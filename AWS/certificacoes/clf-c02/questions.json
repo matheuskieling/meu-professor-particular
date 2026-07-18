@@ -1,0 +1,142 @@
+{
+  "titulo": "Simulado CLF-C02 (AWS Certified Cloud Practitioner) — Fundamentos",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Qual pilar do AWS Well-Architected Framework foca em usar recursos de computação de forma eficiente para atender aos requisitos do sistema?",
+      "opcoes": [
+        "Operational Excellence",
+        "Performance Efficiency",
+        "Cost Optimization",
+        "Reliability"
+      ],
+      "correta": 1,
+      "explicacao": "Performance Efficiency trata de usar os recursos de TI de forma eficiente conforme a demanda muda.",
+      "feedbacks": [
+        "Operational Excellence é sobre operar e monitorar sistemas para entregar valor, não eficiência de recursos.",
+        "Correto: Performance Efficiency é usar recursos computacionais de forma eficiente.",
+        "Cost Optimization foca em evitar custos desnecessários, não em eficiência de performance em si.",
+        "Reliability é sobre recuperar-se de falhas e escalar para atender demanda, não eficiência de recursos."
+      ]
+    },
+    {
+      "pergunta": "Um cliente quer reduzir custos comprometendo-se com um nível de uso por 1 ou 3 anos. Qual opção oferece o maior desconto sobre o preço On-Demand?",
+      "opcoes": [
+        "Spot Instances",
+        "On-Demand Instances",
+        "Savings Plans / Reserved Instances",
+        "Dedicated Hosts sob demanda"
+      ],
+      "correta": 2,
+      "explicacao": "Comprometimento de uso (Savings Plans/RIs) troca flexibilidade por desconto grande e previsível.",
+      "feedbacks": [
+        "Spot é baratíssimo, mas por uso de capacidade ociosa que pode ser interrompida — não é 'compromisso de 1-3 anos'.",
+        "On-Demand é o preço cheio, sem desconto por compromisso.",
+        "Correto: Savings Plans e Reserved Instances dão grande desconto em troca de compromisso de 1 ou 3 anos.",
+        "Dedicated Hosts sob demanda tende a ser mais caro, não a opção de maior desconto por compromisso."
+      ]
+    },
+    {
+      "pergunta": "Qual serviço AWS registra chamadas de API na conta, servindo para AUDITORIA e governança (quem fez o quê e quando)?",
+      "opcoes": [
+        "Amazon CloudWatch",
+        "AWS CloudTrail",
+        "AWS Config",
+        "Amazon Inspector"
+      ],
+      "correta": 1,
+      "explicacao": "CloudTrail = auditoria de chamadas de API (o 'histórico' de ações na conta).",
+      "feedbacks": [
+        "CloudWatch é métricas, logs e alarmes de desempenho/saúde — não o histórico de chamadas de API.",
+        "Correto: CloudTrail registra as chamadas de API (auditoria de quem fez o quê e quando).",
+        "AWS Config avalia e registra a CONFIGURAÇÃO dos recursos ao longo do tempo, não as chamadas de API.",
+        "Inspector faz avaliação de vulnerabilidades, não auditoria de API."
+      ]
+    },
+    {
+      "pergunta": "Uma equipe precisa de alta disponibilidade para uma aplicação web. Qual é a prática recomendada na AWS?",
+      "opcoes": [
+        "Rodar tudo em uma única instância grande",
+        "Distribuir a aplicação em múltiplas Zonas de Disponibilidade (AZs)",
+        "Usar uma única AZ, mas com backup diário",
+        "Colocar todos os recursos em Edge Locations"
+      ],
+      "correta": 1,
+      "explicacao": "Multi-AZ é a base da alta disponibilidade: se uma AZ cai, as outras continuam servindo.",
+      "feedbacks": [
+        "Instância única é ponto único de falha — o oposto de alta disponibilidade.",
+        "Correto: distribuir em múltiplas AZs protege contra a falha de um datacenter inteiro.",
+        "Backup ajuda na recuperação, mas uma única AZ ainda é ponto único de falha para disponibilidade.",
+        "Edge Locations servem CDN/cache (CloudFront), não para hospedar a aplicação com HA."
+      ]
+    },
+    {
+      "pergunta": "No Modelo de Responsabilidade Compartilhada, qual item é SEMPRE responsabilidade da AWS?",
+      "opcoes": [
+        "Configurar as permissões de IAM corretamente",
+        "Criptografar os dados do cliente",
+        "A segurança física dos datacenters",
+        "Aplicar patch no SO de uma instância EC2"
+      ],
+      "correta": 2,
+      "explicacao": "Segurança física/infra (datacenters, hardware, rede física) é 'segurança DA nuvem' — sempre da AWS.",
+      "feedbacks": [
+        "Configurar IAM é responsabilidade do cliente (segurança NA nuvem).",
+        "Criptografar dados do cliente é responsabilidade do cliente (a AWS oferece as ferramentas).",
+        "Correto: segurança física dos datacenters é sempre da AWS (segurança DA nuvem).",
+        "Patch do SO de um EC2 é do cliente — em IaaS o SO é seu."
+      ]
+    },
+    {
+      "pergunta": "Qual plano de suporte AWS é o mínimo que inclui um Technical Account Manager (TAM) dedicado?",
+      "opcoes": [
+        "Basic",
+        "Developer",
+        "Business",
+        "Enterprise"
+      ],
+      "correta": 3,
+      "explicacao": "O TAM dedicado é um benefício do plano Enterprise (e Enterprise On-Ramp, de forma pooled).",
+      "feedbacks": [
+        "Basic é gratuito e não inclui suporte técnico dedicado.",
+        "Developer oferece suporte por e-mail em horário comercial, sem TAM.",
+        "Business tem suporte 24/7 e acesso a engenheiros, mas não um TAM dedicado.",
+        "Correto: o TAM dedicado é benefício do plano Enterprise."
+      ]
+    },
+    {
+      "pergunta": "Qual serviço permite estimar o custo mensal de uma arquitetura ANTES de provisioná-la?",
+      "opcoes": [
+        "AWS Cost Explorer",
+        "AWS Pricing Calculator",
+        "AWS Budgets",
+        "AWS Cost and Usage Report"
+      ],
+      "correta": 1,
+      "explicacao": "O Pricing Calculator estima custos de uma arquitetura planejada; os outros analisam gasto já ocorrido.",
+      "feedbacks": [
+        "Cost Explorer analisa gastos que JÁ aconteceram, não estima uma arquitetura futura.",
+        "Correto: o AWS Pricing Calculator estima o custo de uma solução antes de criá-la.",
+        "Budgets define orçamentos e alertas sobre gasto real, não estimativa de projeto.",
+        "O Cost and Usage Report detalha o uso/custo já incorrido, não uma estimativa prévia."
+      ]
+    },
+    {
+      "pergunta": "Qual afirmação sobre o Free Tier está correta para o exame CLF-C02?",
+      "opcoes": [
+        "Todo serviço é gratuito para sempre",
+        "Existem ofertas 'always free', '12 months free' e 'trials'",
+        "O Free Tier exige plano de suporte Business",
+        "O Free Tier só vale na região us-east-1"
+      ],
+      "correta": 1,
+      "explicacao": "Free Tier tem três categorias: sempre-grátis, 12 meses grátis e trials — cada uma com limites.",
+      "feedbacks": [
+        "Nem todo serviço é grátis; a maioria tem cota ou período limitado.",
+        "Correto: 'always free', '12 months free' e 'trials' são as três categorias.",
+        "Free Tier não exige plano de suporte pago.",
+        "Free Tier não é exclusivo de uma região (embora limites/serviços variem por região)."
+      ]
+    }
+  ]
+}

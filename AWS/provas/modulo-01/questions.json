@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 01: Fundamentos de Cloud & AWS",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Uma empresa quer subir uma aplicação para o ar em minutos, pagando só pelo que usar e escalando conforme a demanda. Que característica da nuvem descreve isso?",
+      "opcoes": [
+        "CapEx: grande investimento antecipado em hardware",
+        "Elasticidade e modelo pague-pelo-uso (OpEx)",
+        "Colocation: alugar espaço num datacenter próprio",
+        "Licenciamento perpétuo de software"
+      ],
+      "correta": 1,
+      "explicacao": "Elasticidade + pagamento sob demanda (OpEx) é o coração da proposta de valor da nuvem.",
+      "feedbacks": [
+        "CapEx é justamente o modelo ANTIGO (comprar hardware antecipado) que a nuvem substitui.",
+        "Isso mesmo: escalar sob demanda e pagar só pelo uso é elasticidade + OpEx.",
+        "Colocation ainda te deixa dono do hardware e da capacidade ociosa — não é o modelo da nuvem.",
+        "Licença perpétua é um custo fixo antecipado, o oposto do pague-pelo-uso."
+      ]
+    },
+    {
+      "pergunta": "Você criou um recurso ontem e hoje ele 'sumiu' do console. Qual a causa mais provável?",
+      "opcoes": [
+        "A AWS deletou o recurso automaticamente",
+        "Você está numa Região diferente da que criou o recurso",
+        "O recurso expira em 24h por padrão",
+        "Houve falha em uma AZ"
+      ],
+      "correta": 1,
+      "explicacao": "Recursos regionais só aparecem na região onde foram criados. Cheque o seletor de região.",
+      "feedbacks": [
+        "A AWS não deleta seus recursos sozinha — isso seria péssimo. Não é isso.",
+        "Exato: a maioria dos recursos é regional. Trocou de região no seletor, 'sumiu'.",
+        "Recursos não expiram em 24h por padrão; continuam (e podem custar) até você removê-los.",
+        "Falha de AZ não faz um recurso desaparecer do console — no máximo afeta disponibilidade."
+      ]
+    },
+    {
+      "pergunta": "Qual afirmação sobre Regiões e Zonas de Disponibilidade está CORRETA?",
+      "opcoes": [
+        "Uma AZ contém várias Regiões",
+        "Regiões são conectadas para que uma falha se propague entre elas",
+        "Uma Região contém múltiplas AZs isoladas entre si",
+        "Toda Região tem exatamente uma AZ"
+      ],
+      "correta": 2,
+      "explicacao": "Região > AZ. Cada Região tem várias AZs (datacenters isolados), base da alta disponibilidade.",
+      "feedbacks": [
+        "Está invertido: é a Região que contém AZs, não o contrário.",
+        "Ao contrário: Regiões são isoladas justamente para que falhas NÃO se propaguem.",
+        "Correto: uma Região agrupa múltiplas AZs isoladas — por isso você distribui recursos entre AZs.",
+        "Não: Regiões normalmente têm 3 ou mais AZs."
+      ]
+    },
+    {
+      "pergunta": "No modelo IaaS (ex.: EC2), quem é responsável por aplicar patches de segurança no sistema operacional da instância?",
+      "opcoes": [
+        "A AWS, sempre",
+        "Você, o cliente",
+        "Ninguém, o SO não precisa de patches",
+        "O fabricante do hardware"
+      ],
+      "correta": 1,
+      "explicacao": "Em IaaS o SO é seu; patch dele é 'segurança NA nuvem', responsabilidade do cliente.",
+      "feedbacks": [
+        "A AWS cuida da infra física e da virtualização, mas NÃO do SO de uma instância EC2.",
+        "Isso: no EC2 o SO é seu. Patches, usuários e configuração do SO são responsabilidade sua.",
+        "Todo SO precisa de patches — deixar sem é uma falha de segurança clássica.",
+        "O fabricante do hardware não tem acesso ao seu SO nem responsabilidade sobre ele."
+      ]
+    },
+    {
+      "pergunta": "Um bucket S3 seu vazou dados por ter sido configurado como público sem querer. Segundo o Modelo de Responsabilidade Compartilhada, de quem é a responsabilidade?",
+      "opcoes": [
+        "Da AWS: é infraestrutura dela",
+        "Sua: configuração de acesso é 'segurança NA nuvem'",
+        "Compartilhada em 50/50, sem culpado definido",
+        "Do usuário final que acessou os dados"
+      ],
+      "correta": 1,
+      "explicacao": "A AWS protege a infraestrutura; como você configura acesso e protege dados é com você.",
+      "feedbacks": [
+        "A AWS garante a segurança DA nuvem (hardware, rede física). Sua configuração não é com ela.",
+        "Correto: definir quem acessa o bucket é 'segurança NA nuvem' — responsabilidade do cliente.",
+        "O modelo não é 50/50: a fronteira é clara (infra x configuração/dados), e configuração é sua.",
+        "Quem acessou aproveitou a brecha, mas a responsabilidade pela config é de quem configurou: você."
+      ]
+    },
+    {
+      "pergunta": "Qual serviço/recurso você usa para ser AVISADO por e-mail quando o gasto se aproxima de um limite definido por você?",
+      "opcoes": [
+        "AWS Budgets",
+        "Amazon EC2",
+        "AWS IAM",
+        "Amazon S3"
+      ],
+      "correta": 0,
+      "explicacao": "AWS Budgets cria orçamentos e dispara alertas por e-mail — sua rede de segurança contra sustos.",
+      "feedbacks": [
+        "Isso: AWS Budgets define orçamentos e envia alertas quando o gasto se aproxima do limite.",
+        "EC2 é compute (máquinas virtuais), não controle de custos.",
+        "IAM cuida de identidade e permissões, não de orçamento.",
+        "S3 é armazenamento de objetos, não alerta de custo."
+      ]
+    },
+    {
+      "pergunta": "Qual comando da AWS CLI confirma que suas credenciais estão funcionando, mostrando sua identidade (UserId, Account, ARN)?",
+      "opcoes": [
+        "aws configure list-regions",
+        "aws sts get-caller-identity",
+        "aws iam whoami",
+        "aws ec2 describe-instances"
+      ],
+      "correta": 1,
+      "explicacao": "`aws sts get-caller-identity` é o teste padrão de 'quem sou eu' após configurar a CLI.",
+      "feedbacks": [
+        "Esse comando não é o teste de identidade; e 'configure list-regions' nem existe nesse formato.",
+        "Correto: é o jeito canônico de checar que a CLI está autenticada e ver sua identidade.",
+        "Não existe 'aws iam whoami'. O comando certo é 'aws sts get-caller-identity'.",
+        "describe-instances lista EC2 (e pode falhar/vir vazio) — não é um teste de identidade."
+      ]
+    },
+    {
+      "pergunta": "Por que evitamos usar o usuário root da conta AWS no dia a dia?",
+      "opcoes": [
+        "Porque o root é mais lento que um usuário IAM",
+        "Porque o root pode tudo e não dá pra restringir; comprometê-lo seria catastrófico",
+        "Porque o root não consegue criar recursos",
+        "Porque a AWS cobra a mais pelo uso do root"
+      ],
+      "correta": 1,
+      "explicacao": "O root tem poder irrestrito. Use-o o mínimo (protegido por MFA) e opere com usuários IAM.",
+      "feedbacks": [
+        "Não há diferença de 'velocidade'; o problema do root é o poder irrestrito.",
+        "Isso: root pode tudo e não pode ser limitado. Por isso: MFA nele e trabalhe com usuários IAM.",
+        "O root consegue criar recursos, sim — o problema é o risco, não a capacidade.",
+        "Não há cobrança extra por usar o root; a questão é segurança, não custo."
+      ]
+    },
+    {
+      "pergunta": "Lambda é frequentemente classificado como serverless/FaaS. Comparado a rodar a mesma lógica num EC2, o que MUDA na sua responsabilidade?",
+      "opcoes": [
+        "Você passa a gerenciar também o SO e o escalonamento",
+        "Você deixa de gerenciar SO e escalonamento; foca só no código",
+        "Nada muda: é idêntico ao EC2",
+        "Você precisa provisionar servidores manualmente antes"
+      ],
+      "correta": 1,
+      "explicacao": "Quanto mais gerenciado o serviço, menos sobra pra você. No Lambda, entrega a função e pronto.",
+      "feedbacks": [
+        "É o contrário: no Lambda você deixa de cuidar do SO e do escalonamento.",
+        "Correto: serverless assume SO, provisionamento e escala; você cuida só do código e dos dados.",
+        "Muda bastante: EC2 é IaaS (você cuida do SO); Lambda abstrai a infra inteira.",
+        "Serverless é exatamente NÃO provisionar servidores manualmente."
+      ]
+    },
+    {
+      "pergunta": "Sobre o Free Tier da AWS, qual afirmação está CORRETA?",
+      "opcoes": [
+        "Tudo na AWS é sempre gratuito no Free Tier",
+        "Tem três sabores: sempre-grátis, 12 meses grátis e trials",
+        "Só vale para empresas com contrato enterprise",
+        "É um valor fixo de crédito de US$ 100 por mês"
+      ],
+      "correta": 1,
+      "explicacao": "Free Tier = sempre-grátis + 12 meses grátis (a partir da criação) + trials por tempo/uso.",
+      "feedbacks": [
+        "Não; só uma parte dos serviços/limites é gratuita, e muitos têm cota.",
+        "Isso mesmo: são esses três tipos, e cada um tem regras próprias de limite.",
+        "Free Tier é aberto a qualquer conta nova, não exige contrato enterprise.",
+        "Não é um crédito fixo mensal; são cotas por serviço."
+      ]
+    },
+    {
+      "pergunta": "Qual destes é um exemplo típico de custo que 'sangra em silêncio' se você esquecer?",
+      "opcoes": [
+        "Listar regiões pela CLI",
+        "Um NAT Gateway ou EC2 esquecido ligado",
+        "Fazer login no console",
+        "Criar um usuário IAM"
+      ],
+      "correta": 1,
+      "explicacao": "Recursos que cobram por hora de existência (NAT Gateway, EC2 ligado, IP elástico ocioso) drenam custo.",
+      "feedbacks": [
+        "Listar regiões é uma chamada de API de leitura — não gera custo relevante.",
+        "Exato: esses recursos cobram enquanto existem/estão ligados, mesmo sem tráfego. Daí o teardown.",
+        "Login no console é gratuito.",
+        "Criar usuário IAM é gratuito; IAM não cobra por usuários/grupos/roles."
+      ]
+    },
+    {
+      "pergunta": "Qual é a 'regra de ouro' de custos adotada neste curso?",
+      "opcoes": [
+        "Deixar recursos ligados por garantia, nunca destruir",
+        "Terminou a prática, faça o teardown; na dúvida, pergunte antes de criar",
+        "Sempre usar a maior instância possível",
+        "Desativar os alertas de billing para não receber e-mails"
+      ],
+      "correta": 1,
+      "explicacao": "Recurso pago só vive enquanto a prática precisa. Terminou, destrói. Na dúvida, pergunte antes.",
+      "feedbacks": [
+        "É justamente o que NÃO fazemos — recurso esquecido ligado é a maior fonte de custo inesperado.",
+        "Isso: teardown ao fim de cada prática e pergunte antes de criar algo que possa custar.",
+        "Instância grande sem necessidade só aumenta o custo — o oposto da boa prática.",
+        "Desativar alertas é remover sua rede de segurança; fazemos o contrário (ativamos)."
+      ]
+    }
+  ]
+}

@@ -103,6 +103,19 @@ estudar, o fluxo é:
 > **Dono do repositório:** estude numa branch própria (ex.: `progresso/<seu-nome>`) e mantenha a
 > `main` limpa, pra que os forks dos amigos sempre nasçam zerados.
 
+## Revisão de longo prazo (estilo Anki)
+
+Além do recap rápido da última sessão (que aparece na retomada), o curso tem uma **revisão
+acumulada com repetição espaçada** — digite **`/revisar`** (ou peça "me testa no que já aprendi"):
+
+- Monta uma **mini-prova** sorteando perguntas de **todos os módulos que você já concluiu** — não
+  pergunta tudo, escolhe uma amostra (prioriza o que está "vencido" e mistura tópicos aleatórios).
+- **Agenda cada pergunta** como no Anki: acertou, ela volta mais pra frente; errou, reaparece logo.
+  Assim o que você tem mais dificuldade aparece com mais frequência.
+- O histórico fica no seu fork (`apps/.sessions/revisao-deck.json`), então acompanha entre máquinas.
+
+Faça uma revisão dessas de vez em quando (a cada poucas sessões) pra fixar o conteúdo de verdade.
+
 ## Recomeçar do zero (reset)
 
 Pra zerar seu progresso (recomeçar ou testar de novo) sem tocar no conteúdo do curso:

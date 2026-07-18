@@ -51,6 +51,7 @@ para retomar depois. Os arquivos `.md` continuam existindo para quem quiser estu
 ├── apps/                 ← drivers + apps de teste (Python puro, sem dependências)
 │   ├── aula.py           ← driver da AULA ao vivo (lê roteiro.json, salva progresso)
 │   ├── session.py        ← driver de QUIZ/PROVA (lê questions.json)
+│   ├── revisar.py        ← revisão acumulada com repetição espaçada (estilo Anki)
 │   ├── quiz_engine.py    ← motor do quiz no modo solo (teclado)
 │   ├── reset.py          ← zera o progresso local (recomeçar do início)
 │   ├── .sessions/        ← progresso do aluno (commitado no fork/branch; zerado na main)
@@ -84,8 +85,10 @@ Cada curso detalha isso no seu próprio `CLAUDE.md` (ver `AWS/CLAUDE.md` como re
 ### Retomar um curso
 
 Para começar/retomar qualquer curso, o aluno usa a skill **`/retomar-curso`**: ela detecta o curso,
-dá um breve resumo de onde paramos e retoma a aula no ponto salvo. Funciona em qualquer curso que siga
-este formato-padrão. (Definição em `.claude/skills/retomar-curso/`.)
+dá um breve resumo de onde paramos, oferece uma revisão da última sessão e retoma a aula no ponto
+salvo. Para revisão de longo prazo, a skill **`/revisar`** faz uma mini-prova estilo **Anki**
+(repetição espaçada) amostrando de todo o conteúdo já concluído. Ambas funcionam em qualquer curso
+que siga o formato-padrão. (Definições em `.claude/skills/`.)
 
 Em agentes **sem suporte a skills**, o fluxo é o mesmo feito à mão: `git pull` (se estiver em
 fork/branch), `python3 <Curso>/apps/aula.py status` + `current` para resumir onde paramos, e
@@ -101,12 +104,11 @@ arquivos Markdown. Convenções:
 - `AGENTS.md` (raiz e por curso), `GEMINI.md` e `.github/copilot-instructions.md` são **ponteiros**
   que direcionam outros harnesses para o `CLAUDE.md` correspondente — mantenha-os como ponteiros;
   qualquer mudança de convenção vai no `CLAUDE.md`.
-- O comando `/retomar-curso` tem **uma lógica só** (`.claude/skills/retomar-curso/SKILL.md`) e
-  ponteiros no formato de comando de cada harness: `.gemini/commands/retomar-curso.toml`,
-  `.cursor/commands/retomar-curso.md`, `.github/prompts/retomar-curso.prompt.md`. Harnesses sem
-  comando por repo (ex.: Codex) caem no fallback do `AGENTS.md` via linguagem natural. Ao alterar a
-  skill, os ponteiros continuam válidos (só referenciam o SKILL.md); crie novos ponteiros se um
-  harness relevante surgir.
+- Os comandos (`/retomar-curso`, `/revisar`) têm **uma lógica só** em
+  `.claude/skills/<comando>/SKILL.md` e ponteiros no formato de cada harness: `.gemini/commands/`,
+  `.cursor/commands/`, `.github/prompts/`. Harnesses sem comando por repo (ex.: Codex) caem no
+  fallback do `AGENTS.md` via linguagem natural. Ao alterar uma skill, os ponteiros continuam
+  válidos (só referenciam o SKILL.md); ao criar um comando novo, replique os ponteiros nos 3 formatos.
 
 ## Cursos
 

@@ -43,6 +43,26 @@ Formato do `roteiro.json`: ver cabeçalho de `aula.py` (campos `modulo`, `titulo
 
 ---
 
+## `revisar.py` — revisão acumulada com repetição espaçada (estilo Anki)
+
+Complementa a revisão-da-sessão do `aula.py`: em vez de recapitular só a última sessão, monta uma
+**mini-prova amostrando de tudo que o aluno já concluiu** e **agenda** cada pergunta para reaparecer
+com o tempo (caixas de Leitner: 1, 3, 7, 16, 35 dias — acertou sobe de caixa, errou volta pra caixa 1).
+
+```bash
+python3 AWS/apps/revisar.py nova --n 8     # monta e inicia a mini-prova (prioriza vencidas + novas + aleatórias)
+python3 AWS/apps/session.py answer C --id revisao   # responde (motor de sempre, com feedback)
+python3 AWS/apps/revisar.py fechar         # processa os acertos/erros no baralho e reagenda
+python3 AWS/apps/revisar.py status         # estado do baralho (rastreadas, dominadas, vencidas)
+```
+- **Fonte:** os bancos que já existem (quizzes + provas). Cada pergunta ganha um `qid` estável.
+- **Elegibilidade:** só módulos **concluídos** (todos os beats de teoria/prática vistos na aula), para
+  nunca perguntar algo ainda não estudado. Use `--ate NN` para incluir módulos 01..NN no estudo solo.
+- **Baralho:** `apps/.sessions/revisao-deck.json` — versionado no fork do aluno (acompanha entre
+  máquinas); o `reset.py` limpa junto. Conduz reusando o `session.py` (id `revisao`).
+- **Quando oferecer:** de vez em quando na retomada (ver a skill `/retomar-curso`) ou quando o aluno
+  pedir "quero revisar". Distinção: `aula.py revisao` = última sessão; `revisar.py` = tudo acumulado.
+
 ## `session.py` — aplicações de teste (quiz/prova/certificação)
 
 As apps de teste reforçam o conteúdo. Compartilham o formato `questions.json` e rodam em **dois modos**.
@@ -77,6 +97,7 @@ apps/
 ├── CLAUDE.md
 ├── aula.py             ← driver de AULA ao vivo (roteiro + progresso)
 ├── session.py          ← driver de QUIZ/PROVA conduzido pelo Claude
+├── revisar.py          ← revisão acumulada com repetição espaçada (estilo Anki)
 ├── quiz_engine.py      ← motor do quiz no modo solo (lê do teclado)
 ├── reset.py            ← zera o progresso local (apaga .sessions/)
 ├── .sessions/          ← progresso do aluno (commitado no fork/branch; zerado na main)

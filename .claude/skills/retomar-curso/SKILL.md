@@ -66,6 +66,9 @@ Depois do resumo e **antes** de retomar o conteúdo novo, rode:
   - **Se não:** siga direto para a aula.
 - **Em qualquer caso** (revisão feita ou dispensada), rode `python3 <CURSO>/apps/aula.py marco --id <ID>`
   para marcar esse conteúdo como revisado e não repeti-lo na próxima retomada.
+- **De vez em quando** (a cada poucas sessões, se já houver módulos concluídos), ofereça também a
+  **revisão acumulada estilo Anki** — a skill `/revisar` (ou `python3 <CURSO>/apps/revisar.py nova`).
+  É a fixação de longo prazo; não precisa ser toda sessão.
 
 ## 4. Retomar a aula de onde paramos
 

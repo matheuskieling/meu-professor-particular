@@ -1,0 +1,247 @@
+{
+  "modulo": "01",
+  "titulo": "Fundamentos de Cloud & AWS",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que vamos fazer neste módulo",
+      "pontos": [
+        "Objetivo: entender o que é nuvem, como a AWS se organiza e os conceitos-base do curso",
+        "Formato: eu explico, você pergunta à vontade, e a gente avança quando fizer sentido",
+        "Ao fim: prática real (criar conta + CLI), quiz e prova"
+      ],
+      "checkpoint": "Confirme que o aluno está pronto pra começar e se topa o formato conversado",
+      "ref": "01-fundamentos/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "O que é a nuvem, de verdade",
+      "pontos": [
+        "Definição: recursos de computação sob demanda, pela internet, pagando pelo uso",
+        "Antes da nuvem: CapEx, comprar servidores, semanas de espera, capacidade ociosa",
+        "Depois: servidor em segundos, pague pelo tempo, desligue quando quiser (OpEx)",
+        "Analogia da energia elétrica: você consome e paga o que usou, não constrói a usina",
+        "Vantagens que importam: elasticidade, pague-pelo-uso, agilidade, alcance global"
+      ],
+      "checkpoint": "Pergunte se a diferença CapEx (comprar) vs OpEx (usar) ficou clara",
+      "ref": "01-fundamentos/teoria.md#1-o-que-é-a-nuvem-de-verdade"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "Modelos de serviço: IaaS, PaaS, SaaS",
+      "pontos": [
+        "Ideia central: quanto a nuvem gerencia POR você (analogia da pizza)",
+        "IaaS = infra crua (EC2): você cuida de SO, runtime, app",
+        "PaaS = plataforma pronta: você cuida só do app e dos dados",
+        "SaaS = software pronto (Gmail): você só usa",
+        "Lambda como FaaS/serverless: entrega a função, a AWS cuida do resto",
+        "Regra: subindo IaaS→SaaS, menos controle E menos responsabilidade"
+      ],
+      "checkpoint": "Peça um exemplo de cada modelo para confirmar entendimento",
+      "ref": "01-fundamentos/teoria.md#2-modelos-de-serviço-iaas-paas-saas"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "Regiões e Zonas de Disponibilidade (AZs)",
+      "pontos": [
+        "Região = área geográfica isolada (us-east-1, sa-east-1)",
+        "Escolha da região afeta latência, preço e conformidade legal (LGPD/GDPR)",
+        "Nem todo serviço existe em toda região; recursos podem ser regionais ou globais",
+        "AZ = um ou mais datacenters isolados dentro da região (energia/rede independentes)",
+        "Multi-AZ = base da alta disponibilidade (se uma cai, a outra serve)",
+        "Armadilha clássica: recurso 'sumiu' = região errada no seletor",
+        "Edge Locations: pontos para CDN (CloudFront), perto do usuário"
+      ],
+      "checkpoint": "Pergunte por que usar múltiplas AZs, e a diferença Região x AZ",
+      "ref": "01-fundamentos/teoria.md#3-como-a-aws-se-organiza-no-mundo-regiões-e-zonas-de-disponibilidade"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Mapa mental das categorias de serviço",
+      "pontos": [
+        "Não decorar os 200+ serviços; reconhecer as 'caixas'",
+        "Compute (EC2, Lambda, ECS/EKS), Storage (S3, EBS, EFS, Glacier)",
+        "Rede (VPC, Route 53, CloudFront, ELB), Banco (RDS, DynamoDB, Aurora)",
+        "Segurança (IAM, KMS, Secrets), Observabilidade (CloudWatch, CloudTrail)",
+        "IaC/Deploy (CloudFormation, CDK, CodePipeline), Custos (Budgets, Cost Explorer)"
+      ],
+      "checkpoint": "Confirme que a ideia é situar cada serviço numa categoria, não decorar",
+      "ref": "01-fundamentos/teoria.md#4-visão-geral-das-categorias-de-serviço"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Modelo de Responsabilidade Compartilhada",
+      "pontos": [
+        "Pergunta que responde: quando algo dá errado, é culpa da AWS ou minha?",
+        "AWS: segurança DA nuvem (hardware, datacenter, rede física, virtualização)",
+        "Você: segurança NA nuvem (IAM, config, criptografia, patch de SO em IaaS)",
+        "Maioria dos vazamentos = erro de config do cliente (bucket público, chave vazada)",
+        "A fronteira se move conforme o modelo (Lambda: AWS assume mais; EC2: você assume mais)"
+      ],
+      "checkpoint": "Teste com o caso do bucket S3 público: de quem é a responsabilidade?",
+      "ref": "01-fundamentos/teoria.md#5-o-modelo-de-responsabilidade-compartilhada"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "Como a AWS cobra + Free Tier + travas de custo",
+      "pontos": [
+        "Três ideias: pague pelo uso; pague menos reservando; pague menos por volume",
+        "Pegadinhas: data transfer OUT cobra; recursos esquecidos ligados sangram custo",
+        "Free Tier: sempre-grátis, 12 meses grátis, trials",
+        "Travas: AWS Budgets, billing alerts, Cost Explorer",
+        "Regra de ouro do curso: terminou a prática, teardown; na dúvida, pergunte antes"
+      ],
+      "checkpoint": "Pergunte quais custos 'pegam' iniciantes e qual é a regra de ouro",
+      "ref": "01-fundamentos/teoria.md#6-como-a-aws-cobra-e-como-você-evita-sustos"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "Formas de acessar a AWS (Console, CLI, SDK, IaC)",
+      "pontos": [
+        "Console: web, ótimo pra ver e aprender",
+        "CLI: reproduzível, automatizável — onde você fica produtivo",
+        "SDK: chamar a AWS do código (boto3 etc.)",
+        "IaC: descrever a infra como código versionável",
+        "Nossa abordagem: Console primeiro (ver), CLI depois (fixar)"
+      ],
+      "checkpoint": "Confirme que faz sentido começar pelo Console e depois CLI",
+      "ref": "01-fundamentos/teoria.md#7-ferramentas-de-acesso-à-aws-o-que-você-vai-usar-na-prática"
+    },
+    {
+      "id": "t8",
+      "fase": "teoria",
+      "titulo": "Recap da teoria + checagem de entendimento",
+      "pontos": [
+        "Recapitular: nuvem, IaaS/PaaS/SaaS, Região/AZ, responsabilidade, custos, acesso",
+        "Rodar mentalmente as 5 perguntas de checagem da teoria",
+        "Amarrar tudo antes de partir pra prática"
+      ],
+      "checkpoint": "Antes de seguir, pergunte: 'podemos passar para a prática na AWS?'",
+      "ref": "01-fundamentos/teoria.md#checagem-de-entendimento"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Preparação + criar a conta AWS",
+      "pontos": [
+        "Avisos: cartão de crédito, cobrança de verificação (~US$1) estornada",
+        "Nada de credencial no repo; chaves só em ~/.aws",
+        "Criar conta em aws.amazon.com, plano de suporte Basic (grátis)",
+        "Entender o usuário root (pode tudo, não dá pra restringir)"
+      ],
+      "acao": "Guiar o aluno a criar a conta pelo console, passo a passo",
+      "checkpoint": "Espere o aluno confirmar que a conta foi criada antes de seguir",
+      "ref": "01-fundamentos/pratica.md#parte-a--criar-e-proteger-a-conta-console"
+    },
+    {
+      "id": "p2",
+      "fase": "pratica",
+      "titulo": "Proteger a conta: MFA no root + Budget",
+      "pontos": [
+        "Ativar MFA no root (app autenticador) — defesa mínima da chave-mestra",
+        "Criar um AWS Budget (zero-spend ou US$1) com alerta por e-mail",
+        "Conectar com a teoria: isso é você cumprindo sua parte na responsabilidade"
+      ],
+      "acao": "Guiar MFA e Budget no console",
+      "checkpoint": "Confirme MFA ativo e budget criado antes de seguir",
+      "ref": "01-fundamentos/pratica.md#passo-2--ativar-mfa-no-usuário-root-crítico"
+    },
+    {
+      "id": "p3",
+      "fase": "pratica",
+      "titulo": "Explorar Regiões e AZs no console",
+      "pontos": [
+        "Abrir o seletor de região, ver a lista",
+        "Trocar para sa-east-1 e voltar para us-east-1",
+        "Fixar a armadilha do 'recurso sumido' = região errada"
+      ],
+      "acao": "Pedir para o aluno navegar o seletor de região",
+      "checkpoint": "Confirme que entendeu por que vamos usar us-east-1 no curso",
+      "ref": "01-fundamentos/pratica.md#passo-4--explorar-regiões-e-azs-fixar-a-teoria"
+    },
+    {
+      "id": "p4",
+      "fase": "pratica",
+      "titulo": "Criar usuário IAM + access keys",
+      "pontos": [
+        "Parar de usar o root no dia a dia",
+        "Criar usuário admin-<nome> com AdministratorAccess (por ora)",
+        "Gerar access keys para CLI e guardá-las com segurança (nunca no repo)"
+      ],
+      "acao": "Guiar criação do usuário IAM e geração das chaves",
+      "checkpoint": "Alerte: se a secret vazar, revogar na hora. Confirme que guardou as chaves",
+      "ref": "01-fundamentos/pratica.md#parte-b--criar-um-usuário-iam-pra-você-console"
+    },
+    {
+      "id": "p5",
+      "fase": "pratica",
+      "titulo": "Instalar e configurar a AWS CLI",
+      "pontos": [
+        "Checar aws --version; instalar se preciso",
+        "aws configure: access key, secret, região us-east-1, output json",
+        "Testar identidade: aws sts get-caller-identity"
+      ],
+      "acao": "Acompanhar a instalação/config e validar o get-caller-identity",
+      "checkpoint": "Confirme que o get-caller-identity retornou a identidade do aluno",
+      "ref": "01-fundamentos/pratica.md#parte-c--instalar-e-configurar-a-aws-cli"
+    },
+    {
+      "id": "p6",
+      "fase": "pratica",
+      "titulo": "Primeiros comandos reais + higiene de custos",
+      "pontos": [
+        "aws ec2 describe-regions (o 'mapa' da AWS) — explicar --query e --output",
+        "aws ec2 describe-availability-zones (as AZs da região)",
+        "Mesmo comando em --region sa-east-1 (regiões são isoladas)",
+        "Teardown: neste módulo nada pago foi criado; fixar o ritual pro futuro"
+      ],
+      "acao": "Guiar os comandos na CLI do aluno e interpretar as saídas",
+      "checkpoint": "Feche a prática confirmando o checklist de conclusão do módulo",
+      "ref": "01-fundamentos/pratica.md#parte-d--primeiros-comandos-reais-cli"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/apps/modulo-01/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "AWS/apps/modulo-01/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 02 após passar"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/provas/modulo-01/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 02; se não, revise os pontos errados",
+      "ref": "AWS/provas/modulo-01/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 01",
+      "pontos": [
+        "Recap do que dominou: fundamentos, conta segura, CLI funcionando",
+        "Opcional: simulado CLF-C02 (certificacoes/clf-c02)",
+        "Próximo: Módulo 02 — Conta, IAM & Segurança (aprofunda IAM)"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 02 ou parar por aqui",
+      "ref": "AWS/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

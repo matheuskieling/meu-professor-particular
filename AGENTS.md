@@ -18,15 +18,17 @@ o seu, descrevendo aquele escopo. Não duplique instruções aqui — este arqui
   python3 <Curso>/apps/aula.py current        # beat atual (pontos + checkpoint)
   python3 <Curso>/apps/aula.py next           # avançar (só após o aluno confirmar)
   python3 <Curso>/apps/session.py start <questions.json>   # conduzir quiz/prova
+  python3 <Curso>/apps/revisar.py nova        # revisão acumulada estilo Anki (repetição espaçada)
   python3 <Curso>/apps/reset.py               # zerar o progresso
   ```
 - **Progresso** (`<Curso>/apps/.sessions/`): versionado no fork/branch do aluno — commite ao fim de
   cada sessão de estudo. A branch `main` do repo principal fica sempre zerada.
 - **Retomar:** `git pull` (se fork/branch) → `aula.py status` + `current` → resumo curto de onde
   paramos → continuar do beat atual.
-- **Comando `/retomar-curso`:** se o usuário digitar `/retomar-curso` (ou pedir para começar ou
-  continuar um curso) e o seu harness não tiver esse comando nativo, **leia
-  `.claude/skills/retomar-curso/SKILL.md` e siga-o** — é a definição canônica do fluxo de retomada,
-  válida para qualquer agente (apesar do caminho, não é exclusiva do Claude).
+- **Comandos `/retomar-curso` e `/revisar`:** se o usuário digitar um deles (ou pedir em linguagem
+  natural para começar/continuar um curso, ou para revisar o que já viu) e o seu harness não tiver o
+  comando nativo, **leia `.claude/skills/<comando>/SKILL.md` e siga-o** — são as definições canônicas
+  desses fluxos, válidas para qualquer agente (apesar do caminho, não são exclusivas do Claude).
+  `/revisar` faz uma mini-prova estilo Anki (repetição espaçada) do conteúdo já concluído.
 - **Regras de ouro:** priorizar AWS Free Tier; teardown de recursos pagos ao fim de cada prática;
   nunca commitar credenciais/secrets.

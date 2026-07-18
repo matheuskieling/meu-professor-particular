@@ -23,20 +23,21 @@ por vez, tira dúvidas, aplica quizzes e provas, e **salva onde você parou** pr
 | Comando | O que faz | Quando usar |
 |---------|-----------|-------------|
 | **`/retomar-curso`** | Detecta o curso, sincroniza seu progresso (`git pull`), resume onde você parou e **retoma a aula exatamente do ponto salvo**. Ao encerrar, commita seu progresso no fork. | Sempre que for **começar ou continuar** a estudar. É o jeito padrão de entrar no curso. Aceita argumento: `/retomar-curso AWS`. |
+| **`/revisar`** | Monta uma **mini-prova estilo Anki** amostrando de tudo que você já concluiu, com **repetição espaçada** (as perguntas voltam de tempos em tempos; erradas reaparecem mais cedo). | Quando quiser **revisar e fixar** o que já aprendeu, a qualquer momento. Aceita argumento: `/revisar AWS`. |
 
-O comando existe no formato nativo de cada harness (a lógica é uma só, definida em
-`.claude/skills/retomar-curso/SKILL.md`):
+Cada comando existe no formato nativo de cada harness (a lógica é uma só — em
+`.claude/skills/<comando>/SKILL.md`):
 
 | Harness | Como acionar |
 |---------|--------------|
-| **Claude Code** | `/retomar-curso` (skill nativa) |
-| **Gemini CLI** | `/retomar-curso` (comando em `.gemini/commands/`) |
-| **Cursor** | `/retomar-curso` (comando em `.cursor/commands/`) |
-| **Copilot (VS Code)** | `/retomar-curso` (prompt em `.github/prompts/`) |
-| **Codex e outros** | Sem comando por repo — **peça em linguagem natural** ("vamos continuar o curso"); o `AGENTS.md` instrui o agente a seguir o mesmo fluxo. |
+| **Claude Code** | `/retomar-curso`, `/revisar` (skills nativas) |
+| **Gemini CLI** | idem (comandos em `.gemini/commands/`) |
+| **Cursor** | idem (comandos em `.cursor/commands/`) |
+| **Copilot (VS Code)** | idem (prompts em `.github/prompts/`) |
+| **Codex e outros** | Sem comando por repo — **peça em linguagem natural** ("vamos continuar o curso", "quero revisar"); o `AGENTS.md` instrui o agente a seguir o mesmo fluxo. |
 
 > Em **qualquer** harness, a linguagem natural sempre funciona: "vamos continuar o curso de onde
-> paramos". Os drivers são Python puro, sem dependências.
+> paramos" ou "me testa no que já aprendi". Os drivers são Python puro, sem dependências.
 
 ## 📚 Como funciona um curso
 

@@ -56,8 +56,13 @@ def carregar_questoes(caminho_json):
 
 
 def _perguntar(questao, numero, total):
+    corretas = questao.get("corretas") or [questao["correta"]]
+    n = len(corretas)
     print(f"\n{NEGRITO}{AZUL}Questão {numero}/{total}{RESET}")
-    print(f"{NEGRITO}{questao['pergunta']}{RESET}\n")
+    print(f"{NEGRITO}{questao['pergunta']}{RESET}")
+    if n > 1:
+        print(f"{AMARELO}(múltipla resposta: marque {n} alternativas, ex.: A,C){RESET}")
+    print()
     for i, opcao in enumerate(questao["opcoes"]):
         print(f"  {NEGRITO}{LETRAS[i]}{RESET}) {opcao}")
 
@@ -66,33 +71,38 @@ def _perguntar(questao, numero, total):
         resp = input(f"\nSua resposta ({'/'.join(validas)}) — ou 'q' pra sair: ").strip().upper()
         if resp == "Q":
             return None
-        if len(resp) == 1 and resp in validas:
-            return LETRAS.index(resp)
-        print(f"{AMARELO}Digite uma das letras: {', '.join(validas)}{RESET}")
+        letras = sorted(set(resp.replace(",", " ").split()))
+        if len(letras) == n and all(len(l) == 1 and l in validas for l in letras):
+            return [LETRAS.index(l) for l in letras]
+        print(f"{AMARELO}Marque {n} letra(s) entre: {', '.join(validas)}{RESET}")
 
 
-def _mostrar_feedback(questao, escolha):
-    """Feedback baseado na alternativa escolhida (usado principalmente nas provas)."""
-    correta = questao["correta"]
+def _mostrar_feedback(questao, escolhas):
+    """Feedback baseado nas alternativas escolhidas (usado principalmente nas provas)."""
+    corretas = sorted(questao.get("corretas") or [questao["correta"]])
     feedbacks = questao.get("feedbacks")
-    acertou = escolha == correta
+    acertou = sorted(escolhas) == corretas
 
     if acertou:
         print(f"{VERDE}✔ Correto!{RESET}")
     else:
         print(f"{VERMELHO}✗ Errado.{RESET}")
 
-    # 1) por que a SUA escolha está certa/errada
-    if feedbacks and escolha < len(feedbacks) and feedbacks[escolha]:
-        marca = "sua resposta"
+    # 1) por que a(s) SUA(s) escolha(s) está(ão) certa(s)/errada(s)
+    if feedbacks:
         cor = VERDE if acertou else VERMELHO
-        print(f"{cor}→ {LETRAS[escolha]}) ({marca}): {feedbacks[escolha]}{RESET}")
+        for escolha in escolhas:
+            if escolha < len(feedbacks) and feedbacks[escolha]:
+                print(f"{cor}→ {LETRAS[escolha]}) (sua resposta): {feedbacks[escolha]}{RESET}")
 
     # 2) se errou, qual é a certa e por quê
     if not acertou:
-        print(f"{NEGRITO}Resposta certa: {LETRAS[correta]}) {questao['opcoes'][correta]}{RESET}")
-        if feedbacks and correta < len(feedbacks) and feedbacks[correta]:
-            print(f"{VERDE}→ por que a {LETRAS[correta]} é a certa: {feedbacks[correta]}{RESET}")
+        certas_txt = ", ".join(f"{LETRAS[c]}) {questao['opcoes'][c]}" for c in corretas)
+        print(f"{NEGRITO}Resposta certa: {certas_txt}{RESET}")
+        if feedbacks:
+            for c in corretas:
+                if c not in escolhas and c < len(feedbacks) and feedbacks[c]:
+                    print(f"{VERDE}→ por que a {LETRAS[c]} é certa: {feedbacks[c]}{RESET}")
 
     # 3) justificativa geral (se houver e ainda não coberta)
     if questao.get("explicacao"):

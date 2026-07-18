@@ -20,7 +20,9 @@ por vez basta para um aluno; use --id para rodar várias em paralelo (ex.: 'prov
 
 Formato do bank.json: igual ao do quiz_engine (titulo, aprovacao, questoes[]),
 onde cada questão pode ter `feedbacks` (um retorno por alternativa) além de
-`explicacao` (justificativa geral da correta).
+`explicacao` (justificativa geral da correta). Questões de MÚLTIPLA RESPOSTA
+(estilo exame AWS, "Escolha DUAS") usam `corretas: [i, j]` no lugar de `correta`;
+a resposta é dada como letras separadas por vírgula (ex.: `answer A,C`).
 """
 
 import argparse
@@ -65,6 +67,8 @@ def _print_questao(state):
     q = _bank_questao(state, pos)
     print(f"[Questão {pos + 1}/{total}] — {state['bank'].get('titulo', '')}")
     print(f"Pergunta: {q['pergunta']}")
+    if q.get("corretas"):
+        print(f"(múltipla resposta: selecione {len(q['corretas'])} alternativas, ex.: A,C)")
     for i, opc in enumerate(q["opcoes"]):
         print(f"  {LETRAS[i]}) {opc}")
 
@@ -103,29 +107,38 @@ def cmd_answer(args):
         print("Sessão já finalizada. Use 'status' ou 'reset'.")
         return
 
-    letra = args.letra.strip().upper()
     q = _bank_questao(state, state["pos"])
     validas = LETRAS[: len(q["opcoes"])]
-    if len(letra) != 1 or letra not in validas:
-        raise SystemExit(f"Resposta inválida '{args.letra}'. Use uma de: {', '.join(validas)}")
+    corretas = sorted(q["corretas"]) if q.get("corretas") else [q["correta"]]
 
-    escolha = LETRAS.index(letra)
-    correta = q["correta"]
-    acertou = escolha == correta
+    letras = sorted(set(args.letra.replace(",", " ").upper().split()))
+    for letra in letras:
+        if len(letra) != 1 or letra not in validas:
+            raise SystemExit(f"Resposta inválida '{letra}'. Use letras entre: {', '.join(validas)}")
+    if len(letras) != len(corretas):
+        raise SystemExit(
+            f"Esta questão pede {len(corretas)} alternativa(s); você marcou {len(letras)}."
+        )
+
+    escolhas = [LETRAS.index(letra) for letra in letras]
+    acertou = escolhas == corretas
     feedbacks = q.get("feedbacks") or []
 
-    print(f"Você respondeu: {letra}")
+    print(f"Você respondeu: {', '.join(letras)}")
     print(f"Resultado: {'CORRETO ✔' if acertou else 'ERRADO ✗'}")
-    if escolha < len(feedbacks) and feedbacks[escolha]:
-        print(f"Sua escolha ({letra}): {feedbacks[escolha]}")
+    for escolha in escolhas:
+        if escolha < len(feedbacks) and feedbacks[escolha]:
+            print(f"Sua escolha ({LETRAS[escolha]}): {feedbacks[escolha]}")
     if not acertou:
-        print(f"Correta: {LETRAS[correta]}) {q['opcoes'][correta]}")
-        if correta < len(feedbacks) and feedbacks[correta]:
-            print(f"Por que {LETRAS[correta]}: {feedbacks[correta]}")
+        certas_txt = ", ".join(f"{LETRAS[c]}) {q['opcoes'][c]}" for c in corretas)
+        print(f"Correta(s): {certas_txt}")
+        for c in corretas:
+            if c not in escolhas and c < len(feedbacks) and feedbacks[c]:
+                print(f"Por que {LETRAS[c]}: {feedbacks[c]}")
     if q.get("explicacao"):
         print(f"Nota: {q['explicacao']}")
 
-    state["answers"].append({"pos": state["pos"], "escolha": escolha, "acertou": acertou})
+    state["answers"].append({"pos": state["pos"], "escolha": escolhas, "acertou": acertou})
     state["pos"] += 1
 
     if state["pos"] >= len(state["order"]):

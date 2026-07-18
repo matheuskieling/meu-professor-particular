@@ -1,41 +1,44 @@
 # Curso de AWS & Cloud — Como fazer o curso
 
 Bem-vindo ao mega intensivo de AWS. Este curso não é só um monte de textos pra ler sozinho:
-a ideia é que ele seja um **one-on-one com o Claude** — eu conduzo a aula, explico aos poucos,
-tiro suas dúvidas na hora e a gente avança no seu ritmo. Este README explica **como isso funciona**.
+a ideia é que ele seja um **one-on-one com o seu agente de IA** (Claude Code, Codex, Cursor,
+Gemini CLI...) — ele conduz a aula, explica aos poucos, tira suas dúvidas na hora e avança no
+seu ritmo. Este README explica **como isso funciona**.
 
 ---
 
 ## Os dois jeitos de fazer cada módulo
 
-### 🎧 Jeito 1 — Aula guiada com o Claude (recomendado)
-Você **não precisa abrir nenhum arquivo**. Entre na aula de um destes dois jeitos (equivalentes):
+### 🎧 Jeito 1 — Aula guiada pelo agente (recomendado)
+Você **não precisa abrir nenhum arquivo**. É só **iniciar o seu harness na pasta do repositório**
+(ex.: `claude`, `codex`, `gemini`... no terminal) e entrar na aula de um destes dois jeitos
+(equivalentes):
 
-- **Pela skill:** digite **`/retomar-curso`** (Claude Code) — ela sincroniza, resume e retoma sozinha;
-- **Conversando:** me chame em linguagem natural:
+- **Pela skill:** digite **`/retomar-curso`** (no Claude Code) — ela sincroniza, resume e retoma sozinha;
+- **Pelas palavras:** peça em linguagem natural (funciona em qualquer agente):
   > "Vamos começar o módulo 1" · "Bora continuar de onde paramos" · "Vamos fazer a prática"
 
-Eu conduzo assim:
-1. Sigo um **roteiro** (a lista ordenada de tudo que quero te ensinar naquele módulo).
-2. Explico um ponto de cada vez, com minhas palavras — nada de despejar textão.
-3. Paro e pergunto **"posso continuar ou tem alguma dúvida?"**. Você pergunta o que quiser.
-4. Quando a teoria acaba, eu proponho **passar pra prática** e te guio na AWS passo a passo.
-5. Depois rodamos o **quiz** e a **prova** (também comigo conduzindo).
-6. **Salvo onde paramos** num arquivo de estado — então dá pra parar quando quiser e retomar
+O agente conduz assim:
+1. Segue um **roteiro** (a lista ordenada de tudo que o módulo ensina).
+2. Explica um ponto de cada vez, com as próprias palavras — nada de despejar textão.
+3. Para e pergunta **"posso continuar ou tem alguma dúvida?"**. Você pergunta o que quiser.
+4. Quando a teoria acaba, propõe **passar pra prática** e te guia na AWS passo a passo.
+5. Depois conduz o **quiz** e a **prova**.
+6. **Salva onde paramos** num arquivo de estado — então dá pra parar quando quiser e retomar
    depois exatamente de onde ficou (é só dizer "vamos continuar").
 
-> Nos bastidores eu uso uns scripts (`apps/aula.py` e `apps/session.py`) que guardam o roteiro e o
-> progresso. Você não precisa saber deles — quem roda sou eu. Mas estão documentados em `apps/CLAUDE.md`.
+> Nos bastidores o agente usa uns scripts (`apps/aula.py` e `apps/session.py`) que guardam o roteiro
+> e o progresso. Você não precisa saber deles — quem os roda é o agente. Estão documentados em `apps/CLAUDE.md`.
 
 ### 📖 Jeito 2 — Estudar sozinho (offline)
-Se um dia você quiser fazer um módulo **sem mim**, todo o conteúdo também existe em arquivos:
+Se um dia você quiser fazer um módulo **sem agente nenhum**, todo o conteúdo também existe em arquivos:
 - `NN-nome/teoria.md` — o texto teórico completo pra ler.
 - `NN-nome/pratica.md` — o passo a passo da prática na AWS.
 - `apps/modulo-NN/quiz.py` — o quiz pra você responder pelo teclado.
 - `provas/modulo-NN/prova.py` — a prova do módulo.
 
 Os dois jeitos cobrem o mesmo conteúdo; escolha por humor do dia. Pode até misturar (ler a teoria
-sozinho e fazer a prática comigo, por exemplo).
+sozinho e fazer a prática guiada pelo agente, por exemplo).
 
 ---
 
@@ -43,10 +46,10 @@ sozinho e fazer a prática comigo, por exemplo).
 
 ```
   1. TEORIA      → entender o "porquê" (conceitos)
-        ↓            eu explico e pergunto "posso continuar?"
+        ↓            o agente explica e pergunta "posso continuar?"
   2. PRÁTICA     → fazer de verdade na AWS (Console primeiro, depois CLI)
         ↓            eu te guio passo a passo; cuidamos de custo e teardown
-  3. QUIZ        → fixar o conteúdo (eu conduzo as perguntas no chat)
+  3. QUIZ        → fixar o conteúdo (o agente conduz as perguntas no chat)
         ↓
   4. PROVA       → avaliação do módulo (feedback por alternativa, aprovação 70%)
         ↓
@@ -55,16 +58,17 @@ sozinho e fazer a prática comigo, por exemplo).
   → próximo módulo
 ```
 
-Você não precisa decorar isso: eu te conduzo por essa ordem automaticamente e sempre te pergunto
+Você não precisa decorar isso: o agente te conduz por essa ordem automaticamente e sempre pergunta
 antes de mudar de etapa ("terminamos a teoria, podemos ir pra prática?").
 
 ---
 
 ## Retomar de onde paramos
 
-Como eu **salvo o estado**, você pode parar a qualquer momento. Na próxima vez, é só dizer algo como
-"vamos continuar o curso" ou "onde a gente parou?" — eu recupero o ponto exato (inclusive dentro da
-teoria ou da prática) e seguimos. Também guardo **notas** de dúvidas importantes que aparecerem no caminho.
+Como o **estado é salvo**, você pode parar a qualquer momento. Na próxima vez, é só dizer algo como
+"vamos continuar o curso" ou "onde a gente parou?" — o agente recupera o ponto exato (inclusive dentro
+da teoria ou da prática) e vocês seguem. Ele também guarda **notas** de dúvidas importantes que
+aparecerem no caminho.
 
 ### A skill `/retomar-curso` (Claude Code)
 
@@ -131,13 +135,13 @@ certificação**, fiéis ao exame real (65 questões, mesmo tempo, mesmo corte, 
 > uns pontos — 80% nos simulados é a margem de segurança. Ficou entre 70–79%? Revise os domínios
 > com mais erros e refaça a pior prova antes de agendar.
 
-Quando eu conduzir seus simulados, **eu mesmo te aviso**: "você bateu o portão, pode agendar" ou
-"falta X, revise Y". Você não precisa controlar nada disso manualmente.
+Quem conduz os simulados é o agente, e **ele mesmo te avisa**: "você bateu o portão, pode agendar"
+ou "falta X, revise Y". Você não precisa controlar nada disso manualmente.
 
 ## Regras de ouro (valem o curso inteiro)
 
 - 💸 **Custos:** priorizamos o **Free Tier**. Toda prática avisa o que cobra e sempre termina com
-  **teardown** (destruir os recursos). Na dúvida se algo custa, **me pergunte antes de criar**.
+  **teardown** (destruir os recursos). Na dúvida se algo custa, **pergunte ao agente antes de criar**.
 - 🔐 **Segurança:** nunca colocamos credenciais/chaves nos arquivos do curso. Elas ficam só na sua
   máquina (`~/.aws/`). MFA no root desde o primeiro dia.
 - 🧭 **Seu ritmo:** não tem pressa. Pergunte quantas vezes precisar; a gente só avança quando fizer sentido.
@@ -163,4 +167,5 @@ AWS/
 
 ## Pronto pra começar?
 
-É só me dizer: **"vamos começar o módulo 1"**. 🚀
+Inicie seu harness na pasta do repositório e digite **`/retomar-curso`** — ou simplesmente diga
+**"vamos começar o módulo 1"**. 🚀

@@ -21,6 +21,14 @@ cada curso. Siga os passos abaixo.
   3. Se **não houver nenhuma sessão** e existir só **um** curso, use esse curso.
   4. Se houver **vários cursos sem sessão ativa** e nada indicar qual, **pergunte** qual retomar.
 
+## 1.5 Sincronizar o progresso (multi-máquina)
+
+O progresso (`apps/.sessions/`) é versionado no fork/branch do aluno. Antes de carregar o estado,
+se o repo tiver remote configurado, rode `git pull --ff-only` (ignore erros de rede sem travar a
+aula — apenas avise). Se estiver na branch `main` do repositório principal (molde do curso), avise
+o aluno e sugira criar uma branch (`git switch -c progresso/<nome>`) ou usar um fork — a `main`
+deve ficar com progresso zerado.
+
 ## 2. Carregar o estado
 
 Com o `<CURSO>` (diretório) e o `<ID>` da sessão em mãos:
@@ -55,6 +63,15 @@ Agora conduza normalmente, seguindo o formato one-on-one:
   `python3 <CURSO>/apps/session.py start <banco.json> [--id prova]`, apresentando as perguntas no chat,
   tirando dúvidas e explicando cada resultado (o banco/ação está no campo `acao`/`ref` do beat).
 - Ao terminar um módulo, proponha emendar o próximo (ou parar), conforme o beat de fechamento.
+
+## 5. Ao encerrar a sessão de estudo
+
+Quando o aluno disser que quer parar (ou a aula/módulo terminar):
+1. Diga em uma frase onde paramos e o que vem a seguir.
+2. Se houver mudanças em `<CURSO>/apps/.sessions/`, **commite o progresso** e faça push:
+   `git add <CURSO>/apps/.sessions && git commit -m "Progresso: <curso> — <ponto onde parou>" && git push`
+   (Exceção: NUNCA commitar progresso na branch `main` do repositório principal — nesse caso,
+   oriente a criar branch/fork primeiro.)
 
 ## Regras de ouro (lembre o aluno quando fizer sentido)
 - 💸 Custos: priorizar Free Tier; toda prática paga termina com teardown; na dúvida, perguntar antes de criar.

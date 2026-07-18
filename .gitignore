@@ -13,8 +13,9 @@ aws-credentials*
 *.tfstate.*
 *.tfvars
 
-# Estado das sessões de quiz/prova (runtime, não versionar)
-**/.sessions/
+# Progresso (apps/.sessions/) é VERSIONADO de propósito: cada aluno commita o
+# próprio progresso no seu fork/branch para continuar de qualquer máquina.
+# A branch main do repo principal deve ficar sempre com progresso zerado.
 
 # Configurações locais do Claude Code (por máquina, não versionar)
 .claude/settings.local.json

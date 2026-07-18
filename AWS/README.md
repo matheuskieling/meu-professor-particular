@@ -64,14 +64,40 @@ Como eu **salvo o estado**, você pode parar a qualquer momento. Na próxima vez
 "vamos continuar o curso" ou "onde a gente parou?" — eu recupero o ponto exato (inclusive dentro da
 teoria ou da prática) e seguimos. Também guardo **notas** de dúvidas importantes que aparecerem no caminho.
 
-Atalho: a skill **`/retomar-curso`** faz exatamente isso — detecta o curso, resume onde paramos e retoma.
+### A skill `/retomar-curso` (Claude Code)
 
-## Recomeçar o curso do zero (reset)
+O jeito mais fácil de entrar no curso é digitar **`/retomar-curso`** (ou `/retomar-curso AWS`).
+Ela faz tudo em sequência:
+1. Sincroniza seu progresso (`git pull` no seu fork/branch);
+2. Detecta o curso e carrega o estado salvo;
+3. Te dá um **resumo curto** de onde paramos (módulo, fase, dúvidas anotadas);
+4. **Retoma a aula do ponto exato** — e ao encerrar, commita seu progresso.
 
-Seu progresso é **local e individual** (fica em `apps/.sessions/`, que não vai pro Git). Ou seja:
-quem clona este repositório **já começa do zero**, sem herdar o progresso de ninguém.
+Use-a **sempre** que for estudar: primeira vez (ela inicia o módulo 1), continuação, ou depois de
+um reset. Em agentes sem skills, é só pedir "vamos continuar o curso de onde paramos" — o fluxo
+está descrito no `AGENTS.md`/`CLAUDE.md` e funciona em qualquer harness.
 
-Se quiser **zerar seu progresso no meio do caminho** (recomeçar ou testar de novo), rode:
+## Seu progresso: faça um fork e commite
+
+O repositório principal fica sempre com **progresso zerado** — ele é o "molde" do curso. Pra
+estudar, o fluxo é:
+
+1. **Faça um fork** deste repositório no seu GitHub (botão *Fork*).
+2. Clone o **seu fork** e estude nele. Seu progresso fica em `AWS/apps/.sessions/` e é
+   **commitado normalmente**:
+   ```bash
+   git add AWS/apps/.sessions && git commit -m "Progresso: módulo 01, beat t3" && git push
+   ```
+   (peça pro agente fazer isso ao fim de cada sessão de estudo — ele já sabe.)
+3. Em **outra máquina**? `git clone` do seu fork (ou `git pull`) e diga "vamos continuar" — a aula
+   retoma exatamente de onde parou. ☁️
+
+> **Dono do repositório:** estude numa branch própria (ex.: `progresso/<seu-nome>`) e mantenha a
+> `main` limpa, pra que os forks dos amigos sempre nasçam zerados.
+
+## Recomeçar do zero (reset)
+
+Pra zerar seu progresso (recomeçar ou testar de novo) sem tocar no conteúdo do curso:
 
 ```bash
 python3 AWS/apps/reset.py           # apaga TODO o progresso e volta o curso ao início
@@ -79,9 +105,7 @@ python3 AWS/apps/reset.py --list    # só mostra as sessões em andamento (não 
 python3 AWS/apps/reset.py --id aula-01   # reseta só uma sessão específica
 ```
 
-O reset mexe **apenas no seu progresso** — não altera nenhum conteúdo do curso (teoria, prática,
-roteiros, questões). Depois de resetar, é só chamar `/retomar-curso` (ou "vamos começar o módulo 1")
-pra recomeçar do início.
+Depois commite o reset no seu fork e chame `/retomar-curso` (ou "vamos começar o módulo 1").
 
 ---
 

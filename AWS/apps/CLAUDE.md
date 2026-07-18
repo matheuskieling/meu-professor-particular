@@ -72,7 +72,7 @@ apps/
 ├── session.py          ← driver de QUIZ/PROVA conduzido pelo Claude
 ├── quiz_engine.py      ← motor do quiz no modo solo (lê do teclado)
 ├── reset.py            ← zera o progresso local (apaga .sessions/)
-├── .sessions/          ← estado de aulas e quizzes em andamento (gitignored)
+├── .sessions/          ← progresso do aluno (commitado no fork/branch; zerado na main)
 └── modulo-01/
     ├── quiz.py         ← runner solo do quiz do módulo
     └── questions.json  ← banco de questões da aula
@@ -82,8 +82,8 @@ apps/
 > não aqui — é conteúdo do módulo. Aqui ficam só os drivers e os quizzes.
 
 ## Resetar o progresso — `reset.py`
-O progresso (aula + quizzes/provas) vive em `.sessions/` (gitignored, individual por aluno). Para
-recomeçar do zero sem tocar no conteúdo do curso:
+O progresso (aula + quizzes/provas) vive em `.sessions/` e é **versionado no fork/branch do aluno**
+(a `main` do repo principal fica zerada). Para recomeçar do zero sem tocar no conteúdo do curso:
 ```bash
 python3 AWS/apps/reset.py          # apaga todo o progresso
 python3 AWS/apps/reset.py --list   # lista sessões sem apagar

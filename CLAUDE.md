@@ -53,7 +53,7 @@ para retomar depois. Os arquivos `.md` continuam existindo para quem quiser estu
 │   ├── session.py        ← driver de QUIZ/PROVA (lê questions.json)
 │   ├── quiz_engine.py    ← motor do quiz no modo solo (teclado)
 │   ├── reset.py          ← zera o progresso local (recomeçar do início)
-│   ├── .sessions/        ← estado de aulas/quizzes em andamento (gitignored)
+│   ├── .sessions/        ← progresso do aluno (commitado no fork/branch; zerado na main)
 │   └── modulo-NN/questions.json   ← banco de questões da aula
 ├── provas/modulo-NN/     ← prova de fim de módulo (feedback por alternativa)
 └── (extras do curso)     ← ex.: AWS tem certificacoes/; outros cursos terão o que fizer sentido
@@ -70,8 +70,10 @@ curso novo, copie a pasta `apps/` de um curso existente e crie só o conteúdo (
    `session.py`. O estado persiste → dá para **parar e retomar sempre de onde ficou**.
 2. **Solo:** o aluno lê os `.md` e roda os quizzes pelo teclado (`quiz.py`, `prova.py`).
 
-O **progresso é local e individual** (`apps/.sessions/`, gitignored) — quem clona o repo começa do
-zero. Para recomeçar no meio, `python3 <Curso>/apps/reset.py` zera o progresso sem tocar no conteúdo.
+O **progresso** (`apps/.sessions/`) é **versionado**: cada aluno commita o próprio progresso no seu
+**fork** (ou numa branch própria, ex.: `progresso/<nome>`) e continua **de qualquer máquina** com um
+`git pull`. A branch `main` do repositório principal fica sempre com **progresso zerado** — nunca
+commitar arquivos de `.sessions/` nela. Para recomeçar, `python3 <Curso>/apps/reset.py` (+ commit).
 
 ### Anatomia de um módulo (ciclo aprender → praticar → testar → avaliar)
 
@@ -84,6 +86,21 @@ Cada curso detalha isso no seu próprio `CLAUDE.md` (ver `AWS/CLAUDE.md` como re
 Para começar/retomar qualquer curso, o aluno usa a skill **`/retomar-curso`**: ela detecta o curso,
 dá um breve resumo de onde paramos e retoma a aula no ponto salvo. Funciona em qualquer curso que siga
 este formato-padrão. (Definição em `.claude/skills/retomar-curso/`.)
+
+Em agentes **sem suporte a skills**, o fluxo é o mesmo feito à mão: `git pull` (se estiver em
+fork/branch), `python3 <Curso>/apps/aula.py status` + `current` para resumir onde paramos, e
+conduzir a partir do beat atual. Os detalhes estão no `CLAUDE.md` de cada curso.
+
+## Compatibilidade com outros agentes (harness-agnóstico)
+
+Este repositório **não depende do Claude**: qualquer agente de código (Codex, Cursor, Gemini CLI,
+Copilot, etc.) consegue conduzir os cursos, porque os drivers são Python puro e as instruções são
+arquivos Markdown. Convenções:
+
+- Os **`CLAUDE.md` são a fonte de verdade** das instruções (nome histórico do projeto).
+- `AGENTS.md` (raiz e por curso), `GEMINI.md` e `.github/copilot-instructions.md` são **ponteiros**
+  que direcionam outros harnesses para o `CLAUDE.md` correspondente — mantenha-os como ponteiros;
+  qualquer mudança de convenção vai no `CLAUDE.md`.
 
 ## Cursos
 

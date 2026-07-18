@@ -1,0 +1,9 @@
+description = "Inicia ou retoma um curso da plataforma (aula ao vivo one-on-one), do ponto salvo"
+
+prompt = """
+Leia o arquivo `.claude/skills/retomar-curso/SKILL.md` deste repositório (é a definição canônica
+deste comando, válida para qualquer agente) e siga exatamente as instruções dele: detectar o curso,
+sincronizar o progresso, resumir onde paramos e retomar a aula do ponto salvo.
+
+Argumentos do usuário (curso, opcional): {{args}}
+"""

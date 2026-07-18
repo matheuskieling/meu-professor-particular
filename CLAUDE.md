@@ -101,6 +101,12 @@ arquivos Markdown. Convenções:
 - `AGENTS.md` (raiz e por curso), `GEMINI.md` e `.github/copilot-instructions.md` são **ponteiros**
   que direcionam outros harnesses para o `CLAUDE.md` correspondente — mantenha-os como ponteiros;
   qualquer mudança de convenção vai no `CLAUDE.md`.
+- O comando `/retomar-curso` tem **uma lógica só** (`.claude/skills/retomar-curso/SKILL.md`) e
+  ponteiros no formato de comando de cada harness: `.gemini/commands/retomar-curso.toml`,
+  `.cursor/commands/retomar-curso.md`, `.github/prompts/retomar-curso.prompt.md`. Harnesses sem
+  comando por repo (ex.: Codex) caem no fallback do `AGENTS.md` via linguagem natural. Ao alterar a
+  skill, os ponteiros continuam válidos (só referenciam o SKILL.md); crie novos ponteiros se um
+  harness relevante surgir.
 
 ## Cursos
 

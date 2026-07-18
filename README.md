@@ -18,17 +18,25 @@ por vez, tira dúvidas, aplica quizzes e provas, e **salva onde você parou** pr
    - **Linguagem natural (qualquer agente):** diga **"vamos começar o curso de AWS"** ou
      **"vamos continuar de onde paramos"**.
 
-## 🧰 Skills disponíveis (Claude Code)
+## 🧰 Comandos/Skills disponíveis
 
-As skills são comandos que você digita com `/` no Claude Code:
-
-| Skill | O que faz | Quando usar |
-|-------|-----------|-------------|
+| Comando | O que faz | Quando usar |
+|---------|-----------|-------------|
 | **`/retomar-curso`** | Detecta o curso, sincroniza seu progresso (`git pull`), resume onde você parou e **retoma a aula exatamente do ponto salvo**. Ao encerrar, commita seu progresso no fork. | Sempre que for **começar ou continuar** a estudar. É o jeito padrão de entrar no curso. Aceita argumento: `/retomar-curso AWS`. |
 
-> Não usa Claude Code? Sem problema — o repo é **agnóstico de agente**. Peça em linguagem natural
-> ("vamos continuar o curso de onde paramos") que qualquer agente segue o fluxo descrito em
-> `AGENTS.md`/`CLAUDE.md`. Os drivers são Python puro, sem dependências.
+O comando existe no formato nativo de cada harness (a lógica é uma só, definida em
+`.claude/skills/retomar-curso/SKILL.md`):
+
+| Harness | Como acionar |
+|---------|--------------|
+| **Claude Code** | `/retomar-curso` (skill nativa) |
+| **Gemini CLI** | `/retomar-curso` (comando em `.gemini/commands/`) |
+| **Cursor** | `/retomar-curso` (comando em `.cursor/commands/`) |
+| **Copilot (VS Code)** | `/retomar-curso` (prompt em `.github/prompts/`) |
+| **Codex e outros** | Sem comando por repo — **peça em linguagem natural** ("vamos continuar o curso"); o `AGENTS.md` instrui o agente a seguir o mesmo fluxo. |
+
+> Em **qualquer** harness, a linguagem natural sempre funciona: "vamos continuar o curso de onde
+> paramos". Os drivers são Python puro, sem dependências.
 
 ## 📚 Como funciona um curso
 

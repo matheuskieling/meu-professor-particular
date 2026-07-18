@@ -1,0 +1,110 @@
+{
+  "titulo": "Módulo 01 — Fundamentos de Cloud & AWS",
+  "questoes": [
+    {
+      "pergunta": "O que melhor descreve computação em nuvem?",
+      "opcoes": [
+        "Recursos de computação sob demanda, pela internet, pagando pelo uso",
+        "Um datacenter que você compra e instala na sua empresa",
+        "Um software de backup que roda no seu notebook",
+        "Uma rede social para desenvolvedores"
+      ],
+      "correta": 0,
+      "explicacao": "Nuvem = recursos sob demanda, via internet, com pagamento pelo uso (OpEx em vez de CapEx)."
+    },
+    {
+      "pergunta": "Qual a diferença entre uma Região e uma Zona de Disponibilidade (AZ)?",
+      "opcoes": [
+        "São sinônimos, apenas nomes diferentes para a mesma coisa",
+        "Região é uma área geográfica; AZ é um ou mais datacenters isolados dentro dela",
+        "AZ é maior que uma Região",
+        "Região é física e AZ é apenas lógica, sem datacenter real"
+      ],
+      "correta": 1,
+      "explicacao": "Uma Região contém várias AZs; cada AZ é um/mais datacenters com energia e rede independentes."
+    },
+    {
+      "pergunta": "Por que distribuir uma aplicação em múltiplas AZs?",
+      "opcoes": [
+        "Para pagar menos impostos",
+        "Para deixar a aplicação mais lenta de propósito",
+        "Para alta disponibilidade: se uma AZ cai, a outra continua servindo",
+        "É obrigatório pela AWS em qualquer serviço"
+      ],
+      "correta": 2,
+      "explicacao": "Múltiplas AZs = resiliência. Falha de um datacenter não derruba a aplicação."
+    },
+    {
+      "pergunta": "No modelo de serviço, EC2 (máquinas virtuais) é um exemplo de:",
+      "opcoes": ["SaaS", "PaaS", "IaaS", "On-premises"],
+      "correta": 2,
+      "explicacao": "EC2 entrega infraestrutura crua (VM). Você gerencia SO, runtime e app — isso é IaaS."
+    },
+    {
+      "pergunta": "No Modelo de Responsabilidade Compartilhada, de quem é a responsabilidade se um bucket S3 seu ficou público por configuração errada?",
+      "opcoes": [
+        "Da AWS, porque é infraestrutura dela",
+        "Sua, porque é segurança 'NA' nuvem (como você configura o serviço)",
+        "De ninguém, é um risco aceitável",
+        "Do provedor de internet"
+      ],
+      "correta": 1,
+      "explicacao": "AWS cuida da segurança DA nuvem; você cuida da segurança NA nuvem (configuração, acessos, dados)."
+    },
+    {
+      "pergunta": "Qual destes custos costuma pegar iniciantes de surpresa?",
+      "opcoes": [
+        "Transferência de dados de saída (data transfer out) para a internet",
+        "Criar um usuário IAM",
+        "Fazer login no console",
+        "Listar regiões pela CLI"
+      ],
+      "correta": 0,
+      "explicacao": "Data transfer OUT é cobrado; entrada geralmente é grátis. Recursos esquecidos ligados também sangram custo."
+    },
+    {
+      "pergunta": "Qual a 'regra de ouro' de custos adotada neste curso?",
+      "opcoes": [
+        "Deixar tudo ligado por garantia",
+        "Nunca deletar nada para não perder trabalho",
+        "Se a prática acabou, faça o teardown (destrua os recursos)",
+        "Usar sempre a instância mais cara para ter certeza"
+      ],
+      "correta": 2,
+      "explicacao": "Recurso pago só existe enquanto a prática precisa. Terminou, destrói. Na dúvida, pergunte antes de criar."
+    },
+    {
+      "pergunta": "Qual comando confirma que sua AWS CLI está autenticada, mostrando sua identidade?",
+      "opcoes": [
+        "aws whoami",
+        "aws sts get-caller-identity",
+        "aws login --check",
+        "aws configure list-regions"
+      ],
+      "correta": 1,
+      "explicacao": "`aws sts get-caller-identity` retorna UserId, Account e ARN — prova de que a CLI está funcionando."
+    },
+    {
+      "pergunta": "Por que ativar MFA no usuário root é uma das primeiras coisas a fazer?",
+      "opcoes": [
+        "Porque a AWS bloqueia a conta sem MFA",
+        "Porque o root pode tudo e não dá pra restringir; uma senha vazada seria um desastre",
+        "Porque deixa a conta mais barata",
+        "Porque acelera a criação de instâncias EC2"
+      ],
+      "correta": 1,
+      "explicacao": "O root é a chave-mestra irrestrita da conta. MFA é sua defesa mínima — parte da sua responsabilidade."
+    },
+    {
+      "pergunta": "O que é o Free Tier da AWS?",
+      "opcoes": [
+        "Um desconto só para empresas grandes",
+        "Uma cota gratuita (sempre-grátis, 12 meses e trials) para aprender sem gastar",
+        "Um plano pago mensal fixo",
+        "Suporte técnico gratuito por telefone"
+      ],
+      "correta": 1,
+      "explicacao": "Free Tier tem 3 sabores: sempre-grátis, 12 meses grátis e trials. Vamos priorizá-lo no curso."
+    }
+  ]
+}

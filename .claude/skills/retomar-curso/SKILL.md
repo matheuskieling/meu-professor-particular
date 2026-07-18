@@ -52,6 +52,21 @@ Antes de retomar o conteúdo, escreva um resumo **curto** (3–5 linhas) com:
 - Onde exatamente paramos (o beat atual e a fase: teoria/prática/quiz/prova).
 - Se houver notas registradas na sessão, mencione dúvidas pendentes relevantes.
 
+## 3.5 Oferecer a revisão da última sessão (mini-prova)
+
+Depois do resumo e **antes** de retomar o conteúdo novo, rode:
+`python3 <CURSO>/apps/aula.py revisao --id <ID>`
+
+- Se ele responder que **não há conteúdo novo**, pule esta etapa e siga.
+- Caso liste tópicos, **pergunte ao aluno se ele quer uma revisão rápida** do que estudou na última
+  sessão (o comando sugere quantas perguntas — o tamanho acompanha o volume de conteúdo).
+  - **Se sim:** elabore esse número de perguntas curtas sobre os tópicos listados (varie o formato —
+    múltipla escolha, "explique com suas palavras", cenário rápido), conduza **uma de cada vez** com
+    feedback, e ao final comente como ele foi, sugerindo reforço nos pontos que errar.
+  - **Se não:** siga direto para a aula.
+- **Em qualquer caso** (revisão feita ou dispensada), rode `python3 <CURSO>/apps/aula.py marco --id <ID>`
+  para marcar esse conteúdo como revisado e não repeti-lo na próxima retomada.
+
 ## 4. Retomar a aula de onde paramos
 
 Agora conduza normalmente, seguindo o formato one-on-one:

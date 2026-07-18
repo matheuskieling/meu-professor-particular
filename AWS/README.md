@@ -77,7 +77,9 @@ Ela faz tudo em sequência:
 1. Sincroniza seu progresso (`git pull` no seu fork/branch);
 2. Detecta o curso e carrega o estado salvo;
 3. Te dá um **resumo curto** de onde paramos (módulo, fase, dúvidas anotadas);
-4. **Retoma a aula do ponto exato** — e ao encerrar, commita seu progresso.
+4. Oferece uma **revisão rápida da última sessão** — uma mini-prova cujo tamanho acompanha o quanto
+   você estudou da última vez (você aceita ou pula);
+5. **Retoma a aula do ponto exato** — e ao encerrar, commita seu progresso.
 
 Use-a **sempre** que for estudar: primeira vez (ela inicia o módulo 1), continuação, ou depois de
 um reset. Em agentes sem skills, é só pedir "vamos continuar o curso de onde paramos" — o fluxo

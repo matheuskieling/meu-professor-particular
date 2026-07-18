@@ -22,9 +22,16 @@ python3 AWS/apps/aula.py start AWS/01-fundamentos/roteiro.json   # mostra o beat
 python3 AWS/apps/aula.py next                                    # avança quando o aluno topar
 python3 AWS/apps/aula.py current                                 # retomar de onde paramos
 python3 AWS/apps/aula.py status                                  # mapa de progresso
+python3 AWS/apps/aula.py revisao                                 # conteúdo da última sessão + nº de perguntas sugerido
+python3 AWS/apps/aula.py marco                                   # marca o conteúdo como já revisado
 python3 AWS/apps/aula.py goto p1                                 # pular para um beat (ex.: prática)
 python3 AWS/apps/aula.py note "aluno teve dúvida em AZ x Região" # registrar nota/dúvida
 ```
+
+**Revisão espaçada na retomada:** ao retomar, depois do resumo, rode `revisao` — ele lista os beats
+de teoria/prática vistos desde o último `marco` (a "última sessão") e sugere quantas perguntas fazer
+(o tamanho acompanha o volume). Ofereça a mini-prova ao aluno; ao terminar (feita ou dispensada),
+rode `marco` para não repetir aquele conteúdo na próxima vez. (A skill `/retomar-curso` já faz isso.)
 - Cada beat traz `pontos` (o que desenvolver), `checkpoint` (a deixa do "posso continuar?"), e às
   vezes `acao` (ex.: rodar o quiz) e `ref` (seção de apoio em teoria.md/pratica.md).
 - O `--id` padrão é `aula-<modulo>`; o beat atual sobrevive entre sessões, então dá pra **retomar**.

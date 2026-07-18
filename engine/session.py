@@ -15,8 +15,10 @@ Comandos:
     status  [--id NOME]                            progresso e nota parcial
     reset   [--id NOME]                            apaga a sessão
 
-O estado fica em AWS/.sessions/<id>.json (ignorado pelo git). Uma sessão "ativa"
-por vez basta para um aluno; use --id para rodar várias em paralelo (ex.: 'prova').
+Motor compartilhado (vive em `engine/`, serve qualquer curso): o curso é descoberto
+pelo caminho do banco (no `start`) ou por `--curso <dir>` / autodetecção. O estado
+fica em `<curso>/.sessions/<id>.json` (versionado no fork). Use --id para rodar
+várias sessões em paralelo (ex.: 'prova', 'cert', 'revisao').
 
 Formato do bank.json: igual ao do quiz_engine (titulo, aprovacao, questoes[]),
 onde cada questão pode ter `feedbacks` (um retorno por alternativa) além de
@@ -30,30 +32,24 @@ import json
 import os
 import random
 
+import _common
+
 LETRAS = "ABCDEFGH"
-APPS_DIR = os.path.dirname(os.path.abspath(__file__))
-SESSIONS_DIR = os.path.join(APPS_DIR, ".sessions")
 
 
-def _state_path(session_id):
-    return os.path.join(SESSIONS_DIR, f"{session_id}.json")
-
-
-def _load_state(session_id):
-    path = _state_path(session_id)
-    if not os.path.exists(path):
+def _load_state(session_id, curso=None):
+    path = _common.state_path(session_id, curso=curso)
+    state = _common.load_json(path)
+    if state is None:
         raise SystemExit(
             f"Nenhuma sessão '{session_id}' ativa. Rode primeiro: "
-            f"session.py start <bank.json> --id {session_id}"
+            f"engine/session.py start <bank.json> --id {session_id}"
         )
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    return state
 
 
-def _save_state(session_id, state):
-    os.makedirs(SESSIONS_DIR, exist_ok=True)
-    with open(_state_path(session_id), "w", encoding="utf-8") as f:
-        json.dump(state, f, ensure_ascii=False, indent=2)
+def _save_state(session_id, state, curso=None):
+    _common.save_json(_common.state_path(session_id, curso=curso), state)
 
 
 def _bank_questao(state, pos):
@@ -87,14 +83,15 @@ def cmd_start(args):
         "answers": [],
         "done": False,
     }
-    _save_state(args.id, state)
+    curso_root = _common.curso_root_de_caminho(args.bank)
+    _common.save_json(_common.state_path(args.id, curso_root=curso_root), state)
     print(f"Sessão '{args.id}' iniciada: {bank.get('titulo', '(sem título)')}")
     print(f"{len(order)} questões. Aprovação: {bank.get('aprovacao', 70)}%.\n")
     _print_questao(state)
 
 
 def cmd_current(args):
-    state = _load_state(args.id)
+    state = _load_state(args.id, args.curso)
     if state["done"]:
         print("Sessão finalizada. Use 'status' para ver a nota ou 'reset' para recomeçar.")
         return
@@ -102,7 +99,7 @@ def cmd_current(args):
 
 
 def cmd_answer(args):
-    state = _load_state(args.id)
+    state = _load_state(args.id, args.curso)
     if state["done"]:
         print("Sessão já finalizada. Use 'status' ou 'reset'.")
         return
@@ -143,11 +140,11 @@ def cmd_answer(args):
 
     if state["pos"] >= len(state["order"]):
         state["done"] = True
-        _save_state(args.id, state)
+        _save_state(args.id, state, args.curso)
         print("\n--- FIM DA SESSÃO ---")
         _print_resultado(state)
     else:
-        _save_state(args.id, state)
+        _save_state(args.id, state, args.curso)
         print("\n--- Próxima ---")
         _print_questao(state)
 
@@ -171,14 +168,14 @@ def _print_resultado(state):
 
 
 def cmd_status(args):
-    state = _load_state(args.id)
+    state = _load_state(args.id, args.curso)
     _print_resultado(state)
     if not state["done"]:
         print(f"Em andamento: questão {state['pos'] + 1}/{len(state['order'])}.")
 
 
 def cmd_reset(args):
-    path = _state_path(args.id)
+    path = _common.state_path(args.id, curso=args.curso)
     if os.path.exists(path):
         os.remove(path)
         print(f"Sessão '{args.id}' apagada.")
@@ -203,11 +200,13 @@ def main():
     ]:
         p = sub.add_parser(name, help=helptext)
         p.add_argument("--id", default="active", help="nome da sessão (padrão: active)")
+        p.add_argument("--curso", default=None, help="diretório do curso (autodetecta se omitido)")
         p.set_defaults(func=func)
 
     p = sub.add_parser("answer", help="responde a questão atual")
     p.add_argument("letra", help="a alternativa: A, B, C, ...")
     p.add_argument("--id", default="active", help="nome da sessão (padrão: active)")
+    p.add_argument("--curso", default=None, help="diretório do curso (autodetecta se omitido)")
     p.set_defaults(func=cmd_answer)
 
     args = parser.parse_args()

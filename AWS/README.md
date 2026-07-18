@@ -27,8 +27,8 @@ O agente conduz assim:
 6. **Salva onde paramos** num arquivo de estado — então dá pra parar quando quiser e retomar
    depois exatamente de onde ficou (é só dizer "vamos continuar").
 
-> Nos bastidores o agente usa uns scripts (`apps/aula.py` e `apps/session.py`) que guardam o roteiro
-> e o progresso. Você não precisa saber deles — quem os roda é o agente. Estão documentados em `apps/CLAUDE.md`.
+> Nos bastidores o agente usa uns scripts (`engine/aula.py` e `engine/session.py`) que guardam o roteiro
+> e o progresso. Você não precisa saber deles — quem os roda é o agente. Estão documentados em `engine/CLAUDE.md`.
 
 ### 📖 Jeito 2 — Estudar sozinho (offline)
 Se um dia você quiser fazer um módulo **sem agente nenhum**, todo o conteúdo também existe em arquivos:
@@ -91,10 +91,10 @@ O repositório principal fica sempre com **progresso zerado** — ele é o "mold
 estudar, o fluxo é:
 
 1. **Faça um fork** deste repositório no seu GitHub (botão *Fork*).
-2. Clone o **seu fork** e estude nele. Seu progresso fica em `AWS/apps/.sessions/` e é
+2. Clone o **seu fork** e estude nele. Seu progresso fica em `AWS/.sessions/` e é
    **commitado normalmente**:
    ```bash
-   git add AWS/apps/.sessions && git commit -m "Progresso: módulo 01, beat t3" && git push
+   git add AWS/.sessions && git commit -m "Progresso: módulo 01, beat t3" && git push
    ```
    (peça pro agente fazer isso ao fim de cada sessão de estudo — ele já sabe.)
 3. Em **outra máquina**? `git clone` do seu fork (ou `git pull`) e diga "vamos continuar" — a aula
@@ -112,7 +112,7 @@ acumulada com repetição espaçada** — digite **`/revisar`** (ou peça "me te
   pergunta tudo, escolhe uma amostra (prioriza o que está "vencido" e mistura tópicos aleatórios).
 - **Agenda cada pergunta** como no Anki: acertou, ela volta mais pra frente; errou, reaparece logo.
   Assim o que você tem mais dificuldade aparece com mais frequência.
-- O histórico fica no seu fork (`apps/.sessions/revisao-deck.json`), então acompanha entre máquinas.
+- O histórico fica no seu fork (`.sessions/revisao-deck.json`), então acompanha entre máquinas.
 
 Faça uma revisão dessas de vez em quando (a cada poucas sessões) pra fixar o conteúdo de verdade.
 
@@ -121,9 +121,9 @@ Faça uma revisão dessas de vez em quando (a cada poucas sessões) pra fixar o 
 Pra zerar seu progresso (recomeçar ou testar de novo) sem tocar no conteúdo do curso:
 
 ```bash
-python3 AWS/apps/reset.py           # apaga TODO o progresso e volta o curso ao início
-python3 AWS/apps/reset.py --list    # só mostra as sessões em andamento (não apaga nada)
-python3 AWS/apps/reset.py --id aula-01   # reseta só uma sessão específica
+python3 engine/reset.py           # apaga TODO o progresso e volta o curso ao início
+python3 engine/reset.py --list    # só mostra as sessões em andamento (não apaga nada)
+python3 engine/reset.py --id aula-01   # reseta só uma sessão específica
 ```
 
 Depois commite o reset no seu fork e chame `/retomar-curso` (ou "vamos começar o módulo 1").

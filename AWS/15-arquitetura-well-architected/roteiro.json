@@ -189,7 +189,7 @@
         "Fixar o conteúdo com o quiz interativo (10 questões)",
         "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
       ],
-      "acao": "Rodar: python3 AWS/apps/session.py start AWS/apps/modulo-15/questions.json",
+      "acao": "Rodar: python3 engine/session.py start AWS/apps/modulo-15/questions.json",
       "checkpoint": "Ao terminar, comente o resultado e o que revisar",
       "ref": "AWS/apps/modulo-15/questions.json"
     },
@@ -201,7 +201,7 @@
         "Avaliação de fim de módulo (12 questões de cenário, feedback por alternativa)",
         "Aprovação 70%; só seguir pro Módulo 16 após passar"
       ],
-      "acao": "Rodar: python3 AWS/apps/session.py start AWS/provas/modulo-15/questions.json --id prova",
+      "acao": "Rodar: python3 engine/session.py start AWS/provas/modulo-15/questions.json --id prova",
       "checkpoint": "Se passou, proponha o Módulo 16; se não, revise os pontos errados",
       "ref": "AWS/provas/modulo-15/questions.json"
     },

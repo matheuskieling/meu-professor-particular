@@ -28,7 +28,10 @@ Revisão espaçada: a cada retomada, `revisao` mostra os beats de teoria/prátic
 volume de conteúdo. O instrutor oferece essa mini-prova ao aluno; depois chama `marco` para não
 repetir o mesmo conteúdo na próxima vez.
 
-Estado em AWS/apps/.sessions/<id>.json (gitignored). O --id padrão deriva do roteiro.
+Motor compartilhado: este driver vive em `engine/` e serve QUALQUER curso. O curso é
+descoberto pelo caminho do roteiro (no `start`) ou por `--curso <dir>` / autodetecção
+(nos demais comandos). O estado fica em `<curso>/.sessions/<id>.json` (versionado no
+fork do aluno). O --id padrão deriva do roteiro.
 
 Formato do roteiro.json:
 {
@@ -53,37 +56,30 @@ import json
 import os
 from datetime import datetime, timezone
 
-APPS_DIR = os.path.dirname(os.path.abspath(__file__))
-SESSIONS_DIR = os.path.join(APPS_DIR, ".sessions")
+import _common
 
 
 def _now():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
-def _state_path(session_id):
-    return os.path.join(SESSIONS_DIR, f"{session_id}.json")
-
-
 def _default_id(roteiro):
     return f"aula-{roteiro.get('modulo', 'x')}"
 
 
-def _load(session_id):
-    path = _state_path(session_id)
-    if not os.path.exists(path):
+def _load(session_id, curso=None):
+    path = _common.state_path(session_id, curso=curso)
+    state = _common.load_json(path)
+    if state is None:
         raise SystemExit(
             f"Nenhuma aula '{session_id}' em andamento. Comece com: "
-            f"aula.py start <roteiro.json> --id {session_id}"
+            f"engine/aula.py start <roteiro.json>"
         )
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    return state
 
 
-def _save(session_id, state):
-    os.makedirs(SESSIONS_DIR, exist_ok=True)
-    with open(_state_path(session_id), "w", encoding="utf-8") as f:
-        json.dump(state, f, ensure_ascii=False, indent=2)
+def _save(session_id, state, curso=None):
+    _common.save_json(_common.state_path(session_id, curso=curso), state)
 
 
 def _beats(state):
@@ -123,6 +119,7 @@ def cmd_start(args):
     with open(args.roteiro, "r", encoding="utf-8") as f:
         roteiro = json.load(f)
     session_id = args.id or _default_id(roteiro)
+    curso_root = _common.curso_root_de_caminho(args.roteiro)
     state = {
         "roteiro_path": os.path.abspath(args.roteiro),
         "roteiro": roteiro,
@@ -132,7 +129,7 @@ def cmd_start(args):
         "notes": [],
         "iniciado_em": _now(),
     }
-    _save(session_id, state)
+    _common.save_json(_common.state_path(session_id, curso_root=curso_root), state)
     print(f"Aula iniciada: Módulo {roteiro.get('modulo', '?')} — {roteiro.get('titulo', '')}")
     print(f"{len(roteiro['beats'])} beats. Sessão: '{session_id}'.\n")
     _show_beat(state)
@@ -143,41 +140,41 @@ def _resolve_id(args, needs_default=False):
 
 
 def cmd_current(args):
-    state = _load(args.id)
+    state = _load(args.id, args.curso)
     _show_beat(state)
 
 
 def cmd_next(args):
-    state = _load(args.id)
+    state = _load(args.id, args.curso)
     beats = _beats(state)
     if state["pos"] < len(beats):
         state["status"][beats[state["pos"]]["id"]] = "visto"
         state["pos"] += 1
-    _save(args.id, state)
+    _save(args.id, state, args.curso)
     _show_beat(state)
 
 
 def cmd_back(args):
-    state = _load(args.id)
+    state = _load(args.id, args.curso)
     if state["pos"] > 0:
         state["pos"] -= 1
-    _save(args.id, state)
+    _save(args.id, state, args.curso)
     _show_beat(state)
 
 
 def cmd_goto(args):
-    state = _load(args.id)
+    state = _load(args.id, args.curso)
     beats = _beats(state)
     idx = next((i for i, b in enumerate(beats) if b["id"] == args.beat_id), None)
     if idx is None:
         raise SystemExit(f"Beat '{args.beat_id}' não existe neste roteiro.")
     state["pos"] = idx
-    _save(args.id, state)
+    _save(args.id, state, args.curso)
     _show_beat(state)
 
 
 def cmd_status(args):
-    state = _load(args.id)
+    state = _load(args.id, args.curso)
     beats = _beats(state)
     r = state["roteiro"]
     print(f"Aula: Módulo {r.get('modulo', '?')} — {r.get('titulo', '')}")
@@ -199,7 +196,7 @@ def _sugerir_n_perguntas(n_topicos):
 
 
 def cmd_revisao(args):
-    state = _load(args.id)
+    state = _load(args.id, args.curso)
     beats = _beats(state)
     marco = state.get("marco_sessao", 0)
     pos = state["pos"]
@@ -228,24 +225,24 @@ def cmd_revisao(args):
 
 
 def cmd_marco(args):
-    state = _load(args.id)
+    state = _load(args.id, args.curso)
     state["marco_sessao"] = state["pos"]
-    _save(args.id, state)
+    _save(args.id, state, args.curso)
     print(f"Marco de revisão atualizado para a posição {state['pos']}. "
           "A próxima retomada vai revisar apenas o conteúdo novo a partir daqui.")
 
 
 def cmd_note(args):
-    state = _load(args.id)
+    state = _load(args.id, args.curso)
     beats = _beats(state)
     beat_id = beats[state["pos"]]["id"] if state["pos"] < len(beats) else "fim"
     state.setdefault("notes", []).append({"beat": beat_id, "ts": _now(), "text": args.texto})
-    _save(args.id, state)
+    _save(args.id, state, args.curso)
     print(f"Nota registrada no beat '{beat_id}'.")
 
 
 def cmd_reset(args):
-    path = _state_path(args.id)
+    path = _common.state_path(args.id, curso=args.curso)
     if os.path.exists(path):
         os.remove(path)
         print(f"Aula '{args.id}' apagada.")
@@ -273,16 +270,19 @@ def main():
     ]:
         p = sub.add_parser(name, help=helptext)
         p.add_argument("--id", default="aula-01", help="nome da sessão (padrão: aula-01)")
+        p.add_argument("--curso", default=None, help="diretório do curso (autodetecta se omitido)")
         p.set_defaults(func=func)
 
     p = sub.add_parser("goto", help="pula para um beat")
     p.add_argument("beat_id", help="id do beat (ex.: t3, p2)")
     p.add_argument("--id", default="aula-01")
+    p.add_argument("--curso", default=None, help="diretório do curso (autodetecta se omitido)")
     p.set_defaults(func=cmd_goto)
 
     p = sub.add_parser("note", help="registra uma nota/dúvida no beat atual")
     p.add_argument("texto", help="texto da nota")
     p.add_argument("--id", default="aula-01")
+    p.add_argument("--curso", default=None, help="diretório do curso (autodetecta se omitido)")
     p.set_defaults(func=cmd_note)
 
     args = parser.parse_args()

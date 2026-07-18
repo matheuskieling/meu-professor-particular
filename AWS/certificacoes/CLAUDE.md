@@ -44,13 +44,13 @@ certificacoes/
 Mesmo driver das provas de módulo — só muda o banco:
 ```bash
 # banco rápido (treino informal)
-python3 AWS/apps/session.py start AWS/certificacoes/clf-c02/questions.json --id cert
+python3 engine/session.py start AWS/certificacoes/clf-c02/questions.json --id cert
 
 # prova completa (simulado real: cronometrar e não consultar material!)
-python3 AWS/apps/session.py start AWS/certificacoes/clf-c02/prova-1.json --id cert
-python3 AWS/apps/session.py answer A --id cert        # resposta única
-python3 AWS/apps/session.py answer A,C --id cert      # múltipla resposta ("Escolha DUAS")
-python3 AWS/apps/session.py status --id cert
+python3 engine/session.py start AWS/certificacoes/clf-c02/prova-1.json --id cert
+python3 engine/session.py answer A --id cert        # resposta única
+python3 engine/session.py answer A,C --id cert      # múltipla resposta ("Escolha DUAS")
+python3 engine/session.py status --id cert
 ```
 
 **Ao conduzir uma prova completa, o Claude deve:** anotar o horário de início e cobrar o limite de

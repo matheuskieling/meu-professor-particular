@@ -11,17 +11,20 @@ Fonte das perguntas: os bancos que já existem (quizzes das aulas e provas dos
 módulos). Só entram módulos **concluídos** (todos os beats de teoria/prática vistos
 na aula), para nunca perguntar algo que o aluno ainda não estudou.
 
-Histórico ("baralho"): apps/.sessions/revisao-deck.json — versionado no fork do
+Histórico ("baralho"): <curso>/.sessions/revisao-deck.json — versionado no fork do
 aluno, então acompanha entre máquinas. O reset.py limpa junto.
 
+Motor compartilhado (vive em `engine/`, serve qualquer curso): informe `--curso <dir>`
+ou deixe autodetectar (curso com sessão mais recente, ou o único existente).
+
 Comandos:
-    revisar.py nova [--n N] [--ate NN] [--id revisao]
+    revisar.py nova [--n N] [--ate NN] [--id revisao] [--curso DIR]
         Monta uma mini-prova (N perguntas, priorizando vencidas + novas + aleatórias)
         e a inicia via session.py. Depois responda com:
-            python3 <Curso>/apps/session.py answer <letra(s)> --id revisao
-    revisar.py fechar [--id revisao]
+            python3 engine/session.py answer <letra(s)> --id revisao
+    revisar.py fechar [--id revisao] [--curso DIR]
         Lê a mini-prova respondida e atualiza o agendamento de cada pergunta.
-    revisar.py status
+    revisar.py status [--curso DIR]
         Mostra o estado do baralho (rastreadas, dominadas, vencidas hoje, disponíveis).
 
 Opções:
@@ -38,12 +41,19 @@ import subprocess
 import sys
 from datetime import date
 
-APPS_DIR = os.path.dirname(os.path.abspath(__file__))
-COURSE_ROOT = os.path.dirname(APPS_DIR)
-SESSIONS_DIR = os.path.join(APPS_DIR, ".sessions")
-DECK_PATH = os.path.join(SESSIONS_DIR, "revisao-deck.json")
-SESSION_PY = os.path.join(APPS_DIR, "session.py")
+import _common
+
+ENGINE_DIR = os.path.dirname(os.path.abspath(__file__))
+SESSION_PY = os.path.join(ENGINE_DIR, "session.py")
 LETRAS = "ABCDEFGH"
+
+
+def _resolver_curso(preferido):
+    root = _common.detectar_curso_root(preferido)
+    if not root:
+        raise SystemExit("Curso não detectado; informe --curso <dir>.")
+    sess = _common.sessions_dir(root)
+    return root, sess, os.path.join(sess, "revisao-deck.json")
 
 # Caixas de Leitron: intervalo em dias até a pergunta ficar "vencida" de novo.
 INTERVALOS = {1: 1, 2: 3, 3: 7, 4: 16, 5: 35}
@@ -71,10 +81,10 @@ def _num_modulo(path):
     return os.path.basename(os.path.dirname(path)).split("-")[-1]
 
 
-def _modulos_concluidos():
+def _modulos_concluidos(sessions_dir):
     """Módulos cujos beats de teoria/prática foram todos vistos na aula."""
     concluidos = set()
-    for sess in glob.glob(os.path.join(SESSIONS_DIR, "aula-*.json")):
+    for sess in glob.glob(os.path.join(sessions_dir, "aula-*.json")):
         st = _load(sess)
         roteiro = st.get("roteiro", {})
         beats = roteiro.get("beats", [])
@@ -85,11 +95,11 @@ def _modulos_concluidos():
     return concluidos
 
 
-def _pool(mods):
+def _pool(mods, course_root):
     """Todas as questões dos módulos elegíveis, com um qid estável cada."""
     pool = []
-    for tipo, base in (("quiz", os.path.join(APPS_DIR, "modulo-*", "questions.json")),
-                       ("prova", os.path.join(COURSE_ROOT, "provas", "modulo-*", "questions.json"))):
+    for tipo, base in (("quiz", os.path.join(course_root, "apps", "modulo-*", "questions.json")),
+                       ("prova", os.path.join(course_root, "provas", "modulo-*", "questions.json"))):
         for path in sorted(glob.glob(base)):
             nn = _num_modulo(path)
             if nn not in mods:
@@ -128,22 +138,23 @@ def _selecionar(pool, deck, n, hoje):
 
 
 def cmd_nova(args):
+    course_root, sessions_dir, deck_path = _resolver_curso(args.curso)
     if args.ate:
         mods = {f"{i:02d}" for i in range(1, int(args.ate) + 1)}
     else:
-        mods = _modulos_concluidos()
+        mods = _modulos_concluidos(sessions_dir)
 
     if not mods:
         print("Ainda não há módulos concluídos para a revisão acumulada.")
         print("Termine ao menos um módulo (ou use --ate NN para incluir os módulos 01..NN).")
         return
 
-    pool = _pool(mods)
+    pool = _pool(mods, course_root)
     if not pool:
         print("Nenhum banco de questões encontrado para os módulos elegíveis.")
         return
 
-    deck = _load(DECK_PATH, {})
+    deck = _load(deck_path, {})
     hoje = _hoje()
     n = min(args.n, len(pool))
     escolhidas, n_venc, n_novas = _selecionar(pool, deck, n, hoje)
@@ -159,14 +170,14 @@ def cmd_nova(args):
         item["qid"] = qid  # rastreio; o session.py ignora campos extras
         bank["questoes"].append(item)
 
-    bank_path = os.path.join(SESSIONS_DIR, "revisao-bank.json")
+    bank_path = os.path.join(sessions_dir, "revisao-bank.json")
     _save(bank_path, bank)
 
     print(f"Mini-prova de revisão: {len(escolhidas)} perguntas de {len(mods)} módulo(s) "
           f"[{mods_txt}].")
     print(f"(prioridade: {min(n_venc, n)} vencida(s), {n_novas} nova(s) no baralho; "
           f"restante sorteado do já visto)")
-    print("Conduza normalmente; ao final rode: python3 <Curso>/apps/revisar.py fechar\n")
+    print("Conduza normalmente; ao final rode: python3 engine/revisar.py fechar\n")
 
     # inicia a sessão de perguntas reutilizando o motor de sempre (sem embaralhar de novo)
     subprocess.run(
@@ -176,7 +187,8 @@ def cmd_nova(args):
 
 
 def cmd_fechar(args):
-    sess_path = os.path.join(SESSIONS_DIR, f"{args.id}.json")
+    course_root, sessions_dir, deck_path = _resolver_curso(args.curso)
+    sess_path = os.path.join(sessions_dir, f"{args.id}.json")
     state = _load(sess_path)
     if not state:
         raise SystemExit("Nenhuma mini-prova de revisão para fechar. Rode 'revisar.py nova' antes.")
@@ -184,7 +196,7 @@ def cmd_fechar(args):
         print("Esta mini-prova já foi processada no baralho.")
         return
 
-    deck = _load(DECK_PATH, {})
+    deck = _load(deck_path, {})
     hoje = _hoje()
     ordem = state["order"]
     questoes = state["bank"]["questoes"]
@@ -209,7 +221,7 @@ def cmd_fechar(args):
         meta["proxima"] = (hoje + timedelta(days=INTERVALOS[meta["caixa"]])).isoformat()
         deck[qid] = meta
 
-    _save(DECK_PATH, deck)
+    _save(deck_path, deck)
     state["revisao_processada"] = True
     _save(sess_path, state)
 
@@ -222,7 +234,8 @@ def cmd_fechar(args):
 
 
 def cmd_status(args):
-    deck = _load(DECK_PATH, {})
+    _, _, deck_path = _resolver_curso(args.curso)
+    deck = _load(deck_path, {})
     if not deck:
         print("Baralho de revisão vazio ainda. Rode 'revisar.py nova' após concluir um módulo.")
         return
@@ -245,13 +258,16 @@ def main():
     p.add_argument("--n", type=int, default=8, help="nº de perguntas (padrão 8)")
     p.add_argument("--ate", help="força incluir módulos 01..NN (para estudo solo)")
     p.add_argument("--id", default="revisao", help="id da sessão (padrão: revisao)")
+    p.add_argument("--curso", default=None, help="diretório do curso (autodetecta se omitido)")
     p.set_defaults(func=cmd_nova)
 
     p = sub.add_parser("fechar", help="processa a mini-prova respondida no baralho")
     p.add_argument("--id", default="revisao")
+    p.add_argument("--curso", default=None, help="diretório do curso (autodetecta se omitido)")
     p.set_defaults(func=cmd_fechar)
 
     p = sub.add_parser("status", help="mostra o estado do baralho")
+    p.add_argument("--curso", default=None, help="diretório do curso (autodetecta se omitido)")
     p.set_defaults(func=cmd_status)
 
     args = parser.parse_args()

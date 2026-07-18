@@ -48,10 +48,10 @@ O curso de AWS ainda tem **simulados de certificação fiéis ao exame real** (C
 
 ## 🔄 Seu progresso
 
-- Fica em `<Curso>/apps/.sessions/` e é **commitado no seu fork** (o agente faz isso por você ao
+- Fica em `<Curso>/.sessions/` e é **commitado no seu fork** (o agente faz isso por você ao
   fim de cada sessão de estudo).
 - Outra máquina? `git pull` no fork e "vamos continuar".
-- Recomeçar do zero: `python3 <Curso>/apps/reset.py`.
+- Recomeçar do zero: `python3 engine/reset.py`.
 
 ## 🗂️ Estrutura
 

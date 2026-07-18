@@ -13,9 +13,8 @@ qual é a certa e por quê. Aprovação: 70%.
 import os
 import sys
 
-# sobe até AWS/ e adiciona apps/ ao path pra reusar o motor
-AWS_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, os.path.join(AWS_DIR, "apps"))
+ENGINE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), *[os.pardir]*3, "engine")
+sys.path.insert(0, os.path.abspath(ENGINE_DIR))
 
 from quiz_engine import run_quiz  # noqa: E402
 

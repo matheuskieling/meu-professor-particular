@@ -11,9 +11,8 @@ Testa o que foi visto em 15-arquitetura-well-architected/teoria.md e pratica.md.
 import os
 import sys
 
-# permite importar o motor da pasta apps/ independente de onde você chama
-APPS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, APPS_DIR)
+ENGINE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), *[os.pardir]*3, "engine")
+sys.path.insert(0, os.path.abspath(ENGINE_DIR))
 
 from quiz_engine import run_quiz  # noqa: E402
 

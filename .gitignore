@@ -1,0 +1,31 @@
+# Credenciais e secrets — NUNCA versionar
+.env
+.env.*
+*.pem
+*.key
+credentials
+aws-credentials*
+**/.aws/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+
+# Estado das sessões de quiz/prova (runtime, não versionar)
+**/.sessions/
+
+# Configurações locais do Claude Code (por máquina, não versionar)
+.claude/settings.local.json
+
+# Python
+__pycache__/
+*.pyc
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

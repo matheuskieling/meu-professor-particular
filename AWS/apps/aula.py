@@ -18,8 +18,15 @@ Comandos:
     back    [--id NOME]                volta um beat
     goto <beat-id> [--id NOME]         pula para um beat específico
     status  [--id NOME]                mapa de progresso (o que já vimos e o que falta)
+    revisao [--id NOME]                conteúdo estudado desde a última sessão + nº sugerido de perguntas
+    marco   [--id NOME]                marca o ponto atual como "já revisado" (chamar após a revisão)
     note "<texto>" [--id NOME]         registra uma nota/dúvida no ponto atual
     reset   [--id NOME]                apaga o progresso da aula
+
+Revisão espaçada: a cada retomada, `revisao` mostra os beats de teoria/prática vistos desde o último
+`marco` (a "última sessão") e sugere quantas perguntas de revisão fazer — o tamanho acompanha o
+volume de conteúdo. O instrutor oferece essa mini-prova ao aluno; depois chama `marco` para não
+repetir o mesmo conteúdo na próxima vez.
 
 Estado em AWS/apps/.sessions/<id>.json (gitignored). O --id padrão deriva do roteiro.
 
@@ -120,6 +127,7 @@ def cmd_start(args):
         "roteiro_path": os.path.abspath(args.roteiro),
         "roteiro": roteiro,
         "pos": 0,
+        "marco_sessao": 0,
         "status": {b["id"]: "pendente" for b in roteiro["beats"]},
         "notes": [],
         "iniciado_em": _now(),
@@ -183,6 +191,50 @@ def cmd_status(args):
             print(f"  - [{n['beat']}] ({n['ts']}) {n['text']}")
 
 
+def _sugerir_n_perguntas(n_topicos):
+    """Nº de perguntas de revisão acompanha o volume de conteúdo (mín. 2, máx. 6)."""
+    if n_topicos <= 0:
+        return 0
+    return min(6, max(2, round(n_topicos / 2)))
+
+
+def cmd_revisao(args):
+    state = _load(args.id)
+    beats = _beats(state)
+    marco = state.get("marco_sessao", 0)
+    pos = state["pos"]
+    # conteúdo estudado na última sessão: beats de teoria/prática entre o marco e a posição atual
+    trecho = beats[marco:pos]
+    conteudo = [b for b in trecho if b.get("fase") in ("teoria", "pratica")]
+
+    if not conteudo:
+        print("Sem conteúdo novo de teoria/prática desde a última revisão — pode seguir a aula direto.")
+        return
+
+    n = _sugerir_n_perguntas(len(conteudo))
+    print(f"Conteúdo estudado desde a última sessão ({len(conteudo)} tópicos):")
+    for b in conteudo:
+        print(f"  • [{b['fase']}] {b['titulo']} (id: {b['id']})")
+        for p in b.get("pontos", []):
+            print(f"      - {p}")
+        if b.get("ref"):
+            print(f"      apoio: {b['ref']}")
+    print(f"\nTamanho sugerido da revisão: ~{n} perguntas (escala com o volume de conteúdo).")
+    print("— Instrução ao instrutor: PERGUNTE ao aluno se ele quer uma revisão rápida da última "
+          f"sessão (~{n} perguntas). Se sim, elabore perguntas curtas sobre os tópicos acima "
+          "(varie o formato), conduza uma a uma com feedback e comente o resultado — sugerindo "
+          "reforço no que ele errar. Se não quiser, siga a aula. Em qualquer caso, ao terminar a "
+          "revisão, rode 'aula.py marco' para não repetir esse conteúdo na próxima retomada.")
+
+
+def cmd_marco(args):
+    state = _load(args.id)
+    state["marco_sessao"] = state["pos"]
+    _save(args.id, state)
+    print(f"Marco de revisão atualizado para a posição {state['pos']}. "
+          "A próxima retomada vai revisar apenas o conteúdo novo a partir daqui.")
+
+
 def cmd_note(args):
     state = _load(args.id)
     beats = _beats(state)
@@ -215,6 +267,8 @@ def main():
         ("next", cmd_next, "avança para o próximo beat"),
         ("back", cmd_back, "volta um beat"),
         ("status", cmd_status, "mapa de progresso"),
+        ("revisao", cmd_revisao, "conteúdo desde a última sessão + nº sugerido de perguntas"),
+        ("marco", cmd_marco, "marca o ponto atual como já revisado"),
         ("reset", cmd_reset, "apaga o progresso"),
     ]:
         p = sub.add_parser(name, help=helptext)

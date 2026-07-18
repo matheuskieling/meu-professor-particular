@@ -9,9 +9,11 @@ tiro suas dúvidas na hora e a gente avança no seu ritmo. Este README explica *
 ## Os dois jeitos de fazer cada módulo
 
 ### 🎧 Jeito 1 — Aula guiada com o Claude (recomendado)
-Você **não precisa abrir nenhum arquivo**. É só me chamar:
+Você **não precisa abrir nenhum arquivo**. Entre na aula de um destes dois jeitos (equivalentes):
 
-> "Vamos começar o módulo 1" · "Bora continuar de onde paramos" · "Vamos fazer a prática"
+- **Pela skill:** digite **`/retomar-curso`** (Claude Code) — ela sincroniza, resume e retoma sozinha;
+- **Conversando:** me chame em linguagem natural:
+  > "Vamos começar o módulo 1" · "Bora continuar de onde paramos" · "Vamos fazer a prática"
 
 Eu conduzo assim:
 1. Sigo um **roteiro** (a lista ordenada de tudo que quero te ensinar naquele módulo).

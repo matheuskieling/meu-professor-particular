@@ -13,7 +13,10 @@ por vez, tira dúvidas, aplica quizzes e provas, e **salva onde você parou** pr
 1. **Faça um fork** deste repositório (o repo principal fica com progresso zerado — o seu
    progresso será commitado **no seu fork**, e assim você continua de qualquer máquina).
 2. Clone o seu fork e abra seu agente de código na pasta (ex.: `claude` no terminal).
-3. Diga: **"vamos começar o curso de AWS"** — ou use a skill `/retomar-curso` (abaixo).
+3. Inicie a aula de **um destes dois jeitos** (dão no mesmo):
+   - **Skill (Claude Code):** digite **`/retomar-curso`** — atalho que já sincroniza, resume e retoma;
+   - **Linguagem natural (qualquer agente):** diga **"vamos começar o curso de AWS"** ou
+     **"vamos continuar de onde paramos"**.
 
 ## 🧰 Skills disponíveis (Claude Code)
 

@@ -90,9 +90,10 @@ correta e por quê (campo `feedbacks` no `questions.json`). Aprovação: **70%**
 via `session.py ... --id prova`, ou solo via `provas/modulo-NN/prova.py`.
 
 ### 5. Preparação para certificação — `certificacoes/`
-Simulados no formato do **exame oficial** (misturam assuntos, estilo "qual a MELHOR opção"). Vivem
-separados por certificação (ex.: `clf-c02/`) e **crescem** conforme o curso avança. Mesmo driver:
-`session.py ... --id cert`.
+Por certificação: **banco rápido** (`questions.json`) + **3 provas completas** (`prova-N.json`)
+no formato exato do exame oficial (65 questões, tempo e corte reais, múltipla resposta via
+`corretas: [i, j]` respondida com `answer A,C`). Mesmo driver: `session.py ... --id cert`.
+Portões de prontidão e instruções de condução em `certificacoes/CLAUDE.md`.
 
 > **Resumo do fluxo de uma aula:** ler `teoria.md` → fazer a `pratica.md` na AWS → rodar o **quiz**
 > (Claude conduz e tira dúvidas) → ao fim do módulo, a **prova** → periodicamente, **simulados de
@@ -124,49 +125,53 @@ Currículo planejado de ponta a ponta, organizado em fases. A ordem pode ser aju
 | # | Módulo | Objetivo | Status |
 |---|--------|----------|--------|
 | 01 | Fundamentos de Cloud & AWS | Nuvem, modelos de serviço, regiões/AZs, responsabilidade compartilhada, custos, CLI. | ✅ |
-| 02 | Conta, IAM & Segurança | Root vs. IAM, users/groups/roles/policies, MFA, least privilege, billing/alertas. | 🔜 |
+| 02 | Conta, IAM & Segurança | Root vs. IAM, users/groups/roles/policies, MFA, least privilege, billing/alertas. | ✅ |
 
 ### Fase 2 — Infraestrutura core
 | # | Módulo | Objetivo | Status |
 |---|--------|----------|--------|
-| 03 | Rede — VPC | VPC, subnets, route tables, IGW/NAT, security groups, NACLs, VPC peering. | ⬜ |
-| 04 | Compute — EC2 | Instâncias, AMIs, tipos, key pairs, user data, EBS, snapshots. | ⬜ |
-| 05 | Escalabilidade & Balanceamento | Auto Scaling Groups, Launch Templates, ELB (ALB/NLB), health checks. | ⬜ |
-| 06 | Storage — S3 & cia | S3 (buckets, políticas, versionamento, lifecycle, criptografia), EBS, EFS, Glacier. | ⬜ |
+| 03 | Rede — VPC | VPC, subnets, route tables, IGW/NAT, security groups, NACLs, VPC peering. | ✅ |
+| 04 | Compute — EC2 | Instâncias, AMIs, tipos, key pairs, user data, EBS, snapshots. | ✅ |
+| 05 | Escalabilidade & Balanceamento | Auto Scaling Groups, Launch Templates, ELB (ALB/NLB), health checks. | ✅ |
+| 06 | Storage — S3 & cia | S3 (buckets, políticas, versionamento, lifecycle, criptografia), EBS, EFS, Glacier. | ✅ |
 
 ### Fase 3 — Dados & aplicações
 | # | Módulo | Objetivo | Status |
 |---|--------|----------|--------|
-| 07 | Bancos de dados | RDS (Multi-AZ, réplicas, backups), Aurora, DynamoDB, ElastiCache. | ⬜ |
-| 08 | Serverless | Lambda, API Gateway, event-driven, noções de Step Functions. | ⬜ |
-| 09 | Containers | Docker na AWS, ECR, ECS (Fargate), visão geral de EKS. | ⬜ |
-| 10 | Mensageria & Integração | SQS, SNS, EventBridge; padrões de desacoplamento. | ⬜ |
+| 07 | Bancos de dados | RDS (Multi-AZ, réplicas, backups), Aurora, DynamoDB, ElastiCache. | ✅ |
+| 08 | Serverless | Lambda, API Gateway, event-driven, noções de Step Functions. | ✅ |
+| 09 | Containers | Docker na AWS, ECR, ECS (Fargate), visão geral de EKS. | ✅ |
+| 10 | Mensageria & Integração | SQS, SNS, EventBridge; padrões de desacoplamento. | ✅ |
 
 ### Fase 4 — Operação & automação
 | # | Módulo | Objetivo | Status |
 |---|--------|----------|--------|
-| 11 | Infra como Código (IaC) | CloudFormation e/ou Terraform; ambientes reproduzíveis e versionados. | ⬜ |
-| 12 | Observabilidade | CloudWatch (métricas/logs/alarmes/dashboards), CloudTrail, X-Ray. | ⬜ |
-| 13 | Segurança avançada | KMS, Secrets Manager, WAF, Shield, GuardDuty, IAM avançado. | ⬜ |
-| 14 | DNS & Entrega de conteúdo | Route 53 (roteamento), CloudFront (CDN), certificados (ACM). | ⬜ |
+| 11 | Infra como Código (IaC) | CloudFormation e/ou Terraform; ambientes reproduzíveis e versionados. | ✅ |
+| 12 | Observabilidade | CloudWatch (métricas/logs/alarmes/dashboards), CloudTrail, X-Ray. | ✅ |
+| 13 | Segurança avançada | KMS, Secrets Manager, WAF, Shield, GuardDuty, IAM avançado. | ✅ |
+| 14 | DNS & Entrega de conteúdo | Route 53 (roteamento), CloudFront (CDN), certificados (ACM). | ✅ |
 
 ### Fase 5 — Arquitetura & avançado
 | # | Módulo | Objetivo | Status |
 |---|--------|----------|--------|
-| 15 | Arquitetura & Well-Architected | Os 6 pilares; padrões resilientes, escaláveis e econômicos. | ⬜ |
-| 16 | CI/CD & DevOps | CodePipeline/CodeBuild/CodeDeploy (ou GitHub Actions), deploy automatizado. | ⬜ |
-| 17 | Otimização de Custos (FinOps) | Right-sizing, Savings Plans/RIs, Spot, tags, Cost Explorer, budgets. | ⬜ |
-| 18 | Alta Disponibilidade & DR | Estratégias multi-AZ/multi-região, RTO/RPO, backup e recuperação. | ⬜ |
+| 15 | Arquitetura & Well-Architected | Os 6 pilares; padrões resilientes, escaláveis e econômicos. | ✅ |
+| 16 | CI/CD & DevOps | CodePipeline/CodeBuild/CodeDeploy (ou GitHub Actions), deploy automatizado. | ✅ |
+| 17 | Otimização de Custos (FinOps) | Right-sizing, Savings Plans/RIs, Spot, tags, Cost Explorer, budgets. | ✅ |
+| 18 | Alta Disponibilidade & DR | Estratégias multi-AZ/multi-região, RTO/RPO, backup e recuperação. | ✅ |
 
 ### Fase 6 — Consolidação
 | # | Módulo | Objetivo | Status |
 |---|--------|----------|--------|
-| 19 | Projeto final (capstone) | Projetar e subir uma arquitetura completa do zero, aplicando tudo. | ⬜ |
+| 19 | Projeto final (capstone) | Projetar e subir uma arquitetura completa do zero, aplicando tudo. | ✅ |
 
 ### Trilha de certificações (paralela ao curso)
-- **CLF-C02** — Cloud Practitioner (após Fase 1–2). Simulado já iniciado em `certificacoes/clf-c02/`.
-- **SAA-C03** — Solutions Architect Associate (após Fase 4–5).
-- **SOA-C02 / DVA-C02** — SysOps / Developer Associate (conforme interesse).
+Cada certificação tem **banco rápido** (treino) e **3 provas completas** fiéis ao exame real
+(65 questões, mesmo tempo, mesmo corte, questões "Escolha DUAS"). Os **portões de prontidão**
+(quando o aluno está pronto pros simulados e pra prova real) estão em `certificacoes/CLAUDE.md` —
+o Claude deve avaliá-los e comunicá-los ao fim de cada simulado.
+- **CLF-C02** — Cloud Practitioner: simulados liberados após o **Módulo 07**. ✅ 3 provas prontas.
+- **SAA-C03** — Solutions Architect Associate: simulados liberados após o **Módulo 18**. ✅ 3 provas prontas.
+- **SOA-C02 / DVA-C02** — SysOps / Developer Associate (futuros, conforme interesse).
 
 ---
 
@@ -180,8 +185,7 @@ AWS/
 │   ├── roteiro.json          ← roteiro da aula ao vivo (o Claude conduz)
 │   ├── teoria.md
 │   └── pratica.md
-├── 02-iam-seguranca/         (próximo)
-│   └── ...
+├── 02-iam-seguranca/ ... 19-projeto-final/   (todos os 19 módulos, mesmo formato)
 ├── apps/                     ← drivers (aula/quiz) + quizzes das aulas
 │   ├── CLAUDE.md
 │   ├── aula.py               ← driver de aula ao vivo (roteiro + progresso)
@@ -206,7 +210,8 @@ AWS/
 
 ## Estado atual
 
-- ✅ **Módulo 01 — Fundamentos** completo: roteiro (aula ao vivo), teoria, prática, quiz, prova e
-  simulado CLF-C02 inicial. README do curso escrito.
-- 🔜 **Próximo:** conduzir a aula ao vivo do M01 com o aluno (`apps/aula.py`) ou iniciar o
-  **Módulo 02 — Conta, IAM & Segurança**.
+- ✅ **CURSO COMPLETO** — os 19 módulos prontos (roteiro + teoria + prática + quiz de 10 questões +
+  prova de 12 questões com feedback por alternativa, cada um).
+- ✅ **Certificações:** CLF-C02 e SAA-C03 com banco rápido + 3 provas completas cada (65 questões,
+  formato do exame real) e portões de prontidão definidos.
+- 🎓 O aluno pode fazer o curso do início ao fim: `/retomar-curso` (ou "vamos começar o módulo 1").

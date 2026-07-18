@@ -85,6 +85,29 @@ pra recomeçar do início.
 
 ---
 
+## Certificações AWS — quando você está pronto
+
+O curso te prepara para as certificações oficiais, com **3 provas simuladas completas por
+certificação**, fiéis ao exame real (65 questões, mesmo tempo, mesmo corte, questões de
+"Escolha DUAS"). E ele te diz **exatamente quando você está pronto**:
+
+### CLF-C02 — Cloud Practitioner (65 questões · 90 min · corte 70%)
+- 🟡 **Pronto pros simulados:** terminou os **Módulos 01–07** com ≥70% em todas as provas de módulo.
+- 🟢 **Pronto pra prova real:** tirou **≥80% nas 3 provas simuladas**, cada uma dentro de
+  **90 minutos e sem consultar material**. Aí é só agendar o exame com confiança.
+
+### SAA-C03 — Solutions Architect Associate (65 questões · 130 min · corte 72%)
+- 🟡 **Pronto pros simulados:** terminou os **Módulos 01–18** com ≥70% nas provas de módulo.
+- 🟢 **Pronto pra prova real:** **≥80% nas 3 provas simuladas** dentro de **130 minutos** sem
+  consulta, e **Módulo 19 (projeto final)** concluído.
+
+> Por que 80% se o corte é ~70%? Nervosismo, tempo e questões experimentais do exame real comem
+> uns pontos — 80% nos simulados é a margem de segurança. Ficou entre 70–79%? Revise os domínios
+> com mais erros e refaça a pior prova antes de agendar.
+
+Quando eu conduzir seus simulados, **eu mesmo te aviso**: "você bateu o portão, pode agendar" ou
+"falta X, revise Y". Você não precisa controlar nada disso manualmente.
+
 ## Regras de ouro (valem o curso inteiro)
 
 - 💸 **Custos:** priorizamos o **Free Tier**. Toda prática avisa o que cobra e sempre termina com

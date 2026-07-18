@@ -1,0 +1,431 @@
+{
+  "titulo": "Simulado SAA-C03 (AWS Certified Solutions Architect – Associate) — Arquitetura de Soluções",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Por conformidade, um bucket S3 só pode ser acessado a partir de um VPC endpoint específico da empresa; qualquer outro caminho deve ser negado. Como um arquiteto implementa esse requisito?",
+      "opcoes": [
+        "Associar um security group ao bucket permitindo apenas a VPC",
+        "Bucket policy com uma condition usando aws:SourceVpce para o endpoint permitido",
+        "Configurar ACLs de objeto restringindo por endereço IP",
+        "Criar uma NACL na subnet do bucket bloqueando o restante"
+      ],
+      "correta": 1,
+      "explicacao": "Bucket policies aceitam conditions como aws:SourceVpce, que restringem o acesso ao VPC endpoint indicado.",
+      "feedbacks": [
+        "Buckets S3 não têm security group — SGs se aplicam a ENIs/instâncias, não ao S3.",
+        "Correto: a condition aws:SourceVpce na bucket policy nega qualquer requisição que não venha do endpoint aprovado.",
+        "ACLs são um mecanismo legado, por objeto/conta — não filtram por VPC endpoint e a AWS recomenda desativá-las.",
+        "S3 é um serviço regional fora da sua VPC — não existe 'subnet do bucket' para aplicar NACL."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa exige que os objetos de um bucket S3 sejam criptografados com chaves gerenciadas por ELA, com rotação automática e auditoria de cada uso da chave no CloudTrail. Qual opção atende?",
+      "opcoes": [
+        "SSE-S3 (chaves gerenciadas pelo S3)",
+        "SSE-C (chaves fornecidas pelo cliente a cada requisição)",
+        "SSE-KMS com uma customer managed key (CMK)",
+        "Criptografia no cliente com chaves em um arquivo local"
+      ],
+      "correta": 2,
+      "explicacao": "Só a customer managed key do KMS dá controle da política da chave, rotação automática e log de uso no CloudTrail.",
+      "feedbacks": [
+        "Com SSE-S3 a AWS gerencia as chaves — sem controle de política pela empresa nem auditoria por chave no CloudTrail.",
+        "SSE-C obriga a empresa a enviar e gerenciar a chave em cada requisição — sem rotação automática e alto risco operacional.",
+        "Correto: SSE-KMS com CMK permite política própria da chave, rotação automática anual e registro de cada uso no CloudTrail.",
+        "Criptografia no cliente com chave em arquivo local não oferece rotação automática nem trilha de auditoria centralizada."
+      ]
+    },
+    {
+      "pergunta": "Um endereço IP específico está atacando uma aplicação em uma subnet pública. O arquiteto precisa criar uma regra explícita de DENY para esse IP na camada de rede. Qual recurso usar?",
+      "opcoes": [
+        "Network ACL da subnet",
+        "Security group das instâncias",
+        "Route table da subnet",
+        "Internet Gateway da VPC"
+      ],
+      "correta": 0,
+      "explicacao": "NACLs suportam regras de DENY explícito; security groups só possuem regras de ALLOW.",
+      "feedbacks": [
+        "Correto: a NACL é stateless e aceita regras numeradas de allow E deny — ideal para bloquear um IP na subnet.",
+        "Security groups são 'default deny' mas só aceitam regras de PERMISSÃO — não dá para negar um IP específico.",
+        "Route tables definem para onde o tráfego é roteado, não filtram nem negam IPs de origem.",
+        "O Internet Gateway apenas conecta a VPC à internet — não aplica regras de filtragem."
+      ]
+    },
+    {
+      "pergunta": "Uma política do IAM deve permitir que administradores excluam objetos de um bucket S3 SOMENTE quando autenticados com MFA. Qual elemento da policy implementa esse requisito?",
+      "opcoes": [
+        "Principal com o ARN dos administradores",
+        "Resource apontando para o bucket",
+        "NotAction excluindo s3:DeleteObject",
+        "Condition com a chave aws:MultiFactorAuthPresent"
+      ],
+      "correta": 3,
+      "explicacao": "A condition aws:MultiFactorAuthPresent restringe a ação a sessões autenticadas com MFA.",
+      "feedbacks": [
+        "Principal identifica QUEM a policy afeta, mas não impõe a exigência de MFA.",
+        "Resource define ONDE a ação se aplica, não a condição de autenticação.",
+        "NotAction inverte a lista de ações — não tem relação com exigir MFA.",
+        "Correto: Condition com aws:MultiFactorAuthPresent = true só permite a ação em sessões com MFA."
+      ]
+    },
+    {
+      "pergunta": "Instâncias EC2 em subnets privadas, sem rota para a internet, precisam chamar as APIs do AWS Secrets Manager. Qual solução permite isso mantendo todo o tráfego na rede da AWS?",
+      "opcoes": [
+        "Adicionar um NAT Gateway na subnet pública",
+        "Criar um Interface VPC Endpoint (AWS PrivateLink) para o Secrets Manager",
+        "Anexar um Internet Gateway à VPC",
+        "Configurar VPC peering com a VPC do Secrets Manager"
+      ],
+      "correta": 1,
+      "explicacao": "Interface endpoints (PrivateLink) criam ENIs privadas na sua VPC para chamar APIs de serviços AWS sem sair para a internet.",
+      "feedbacks": [
+        "NAT Gateway dá saída para a internet — viola o requisito de manter o tráfego na rede da AWS.",
+        "Correto: o interface endpoint expõe o Secrets Manager via IP privado dentro da VPC, sem tocar a internet.",
+        "Internet Gateway é exatamente o que a arquitetura quer evitar: exposição/rota pública.",
+        "Secrets Manager é um serviço gerenciado, não uma VPC de outra conta — VPC peering não se aplica."
+      ]
+    },
+    {
+      "pergunta": "Uma aplicação usa credenciais de um banco RDS que, por política de segurança, devem ser rotacionadas automaticamente a cada 30 dias sem downtime. Qual solução exige o MENOR esforço operacional?",
+      "opcoes": [
+        "SSM Parameter Store com rotação via scripts agendados",
+        "Arquivo de configuração criptografado no S3 atualizado manualmente",
+        "AWS Secrets Manager com rotação automática integrada ao RDS",
+        "Variáveis de ambiente definidas no Launch Template"
+      ],
+      "correta": 2,
+      "explicacao": "Secrets Manager tem rotação automática nativa para RDS — configura-se o intervalo e ele troca a senha sozinho.",
+      "feedbacks": [
+        "Parameter Store não tem rotação nativa — você teria que escrever e manter Lambdas/scripts próprios.",
+        "Atualização manual de arquivo no S3 é justamente o esforço operacional (e o risco) que se quer eliminar.",
+        "Correto: Secrets Manager rotaciona credenciais de RDS automaticamente, com integração pronta e sem downtime.",
+        "Variáveis no Launch Template são estáticas: rotacionar exigiria novo template e substituição das instâncias."
+      ]
+    },
+    {
+      "pergunta": "Usuários da conta de desenvolvimento precisam de acesso temporário a um bucket S3 na conta de produção, seguindo as boas práticas da AWS. Qual é a abordagem recomendada?",
+      "opcoes": [
+        "Criar na conta de produção uma IAM role com trust policy para a conta de dev e usar sts:AssumeRole",
+        "Criar usuários IAM duplicados na conta de produção para cada desenvolvedor",
+        "Compartilhar access keys de um usuário da produção com a equipe de dev",
+        "Liberar o bucket com uma ACL pública temporária"
+      ],
+      "correta": 0,
+      "explicacao": "Acesso cross-account com role + AssumeRole gera credenciais temporárias e auditáveis, sem duplicar identidades.",
+      "feedbacks": [
+        "Correto: a role na conta de produção confia na conta de dev; os usuários assumem a role e recebem credenciais temporárias.",
+        "Duplicar usuários cria identidades e senhas paralelas para manter — o problema que roles cross-account resolvem.",
+        "Compartilhar access keys de longo prazo entre pessoas/contas é uma violação grave de boas práticas.",
+        "ACL pública expõe o bucket ao mundo — nunca é a resposta para acesso entre contas."
+      ]
+    },
+    {
+      "pergunta": "Uma aplicação web envia pedidos direto para um backend de processamento. Quando o backend fica indisponível ou sobrecarregado, pedidos são perdidos. Como desacoplar as camadas para que NENHUM pedido se perca?",
+      "opcoes": [
+        "Aumentar o tamanho da instância do backend (scale up)",
+        "Colocar uma fila Amazon SQS entre o front-end e o backend",
+        "Habilitar sticky sessions no Application Load Balancer",
+        "Fazer o cliente reenviar sincronamente com retries"
+      ],
+      "correta": 1,
+      "explicacao": "SQS persiste as mensagens de forma durável: o backend consome no seu ritmo e nada se perde durante indisponibilidades.",
+      "feedbacks": [
+        "Scale up adia o problema, mas mantém o acoplamento — se o backend cair, os pedidos continuam se perdendo.",
+        "Correto: com SQS o front publica na fila durável e o backend consome quando puder — desacoplamento clássico.",
+        "Sticky sessions só fixam o usuário em uma instância — não protegem contra perda de pedidos.",
+        "Retry síncrono no cliente falha se a indisponibilidade durar mais que a janela de retry, e degrada a experiência."
+      ]
+    },
+    {
+      "pergunta": "Um RDS MySQL sofre com relatórios pesados que degradam as transações OLTP, e a empresa também exige failover automático se a AZ falhar. Qual combinação atende aos DOIS requisitos?",
+      "opcoes": [
+        "Somente habilitar Multi-AZ",
+        "Somente criar read replicas",
+        "Duas instâncias independentes com backups cruzados",
+        "Multi-AZ para failover + read replicas para direcionar os relatórios"
+      ],
+      "correta": 3,
+      "explicacao": "Multi-AZ resolve disponibilidade (failover); read replicas resolvem escala de leitura — são recursos complementares.",
+      "feedbacks": [
+        "Multi-AZ dá failover, mas o standby NÃO atende leituras — os relatórios continuariam pesando na primária.",
+        "Read replicas descarregam leituras, mas não fornecem failover automático da instância primária.",
+        "Instâncias independentes com backup não dão failover automático nem separam a carga de leitura de forma gerenciada.",
+        "Correto: Multi-AZ cobre a disponibilidade e as read replicas absorvem os relatórios, protegendo o OLTP."
+      ]
+    },
+    {
+      "pergunta": "Uma aplicação stateless em EC2 deve continuar disponível mesmo com a falha de uma AZ inteira, ajustando a capacidade automaticamente à demanda. Qual arquitetura atende?",
+      "opcoes": [
+        "Auto Scaling Group distribuído em múltiplas AZs atrás de um Application Load Balancer",
+        "Uma única instância grande com Elastic IP e snapshot diário",
+        "Auto Scaling Group em uma única AZ com scheduled scaling",
+        "Duas instâncias em regiões diferentes com failover manual de DNS"
+      ],
+      "correta": 0,
+      "explicacao": "ASG multi-AZ + ALB é o padrão: o ALB distribui tráfego entre AZs saudáveis e o ASG repõe/escala instâncias.",
+      "feedbacks": [
+        "Correto: se uma AZ cair, o ALB envia tráfego às demais e o ASG recria capacidade — com scaling automático pela demanda.",
+        "Instância única é ponto único de falha; snapshot diário só ajuda na recuperação, não na disponibilidade.",
+        "ASG numa única AZ morre junto com a AZ; scheduled scaling não reage à demanda real.",
+        "Failover manual entre regiões não é automático e adiciona complexidade desnecessária para exigência de AZ."
+      ]
+    },
+    {
+      "pergunta": "Um sistema crítico exige RTO de poucos minutos e RPO de segundos. A empresa aceita manter na região de DR uma versão REDUZIDA porém funcional do ambiente rodando continuamente, escalável rapidamente num desastre. Qual estratégia de DR é essa?",
+      "opcoes": [
+        "Backup and restore",
+        "Pilot light",
+        "Warm standby",
+        "Multi-site active-active"
+      ],
+      "correta": 2,
+      "explicacao": "Warm standby mantém uma cópia funcional em escala reduzida sempre rodando, que se expande no failover.",
+      "feedbacks": [
+        "Backup and restore só guarda backups — RTO de horas/dias, longe de 'poucos minutos'.",
+        "No pilot light apenas o núcleo (ex.: dados replicados) fica ativo; a aplicação está desligada — leva mais tempo que warm standby.",
+        "Correto: warm standby = ambiente completo funcional em escala mínima, pronto para escalar e assumir em minutos.",
+        "Active-active atenderia, mas roda capacidade total em duas regiões — custo bem maior que o cenário descreve."
+      ]
+    },
+    {
+      "pergunta": "Um site roda na região primária e tem uma página de contingência estática hospedada no S3 em outra região. Como redirecionar os usuários AUTOMATICAMENTE para a contingência quando a região primária ficar indisponível?",
+      "opcoes": [
+        "CloudFront com uma única origem na região primária",
+        "Route 53 com política de roteamento failover e health checks",
+        "Um Application Load Balancer estendido entre as duas regiões",
+        "VPC peering entre as regiões com rotas alternativas"
+      ],
+      "correta": 1,
+      "explicacao": "O failover routing do Route 53 monitora a primária via health check e responde com o registro secundário quando ela falha.",
+      "feedbacks": [
+        "CloudFront com origem única não muda de destino sozinho quando a região primária cai (seria preciso origin failover configurado, e a questão não o oferece).",
+        "Correto: Route 53 failover + health checks detecta a falha e passa a resolver o DNS para o site estático no S3.",
+        "Um ALB é regional — não existe ALB atravessando duas regiões.",
+        "VPC peering conecta redes privadas; não decide para onde os USUÁRIOS da internet são direcionados."
+      ]
+    },
+    {
+      "pergunta": "Um banco de dados deve sobreviver à indisponibilidade de uma REGIÃO inteira, com RPO de aproximadamente 1 segundo e promoção rápida da região secundária. Qual solução atende?",
+      "opcoes": [
+        "Amazon Aurora Global Database",
+        "RDS Multi-AZ na região primária",
+        "Read replica na mesma AZ da primária",
+        "Snapshots manuais copiados para outra região semanalmente"
+      ],
+      "correta": 0,
+      "explicacao": "Aurora Global Database replica entre regiões com lag típico abaixo de 1 segundo e permite promover a secundária em minutos.",
+      "feedbacks": [
+        "Correto: Aurora Global Database foi feito para DR multi-região — replicação de ~1s e failover rápido para a região secundária.",
+        "Multi-AZ protege contra falha de AZ, mas tudo continua DENTRO da mesma região.",
+        "Read replica na mesma AZ não protege nem contra falha de AZ, muito menos de região.",
+        "Snapshots semanais significam RPO de até uma semana — ordens de magnitude acima do exigido."
+      ]
+    },
+    {
+      "pergunta": "Um banco relacional está sobrecarregado por leituras repetidas dos MESMOS dados (consultas idênticas e frequentes). Qual solução reduz a latência e alivia o banco com a MENOR mudança na arquitetura?",
+      "opcoes": [
+        "Migrar todo o banco para DynamoDB",
+        "Aumentar o tamanho da instância do banco (scale up)",
+        "Adicionar Amazon ElastiCache para cachear os resultados das consultas",
+        "Particionar os dados em um segundo banco (sharding)"
+      ],
+      "correta": 2,
+      "explicacao": "Cache (ElastiCache Redis/Memcached) é a resposta padrão para leituras repetidas: tira carga do banco com mudança mínima.",
+      "feedbacks": [
+        "Migrar de relacional para DynamoDB é uma re-arquitetura completa — o oposto de 'menor mudança'.",
+        "Scale up é caro, tem teto e não elimina o desperdício de reprocessar as mesmas consultas.",
+        "Correto: um cache em memória na frente do banco serve as leituras repetidas em microssegundos e alivia o banco.",
+        "Sharding é uma das mudanças mais invasivas possíveis — só se justifica para escala de escrita/volume, não para cache de leitura."
+      ]
+    },
+    {
+      "pergunta": "Uma aplicação que usa DynamoDB precisa de latência de leitura de MICROSSEGUNDOS para itens acessados com muita frequência, sem reescrever a lógica de acesso aos dados. Qual solução adotar?",
+      "opcoes": [
+        "ElastiCache Memcached na frente do DynamoDB",
+        "DynamoDB Accelerator (DAX)",
+        "Aumentar as RCUs provisionadas da tabela",
+        "Exportar os itens quentes para o S3"
+      ],
+      "correta": 1,
+      "explicacao": "DAX é o cache em memória nativo do DynamoDB, compatível com a API existente — leituras em microssegundos sem mudar o código.",
+      "feedbacks": [
+        "Memcached exigiria implementar a lógica de cache (popular, invalidar) na aplicação — reescrita do acesso a dados.",
+        "Correto: DAX é API-compatível com o DynamoDB; basta apontar o client para o cluster e as leituras caem para microssegundos.",
+        "Mais RCUs aumentam o THROUGHPUT, mas a latência continua na casa de milissegundos.",
+        "S3 não é cache de baixa latência — leituras seriam mais lentas e a arquitetura ficaria incoerente."
+      ]
+    },
+    {
+      "pergunta": "Usuários na Europa, nos EUA e na Ásia usam uma aplicação baseada em DynamoDB e sofrem com latência quando acessam a região de origem. A solução deve oferecer LEITURA E ESCRITA locais em cada região. O que usar?",
+      "opcoes": [
+        "Read replicas do RDS em cada região",
+        "CloudFront na frente do endpoint do DynamoDB",
+        "Um cluster DAX em cada região apontando para a tabela original",
+        "DynamoDB global tables"
+      ],
+      "correta": 3,
+      "explicacao": "Global tables replicam a tabela em múltiplas regiões com escrita ativa em todas — leitura e escrita locais.",
+      "feedbacks": [
+        "Read replicas são do RDS (relacional) e, ainda assim, só resolveriam LEITURA — não escrita local.",
+        "CloudFront acelera conteúdo/HTTP, mas não replica um banco: as escritas continuariam indo à região de origem.",
+        "DAX aceleraria leituras cacheadas, mas toda escrita ainda cruzaria o mundo até a região da tabela.",
+        "Correto: global tables são multi-região e multi-active — cada região lê E escreve localmente, com replicação automática."
+      ]
+    },
+    {
+      "pergunta": "Usuários espalhados pelo mundo fazem upload de arquivos grandes para um ÚNICO bucket S3 nos EUA e reclamam de lentidão. Qual recurso acelera esses uploads de longa distância usando as Edge Locations da AWS?",
+      "opcoes": [
+        "S3 Transfer Acceleration",
+        "S3 Cross-Region Replication",
+        "S3 Intelligent-Tiering",
+        "Volumes EBS otimizados nas instâncias"
+      ],
+      "correta": 0,
+      "explicacao": "Transfer Acceleration recebe o upload na Edge Location mais próxima do usuário e o leva ao bucket pela backbone da AWS.",
+      "feedbacks": [
+        "Correto: com Transfer Acceleration o usuário envia para a edge mais próxima e o resto do caminho usa a rede otimizada da AWS.",
+        "Cross-Region Replication copia objetos DEPOIS de já estarem no bucket — não acelera o upload em si.",
+        "Intelligent-Tiering otimiza CUSTO de armazenamento por padrão de acesso, não a velocidade de upload.",
+        "EBS é armazenamento de bloco de instâncias EC2 — irrelevante para uploads de usuários ao S3."
+      ]
+    },
+    {
+      "pergunta": "Um site serve imagens e vídeos estáticos de um bucket S3 para usuários globais. Qual solução reduz a latência para os usuários E o custo de transferência de dados a partir do S3?",
+      "opcoes": [
+        "Mudar os objetos para uma classe de storage mais rápida",
+        "Habilitar S3 Transfer Acceleration no bucket",
+        "Criar uma distribuição CloudFront com o bucket como origem",
+        "Replicar o bucket para todas as regiões da AWS"
+      ],
+      "correta": 2,
+      "explicacao": "CloudFront cacheia nas edges (menos latência) e reduz as saídas do S3 — cache hit não busca na origem.",
+      "feedbacks": [
+        "Classes de storage do S3 mudam custo/disponibilidade, não a latência de entrega para usuários distantes.",
+        "Transfer Acceleration acelera UPLOADS para o bucket, não a distribuição de conteúdo para quem baixa.",
+        "Correto: o CDN serve do cache mais próximo do usuário e diminui drasticamente as leituras (e o data transfer) na origem S3.",
+        "Replicar para todas as regiões multiplicaria custo de storage e replicação — o CDN resolve o mesmo problema muito mais barato."
+      ]
+    },
+    {
+      "pergunta": "Um banco de dados autogerenciado em EC2 precisa de 60.000 IOPS consistentes com latência de milissegundo único. Qual tipo de volume EBS o arquiteto deve escolher?",
+      "opcoes": [
+        "gp2 (General Purpose SSD)",
+        "io2 (Provisioned IOPS SSD)",
+        "st1 (Throughput Optimized HDD)",
+        "sc1 (Cold HDD)"
+      ],
+      "correta": 1,
+      "explicacao": "Volumes io2 (Provisioned IOPS / Block Express) entregam dezenas de milhares de IOPS garantidos — o perfil para bancos exigentes.",
+      "feedbacks": [
+        "gp2 tem teto de 16.000 IOPS por volume e desempenho atrelado ao tamanho — não chega a 60.000 consistentes.",
+        "Correto: io2 permite provisionar IOPS altíssimos (com Block Express, até 256.000) com latência submilissegundo e alta durabilidade.",
+        "st1 é HDD otimizado para THROUGHPUT sequencial (big data, logs), péssimo para IOPS aleatórios de banco.",
+        "sc1 é o HDD frio, mais barato e mais lento — para dados raramente acessados, jamais para banco transacional."
+      ]
+    },
+    {
+      "pergunta": "Logs armazenados no S3 são consultados com frequência nos primeiros 30 dias, raramente depois disso, e precisam ser retidos por 7 anos para auditoria. Qual configuração é a MAIS econômica?",
+      "opcoes": [
+        "Manter tudo em S3 Standard pelos 7 anos",
+        "Replicar os logs para um bucket em outra região",
+        "Enviar tudo imediatamente para S3 One Zone-IA",
+        "Lifecycle policy: Standard → Standard-IA após 30 dias → Glacier Deep Archive para o restante da retenção"
+      ],
+      "correta": 3,
+      "explicacao": "Lifecycle alinhando classe ao padrão de acesso: quente no Standard, morno no IA, arquivo de anos no Deep Archive.",
+      "feedbacks": [
+        "Standard por 7 anos paga o preço mais alto por dados que quase nunca serão lidos.",
+        "Replicação adiciona custo (storage em dobro + transferência) e não resolve nada do requisito de economia.",
+        "One Zone-IA imediato encarece os primeiros 30 dias de acesso frequente (taxa por recuperação) e reduz a resiliência.",
+        "Correto: a lifecycle policy move os dados automaticamente para classes mais baratas conforme esfriam, com Deep Archive na retenção longa."
+      ]
+    },
+    {
+      "pergunta": "Um job de processamento de imagens em lote é tolerante a falhas: pode ser interrompido e reprocessado a qualquer momento, e roda poucas horas por dia. Qual opção de compra de EC2 tem o MENOR custo?",
+      "opcoes": [
+        "Spot Instances",
+        "On-Demand Instances",
+        "Reserved Instances de 3 anos com pagamento adiantado",
+        "Dedicated Hosts"
+      ],
+      "correta": 0,
+      "explicacao": "Workload interruptível e flexível é o caso ideal de Spot: descontos de até ~90% sobre On-Demand.",
+      "feedbacks": [
+        "Correto: Spot usa capacidade ociosa com desconto de até 90% — e a tolerância a interrupção elimina o único risco.",
+        "On-Demand é o preço cheio; para batch interruptível, é pagar caro sem necessidade.",
+        "RI de 3 anos comprometeria pagamento contínuo para algo que roda poucas horas por dia — desperdício.",
+        "Dedicated Hosts são a opção mais CARA, voltada a licenciamento/compliance, não a economia."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa tem consumo de computação estável 24/7, mas quer liberdade para trocar de família de instância, de região e até migrar cargas para Fargate ou Lambda — mantendo o desconto. Qual opção de compra oferece isso?",
+      "opcoes": [
+        "EC2 Instance Savings Plans",
+        "Standard Reserved Instances",
+        "Compute Savings Plans",
+        "Spot Fleet com allocation strategy diversificada"
+      ],
+      "correta": 2,
+      "explicacao": "Compute Savings Plans dão desconto por compromisso de US$/hora e valem para qualquer família/região, Fargate e Lambda.",
+      "feedbacks": [
+        "EC2 Instance Savings Plans prendem o desconto a UMA família de instância em UMA região — sem a flexibilidade pedida.",
+        "Standard RIs são ainda mais rígidas (instância/região) e não cobrem Fargate nem Lambda.",
+        "Correto: Compute Savings Plans são o compromisso mais flexível — qualquer instância, região, Fargate e Lambda.",
+        "Spot não é compromisso com desconto garantido e pode ser interrompido — inadequado para carga estável 24/7."
+      ]
+    },
+    {
+      "pergunta": "Uma conta tem centenas de volumes EBS gp2 cujo desempenho atual é suficiente. O arquiteto quer reduzir o custo de EBS SEM perder performance e SEM re-arquitetar nada. Qual ação é recomendada?",
+      "opcoes": [
+        "Migrar os volumes para io2",
+        "Migrar os volumes de gp2 para gp3",
+        "Migrar os volumes para st1",
+        "Aumentar o tamanho dos volumes gp2 para ganhar IOPS de burst"
+      ],
+      "correta": 1,
+      "explicacao": "gp3 custa ~20% menos por GB que gp2 e entrega 3.000 IOPS de base independentemente do tamanho — migração transparente.",
+      "feedbacks": [
+        "io2 é o tipo MAIS caro — iria na direção oposta do objetivo de custo.",
+        "Correto: gp3 é mais barato que gp2, com 3.000 IOPS/125 MBps de base desacoplados do tamanho; a migração é in-place.",
+        "st1 é HDD sequencial: mais barato, mas mudaria (e derrubaria) o perfil de performance de uso geral.",
+        "Aumentar volumes gp2 AUMENTA o custo — gp2 amarra IOPS ao tamanho, o inverso da economia buscada."
+      ]
+    },
+    {
+      "pergunta": "Instâncias em subnets privadas transferem vários terabytes por mês para o Amazon S3 passando por um NAT Gateway, gerando alto custo de processamento de dados. Como reduzir DRASTICAMENTE esse custo?",
+      "opcoes": [
+        "Criar um Gateway VPC Endpoint para o S3 e rotear o tráfego por ele",
+        "Adicionar um segundo NAT Gateway para dividir a carga",
+        "Substituir o NAT Gateway por uma NAT Instance grande",
+        "Comprimir os dados antes de enviar ao S3"
+      ],
+      "correta": 0,
+      "explicacao": "Gateway endpoints para S3 são gratuitos: o tráfego deixa de passar (e de ser cobrado) no NAT Gateway.",
+      "feedbacks": [
+        "Correto: o gateway endpoint não tem custo por hora nem por GB — o tráfego ao S3 sai da rota do NAT e a cobrança some.",
+        "Dois NAT Gateways dobram o custo por hora e continuam cobrando por GB processado.",
+        "NAT Instance troca custo gerenciado por custo de instância + operação — e o tráfego continua pagando o caminho errado.",
+        "Compressão reduz o volume, mas mantém a arquitetura cara; o endpoint elimina o custo pela raiz."
+      ]
+    },
+    {
+      "pergunta": "Após uma migração lift-and-shift, a empresa suspeita que muitas instâncias EC2 estão superdimensionadas. Qual serviço analisa métricas de utilização e RECOMENDA tipos/tamanhos de instância mais adequados (right-sizing)?",
+      "opcoes": [
+        "AWS Budgets",
+        "AWS Pricing Calculator",
+        "AWS Compute Optimizer",
+        "AWS Artifact"
+      ],
+      "correta": 2,
+      "explicacao": "Compute Optimizer usa machine learning sobre métricas do CloudWatch para recomendar o dimensionamento ideal.",
+      "feedbacks": [
+        "Budgets alerta quando o gasto estoura um orçamento — não analisa utilização nem sugere tipos de instância.",
+        "Pricing Calculator estima custos de arquiteturas futuras — não olha o uso real das instâncias existentes.",
+        "Correto: Compute Optimizer analisa CPU, memória e rede reais e recomenda instâncias (e volumes) mais adequados.",
+        "Artifact entrega relatórios de conformidade da AWS — nada a ver com right-sizing."
+      ]
+    }
+  ]
+}

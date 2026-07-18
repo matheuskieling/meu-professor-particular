@@ -1,0 +1,793 @@
+{
+  "titulo": "Simulado CLF-C02 — Prova 3 (65 questões · 90 min · corte 70%)",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Uma empresa quer que sua capacidade computacional aumente automaticamente durante picos de acesso e diminua quando a demanda cair, pagando apenas pelo que usar. Qual conceito de computação em nuvem descreve MELHOR esse comportamento?",
+      "opcoes": ["Alta disponibilidade", "Tolerância a falhas", "Elasticidade", "Agilidade"],
+      "correta": 2,
+      "explicacao": "Elasticidade é a capacidade de adquirir recursos conforme a demanda aumenta e liberá-los quando ela diminui, pagando apenas pelo que se usa.",
+      "feedbacks": [
+        "Errada. Alta disponibilidade é manter o sistema acessível mesmo com falhas, não ajustar capacidade conforme a demanda.",
+        "Errada. Tolerância a falhas é continuar operando mesmo quando componentes falham; não trata de escalar com a demanda.",
+        "Correta. Elasticidade é exatamente crescer e encolher recursos automaticamente conforme a demanda, pagando só pelo uso.",
+        "Errada. Agilidade é a velocidade para experimentar e provisionar recursos rapidamente, não o ajuste automático de capacidade."
+      ]
+    },
+    {
+      "pergunta": "Um administrador precisa monitorar a utilização de CPU das instâncias EC2 e criar alarmes quando ela ultrapassar 80%. Qual serviço da AWS deve usar?",
+      "opcoes": ["AWS CloudTrail", "Amazon CloudWatch", "AWS Config", "AWS Trusted Advisor"],
+      "correta": 1,
+      "explicacao": "O CloudWatch coleta métricas de desempenho (como CPU) e permite criar alarmes com base em limites definidos.",
+      "feedbacks": [
+        "Errada. O CloudTrail registra chamadas de API (quem fez o quê), não métricas de desempenho como CPU.",
+        "Correta. O CloudWatch coleta métricas operacionais (CPU, rede, disco) e dispara alarmes quando limites são ultrapassados.",
+        "Errada. O AWS Config rastreia o histórico de configuração dos recursos e avalia conformidade, não desempenho.",
+        "Errada. O Trusted Advisor faz verificações de boas práticas (custo, segurança, limites), não monitoramento de métricas em tempo real."
+      ]
+    },
+    {
+      "pergunta": "De acordo com o Modelo de Responsabilidade Compartilhada da AWS, qual tarefa é responsabilidade do CLIENTE?",
+      "opcoes": ["Criptografar os dados e configurar as permissões do IAM", "Substituir discos com falha nos data centers", "Aplicar patches no hipervisor do EC2", "Garantir a segurança física das instalações"],
+      "correta": 0,
+      "explicacao": "O cliente é responsável pela segurança NA nuvem: seus dados, criptografia, e configuração de identidades e permissões.",
+      "feedbacks": [
+        "Correta. Dados do cliente, criptografia e gerenciamento de acesso (IAM) são sempre responsabilidade do cliente.",
+        "Errada. Manutenção de hardware nos data centers é responsabilidade da AWS (segurança DA nuvem).",
+        "Errada. O hipervisor faz parte da infraestrutura gerenciada pela AWS; o cliente não tem acesso a ele.",
+        "Errada. A segurança física dos data centers é responsabilidade exclusiva da AWS."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa roda cargas de produção na AWS e precisa de suporte técnico 24x7 por telefone e chat, com tempo de resposta inferior a 1 hora quando um sistema de produção estiver fora do ar. Qual é o plano de suporte MAIS econômico que atende a esses requisitos?",
+      "opcoes": ["Basic", "Developer", "Business", "Enterprise"],
+      "correta": 2,
+      "explicacao": "O plano Business oferece suporte 24x7 por telefone/chat e resposta em menos de 1 hora para sistemas de produção inoperantes, sendo mais barato que o Enterprise.",
+      "feedbacks": [
+        "Errada. O plano Basic não inclui suporte técnico por telefone ou chat, apenas atendimento para conta e faturamento.",
+        "Errada. O Developer oferece suporte apenas em horário comercial e por e-mail, sem resposta de 1 hora para produção fora do ar.",
+        "Correta. O Business tem suporte 24x7 por telefone/chat e resposta < 1 hora para sistema de produção inoperante, pelo menor custo entre os que atendem.",
+        "Errada. O Enterprise também atende, mas é muito mais caro; a pergunta pede a opção mais econômica."
+      ]
+    },
+    {
+      "pergunta": "Qual pilar do AWS Well-Architected Framework se concentra na capacidade de uma carga de trabalho se recuperar de falhas de infraestrutura e atender à demanda de forma consistente?",
+      "opcoes": ["Segurança", "Otimização de custos", "Excelência operacional", "Confiabilidade"],
+      "correta": 3,
+      "explicacao": "O pilar Confiabilidade trata de recuperação de falhas, escalabilidade horizontal e testes de procedimentos de recuperação.",
+      "feedbacks": [
+        "Errada. O pilar Segurança trata de proteger dados, sistemas e ativos, não de recuperação de falhas.",
+        "Errada. Otimização de custos trata de eliminar gastos desnecessários e medir eficiência financeira.",
+        "Errada. Excelência operacional foca em executar operações como código e melhorar procedimentos continuamente.",
+        "Correta. Confiabilidade é o pilar que trata de recuperação automática de falhas e capacidade de atender à demanda."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa precisa de um sistema de arquivos que possa ser montado simultaneamente por várias instâncias EC2. Quais serviços da AWS atendem a esse requisito? (Escolha DUAS)",
+      "opcoes": ["Amazon EBS", "Amazon EFS", "Amazon S3 Glacier", "Amazon FSx for Windows File Server", "AWS Snowball"],
+      "corretas": [1, 3],
+      "explicacao": "EFS (Linux/NFS) e FSx for Windows (SMB) são sistemas de arquivos de rede que podem ser montados por várias instâncias ao mesmo tempo.",
+      "feedbacks": [
+        "Errada. O EBS é armazenamento em bloco anexado tipicamente a uma única instância por vez (exceto o modo Multi-Attach limitado); não é um sistema de arquivos compartilhado.",
+        "Correta. O EFS é um sistema de arquivos NFS elástico que pode ser montado por centenas de instâncias simultaneamente.",
+        "Errada. O S3 Glacier é armazenamento de arquivamento de objetos, não um sistema de arquivos montável.",
+        "Correta. O FSx for Windows File Server fornece compartilhamento de arquivos via SMB acessível por várias instâncias.",
+        "Errada. O Snowball é um dispositivo físico para transferência de grandes volumes de dados, não um sistema de arquivos."
+      ]
+    },
+    {
+      "pergunta": "Uma aplicação em uma instância EC2 precisa acessar um bucket do Amazon S3. Qual é a forma MAIS segura de conceder esse acesso?",
+      "opcoes": ["Armazenar chaves de acesso de um usuário IAM no código da aplicação", "Anexar uma role (função) do IAM à instância EC2", "Usar as credenciais do usuário raiz da conta", "Tornar o bucket S3 público"],
+      "correta": 1,
+      "explicacao": "Roles do IAM fornecem credenciais temporárias e rotacionadas automaticamente, eliminando chaves fixas embutidas no código.",
+      "feedbacks": [
+        "Errada. Chaves de acesso embutidas no código podem vazar e não são rotacionadas automaticamente; é uma má prática.",
+        "Correta. Roles do IAM anexadas à instância fornecem credenciais temporárias gerenciadas automaticamente pela AWS.",
+        "Errada. As credenciais do usuário raiz jamais devem ser usadas em aplicações; têm acesso irrestrito à conta.",
+        "Errada. Tornar o bucket público expõe os dados a qualquer pessoa na internet."
+      ]
+    },
+    {
+      "pergunta": "Uma aplicação web envia pedidos para um sistema de processamento que às vezes fica indisponível. A empresa quer garantir que nenhum pedido seja perdido, mantendo os componentes desacoplados. Qual serviço deve usar?",
+      "opcoes": ["Amazon SQS", "Amazon SNS", "Amazon EventBridge", "AWS Step Functions"],
+      "correta": 0,
+      "explicacao": "O SQS é uma fila durável: as mensagens ficam armazenadas até o consumidor processá-las, mesmo que ele fique temporariamente indisponível.",
+      "feedbacks": [
+        "Correta. O SQS armazena as mensagens de forma durável na fila até serem consumidas, garantindo que nenhum pedido se perca.",
+        "Errada. O SNS é push (pub/sub): se o assinante estiver indisponível e não houver fila, a mensagem pode não ser processada; não retém mensagens para consumo posterior como uma fila.",
+        "Errada. O EventBridge roteia eventos por regras; para reter pedidos até o consumidor processar, o padrão é uma fila SQS.",
+        "Errada. O Step Functions orquestra fluxos de trabalho em etapas, não serve como buffer durável de mensagens."
+      ]
+    },
+    {
+      "pergunta": "Qual benefício financeiro uma empresa obtém ao migrar de um data center on-premises para a AWS?",
+      "opcoes": ["Eliminação de todos os custos de TI", "Custos fixos mensais garantidos por contrato", "Troca de despesas de capital (CapEx) por despesas variáveis (OpEx)", "Depreciação acelerada de servidores próprios"],
+      "correta": 2,
+      "explicacao": "Na nuvem, a empresa deixa de investir antecipadamente em hardware (CapEx) e passa a pagar conforme o uso (OpEx).",
+      "feedbacks": [
+        "Errada. A nuvem reduz e transforma custos, mas não elimina todos os custos de TI.",
+        "Errada. O modelo da nuvem é de custo variável conforme o uso, não de custos fixos garantidos.",
+        "Correta. Trocar investimento antecipado em data centers por despesa variável conforme o consumo é um benefício central da nuvem.",
+        "Errada. Na nuvem a empresa deixa de comprar servidores próprios, então não há depreciação de hardware."
+      ]
+    },
+    {
+      "pergunta": "Qual serviço da AWS usa machine learning para detectar continuamente atividades maliciosas e comportamento não autorizado, analisando logs de VPC Flow, DNS e CloudTrail?",
+      "opcoes": ["Amazon Inspector", "AWS Shield", "Amazon Macie", "Amazon GuardDuty"],
+      "correta": 3,
+      "explicacao": "O GuardDuty é o serviço de detecção inteligente de ameaças que analisa continuamente essas fontes de logs.",
+      "feedbacks": [
+        "Errada. O Inspector avalia vulnerabilidades de software (CVEs) em EC2 e contêineres, não detecta ameaças em logs.",
+        "Errada. O Shield protege contra ataques DDoS, não faz detecção de ameaças baseada em logs.",
+        "Errada. O Macie descobre e classifica dados sensíveis (PII) no S3, não analisa logs de rede.",
+        "Correta. O GuardDuty monitora VPC Flow Logs, logs de DNS e eventos do CloudTrail para detectar ameaças com machine learning."
+      ]
+    },
+    {
+      "pergunta": "Um banco de dados autogerenciado roda em uma única instância EC2 e precisa de armazenamento em bloco de baixa latência e alto desempenho. Qual serviço é o MAIS adequado?",
+      "opcoes": ["Amazon EBS", "Amazon EFS", "Amazon S3", "AWS Storage Gateway"],
+      "correta": 0,
+      "explicacao": "O EBS fornece volumes de armazenamento em bloco de baixa latência, ideais para bancos de dados em uma única instância EC2.",
+      "feedbacks": [
+        "Correta. O EBS é armazenamento em bloco de alta performance e baixa latência, o padrão para bancos de dados em EC2.",
+        "Errada. O EFS é um sistema de arquivos de rede compartilhado; tem latência maior que o EBS e não é armazenamento em bloco.",
+        "Errada. O S3 é armazenamento de objetos, inadequado como disco de banco de dados transacional.",
+        "Errada. O Storage Gateway conecta ambientes on-premises ao armazenamento da AWS; não é o disco local da instância."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa executa jobs de processamento em lote que toleram interrupções e podem ser reiniciados a qualquer momento. Qual modelo de compra do EC2 oferece o MAIOR desconto para essa carga?",
+      "opcoes": ["Instâncias reservadas", "Instâncias spot", "Instâncias sob demanda", "Dedicated Hosts"],
+      "correta": 1,
+      "explicacao": "Instâncias spot usam capacidade ociosa com descontos de até 90%, ideais para cargas tolerantes a interrupções.",
+      "feedbacks": [
+        "Errada. Instâncias reservadas dão bom desconto (até ~72%) para uso contínuo de 1 ou 3 anos, mas menos que spot e sem necessidade de compromisso aqui.",
+        "Correta. Instâncias spot oferecem até 90% de desconto e são perfeitas para cargas que toleram interrupção, como lotes reiniciáveis.",
+        "Errada. Sob demanda é o modelo mais caro; não aproveita a tolerância a interrupções da carga.",
+        "Errada. Dedicated Hosts são servidores físicos dedicados, usados para licenciamento ou compliance, e custam mais."
+      ]
+    },
+    {
+      "pergunta": "Qual medida adiciona uma camada extra de proteção ao login de usuários do IAM, exigindo um código temporário além da senha?",
+      "opcoes": ["Política de senhas fortes", "AWS KMS", "Autenticação multifator (MFA)", "Grupos do IAM"],
+      "correta": 2,
+      "explicacao": "O MFA exige um segundo fator (código de dispositivo ou chave física) além da senha, protegendo contra credenciais comprometidas.",
+      "feedbacks": [
+        "Errada. Política de senhas fortalece o primeiro fator, mas não adiciona um segundo fator de autenticação.",
+        "Errada. O KMS gerencia chaves de criptografia de dados, não autenticação de login.",
+        "Correta. O MFA exige um código temporário (ou chave de segurança) além da senha, adicionando uma camada extra de proteção.",
+        "Errada. Grupos do IAM organizam permissões de usuários, não afetam o processo de autenticação."
+      ]
+    },
+    {
+      "pergunta": "Quais são benefícios de migrar cargas de trabalho para a nuvem AWS? (Escolha DUAS)",
+      "opcoes": ["Deixar de adivinhar a capacidade de infraestrutura necessária", "Obter controle físico total sobre os servidores", "Aumentar a velocidade e a agilidade de entrega", "Eliminar a necessidade de gerenciar qualquer aspecto de segurança", "Assinar contratos de longo prazo obrigatórios para todo uso"],
+      "corretas": [0, 2],
+      "explicacao": "Entre os benefícios clássicos da nuvem estão parar de adivinhar capacidade (escala conforme a demanda) e aumentar velocidade e agilidade.",
+      "feedbacks": [
+        "Correta. Na nuvem a capacidade escala conforme a demanda real, eliminando a necessidade de estimar e comprar hardware antecipadamente.",
+        "Errada. Na nuvem o controle físico dos servidores é da AWS; o cliente gerencia recursos de forma lógica.",
+        "Correta. Provisionar recursos em minutos aumenta a velocidade de experimentação e entrega — a agilidade é um benefício central.",
+        "Errada. Pelo modelo de responsabilidade compartilhada, o cliente continua responsável pela segurança NA nuvem (dados, IAM, configurações).",
+        "Errada. A nuvem funciona sob demanda, sem contratos de longo prazo obrigatórios (compromissos como Savings Plans são opcionais)."
+      ]
+    },
+    {
+      "pergunta": "Uma aplicação de jogos precisa de um banco de dados NoSQL chave-valor com latência de milissegundos de um dígito e escalabilidade automática, sem gerenciamento de servidores. Qual serviço atende?",
+      "opcoes": ["Amazon RDS", "Amazon Redshift", "Amazon ElastiCache", "Amazon DynamoDB"],
+      "correta": 3,
+      "explicacao": "O DynamoDB é o banco NoSQL chave-valor serverless da AWS, com latência de milissegundos de um dígito em qualquer escala.",
+      "feedbacks": [
+        "Errada. O RDS é um banco relacional gerenciado, não NoSQL chave-valor, e exige escolha de instâncias.",
+        "Errada. O Redshift é um data warehouse para análises SQL em grandes volumes, não para acesso chave-valor de baixa latência.",
+        "Errada. O ElastiCache é um cache em memória complementar a bancos de dados, não um banco de dados durável principal.",
+        "Correta. O DynamoDB é serverless, chave-valor, com latência de milissegundos de um dígito e escala automática."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa quer proteger sua aplicação web contra ataques de injeção de SQL e cross-site scripting (XSS). Qual serviço da AWS deve usar?",
+      "opcoes": ["AWS Shield Standard", "AWS WAF", "Amazon GuardDuty", "AWS Firewall Manager"],
+      "correta": 1,
+      "explicacao": "O WAF é o firewall de aplicações web que filtra requisições maliciosas, como injeção de SQL e XSS, por meio de regras.",
+      "feedbacks": [
+        "Errada. O Shield Standard protege contra ataques DDoS de rede, não contra ataques de camada de aplicação como SQL injection.",
+        "Correta. O WAF inspeciona requisições HTTP/HTTPS e bloqueia padrões como injeção de SQL e XSS.",
+        "Errada. O GuardDuty detecta ameaças analisando logs; não bloqueia requisições web maliciosas.",
+        "Errada. O Firewall Manager gerencia centralizadamente regras (inclusive do WAF) em várias contas, mas quem filtra o tráfego web é o WAF."
+      ]
+    },
+    {
+      "pergunta": "Por que a AWS consegue reduzir os preços dos seus serviços ao longo do tempo?",
+      "opcoes": ["Economias de escala geradas pelo uso agregado de centenas de milhares de clientes", "Subsídios governamentais para provedores de nuvem", "Contratos de longo prazo obrigatórios firmados com todos os clientes", "Redução gradual da qualidade dos serviços mais antigos"],
+      "correta": 0,
+      "explicacao": "O uso agregado massivo permite à AWS comprar e operar infraestrutura com custo unitário menor, repassando as economias de escala aos clientes.",
+      "feedbacks": [
+        "Correta. Quanto mais clientes usam a AWS, menor o custo unitário da infraestrutura — e essas economias de escala são repassadas em reduções de preço.",
+        "Errada. As reduções de preço vêm da eficiência operacional e escala, não de subsídios governamentais.",
+        "Errada. A AWS não exige contratos de longo prazo; o modelo padrão é pagamento conforme o uso.",
+        "Errada. A AWS mantém a qualidade dos serviços; a redução de preço vem da escala, não de cortes de qualidade."
+      ]
+    },
+    {
+      "pergunta": "Uma equipe de BI precisa executar consultas SQL analíticas complexas sobre petabytes de dados históricos estruturados. Qual serviço é o MAIS adequado?",
+      "opcoes": ["Amazon DynamoDB", "Amazon ElastiCache", "Amazon Redshift", "Amazon Neptune"],
+      "correta": 2,
+      "explicacao": "O Redshift é o data warehouse da AWS, otimizado para consultas analíticas (OLAP) em escala de petabytes.",
+      "feedbacks": [
+        "Errada. O DynamoDB é para acesso chave-valor de baixa latência, não para consultas analíticas SQL complexas.",
+        "Errada. O ElastiCache é um cache em memória para acelerar leituras, não um data warehouse.",
+        "Correta. O Redshift é projetado para análises SQL complexas sobre grandes volumes de dados estruturados (data warehousing).",
+        "Errada. O Neptune é um banco de dados de grafos, indicado para relacionamentos altamente conectados, não BI analítico."
+      ]
+    },
+    {
+      "pergunta": "De acordo com o Modelo de Responsabilidade Compartilhada, qual item é responsabilidade da AWS?",
+      "opcoes": ["Configuração dos security groups", "Gerenciamento de usuários e permissões do IAM", "Criptografia dos dados dos clientes", "Segurança física dos data centers"],
+      "correta": 3,
+      "explicacao": "A AWS é responsável pela segurança DA nuvem, o que inclui a proteção física das instalações e da infraestrutura global.",
+      "feedbacks": [
+        "Errada. Security groups são configurados pelo cliente; fazem parte da segurança NA nuvem.",
+        "Errada. O cliente gerencia seus usuários, roles e permissões do IAM.",
+        "Errada. O cliente decide se e como criptografa seus dados (a AWS fornece as ferramentas).",
+        "Correta. A segurança física dos data centers, o hardware e a infraestrutura global são responsabilidade da AWS."
+      ]
+    },
+    {
+      "pergunta": "Uma aplicação precisa enviar a mesma notificação simultaneamente para vários assinantes — e-mail, SMS e filas SQS — no modelo publicação/assinatura (pub/sub). Qual serviço usar?",
+      "opcoes": ["Amazon SQS", "Amazon SNS", "Amazon MQ", "AWS Step Functions"],
+      "correta": 1,
+      "explicacao": "O SNS é o serviço pub/sub que publica uma mensagem em um tópico e a entrega a todos os assinantes (fan-out).",
+      "feedbacks": [
+        "Errada. No SQS cada mensagem é consumida da fila por um consumidor; não faz entrega simultânea a vários assinantes.",
+        "Correta. O SNS publica em tópicos e entrega a múltiplos assinantes ao mesmo tempo (e-mail, SMS, SQS, Lambda) — o padrão fan-out.",
+        "Errada. O Amazon MQ é um broker gerenciado (ActiveMQ/RabbitMQ) para migrar sistemas de mensageria legados, não a escolha padrão para pub/sub nativo.",
+        "Errada. O Step Functions orquestra workflows com etapas, não distribui notificações pub/sub."
+      ]
+    },
+    {
+      "pergunta": "Qual pilar do Well-Architected Framework recomenda aplicar proteção em todas as camadas, rastrear e auditar ações e proteger dados em trânsito e em repouso?",
+      "opcoes": ["Segurança", "Confiabilidade", "Eficiência de performance", "Excelência operacional"],
+      "correta": 0,
+      "explicacao": "Esses são princípios do pilar Segurança: defesa em profundidade, rastreabilidade e proteção de dados.",
+      "feedbacks": [
+        "Correta. O pilar Segurança prega defesa em camadas, rastreabilidade e criptografia de dados em trânsito e em repouso.",
+        "Errada. Confiabilidade trata de recuperação de falhas e escalabilidade, não de proteção de dados.",
+        "Errada. Eficiência de performance trata do uso eficiente de recursos computacionais.",
+        "Errada. Excelência operacional trata de operar e evoluir processos, como operações como código."
+      ]
+    },
+    {
+      "pergunta": "Quais práticas a AWS recomenda para proteger o usuário raiz (root) da conta? (Escolha DUAS)",
+      "opcoes": ["Usar o root para as tarefas administrativas do dia a dia", "Habilitar MFA no usuário raiz", "Compartilhar a senha do root com toda a equipe de administradores", "Criar chaves de acesso do root para uso em aplicações", "Evitar usar o root no dia a dia, criando usuários/roles IAM com as permissões adequadas"],
+      "corretas": [1, 4],
+      "explicacao": "As boas práticas são proteger o root com MFA e usá-lo apenas para as poucas tarefas que o exigem, operando no dia a dia com identidades IAM.",
+      "feedbacks": [
+        "Errada. O root deve ser usado apenas para tarefas que exigem root (ex.: fechar a conta), nunca no dia a dia.",
+        "Correta. Habilitar MFA no root é uma recomendação fundamental para proteger a conta.",
+        "Errada. Compartilhar a senha do root elimina a rastreabilidade e amplia o risco de comprometimento.",
+        "Errada. A AWS recomenda NÃO criar chaves de acesso para o root; aplicações devem usar roles do IAM.",
+        "Correta. Criar usuários e roles IAM com privilégio mínimo e guardar o root para exceções é a prática recomendada."
+      ]
+    },
+    {
+      "pergunta": "Um site de e-commerce quer reduzir a latência de leituras repetidas ao banco de dados armazenando os resultados em um cache em memória. Qual serviço deve usar?",
+      "opcoes": ["Amazon RDS Read Replicas", "Amazon Redshift", "Amazon ElastiCache", "Amazon EFS"],
+      "correta": 2,
+      "explicacao": "O ElastiCache fornece caches em memória gerenciados (Redis/Memcached) com latência de microssegundos para leituras repetidas.",
+      "feedbacks": [
+        "Errada. Read replicas distribuem leituras, mas continuam sendo leituras em disco no banco; a pergunta pede cache EM MEMÓRIA.",
+        "Errada. O Redshift é um data warehouse analítico, não um cache de baixa latência.",
+        "Correta. O ElastiCache (Redis ou Memcached) mantém dados em memória, reduzindo drasticamente a latência de leituras repetidas.",
+        "Errada. O EFS é um sistema de arquivos de rede, sem relação com cache de banco de dados."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa está desenvolvendo um aplicativo móvel e precisa de cadastro, login e autenticação social (Google, Apple) para milhões de usuários finais. Qual serviço deve usar?",
+      "opcoes": ["Amazon Cognito", "AWS IAM", "AWS IAM Identity Center", "AWS Directory Service"],
+      "correta": 0,
+      "explicacao": "O Cognito gerencia identidades de usuários finais de aplicações web e móveis, incluindo cadastro, login e provedores sociais.",
+      "feedbacks": [
+        "Correta. O Cognito é o serviço para autenticação de USUÁRIOS FINAIS de apps, com user pools, login social e federação.",
+        "Errada. O IAM gerencia acesso de pessoas e serviços aos RECURSOS da AWS, não usuários finais de uma aplicação.",
+        "Errada. O IAM Identity Center fornece SSO para a FORÇA DE TRABALHO acessar contas AWS e apps corporativos, não clientes de um app móvel.",
+        "Errada. O Directory Service fornece Active Directory gerenciado para cenários corporativos, não login social de apps."
+      ]
+    },
+    {
+      "pergunta": "Um analista financeiro precisa visualizar os custos da AWS dos últimos 12 meses, filtrar por serviço e obter uma previsão de gastos futuros em gráficos interativos. Qual ferramenta deve usar?",
+      "opcoes": ["AWS Budgets", "AWS Pricing Calculator", "AWS Cost and Usage Report", "AWS Cost Explorer"],
+      "correta": 3,
+      "explicacao": "O Cost Explorer oferece visualização interativa de custos históricos, filtros por dimensão e previsões de gastos.",
+      "feedbacks": [
+        "Errada. O Budgets serve para definir limites de gasto/uso e receber alertas, não para explorar custos históricos em gráficos.",
+        "Errada. O Pricing Calculator estima custos de arquiteturas ANTES da implantação, não analisa gastos reais.",
+        "Errada. O Cost and Usage Report gera dados brutos e detalhados para análise externa, não visualização interativa com previsão.",
+        "Correta. O Cost Explorer visualiza custos passados, filtra por serviço/conta/tag e gera previsões (forecast)."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa quer construir uma arquitetura orientada a eventos que reaja a eventos de serviços da AWS e de aplicações SaaS de parceiros, roteando-os por regras para diferentes destinos. Qual serviço é o MAIS adequado?",
+      "opcoes": ["Amazon SQS", "Amazon EventBridge", "Amazon SNS", "AWS Batch"],
+      "correta": 1,
+      "explicacao": "O EventBridge é o barramento de eventos que recebe eventos da AWS, de SaaS parceiros e de aplicações próprias, roteando-os por regras.",
+      "feedbacks": [
+        "Errada. O SQS é uma fila ponto a ponto; não possui integração nativa com eventos de SaaS nem roteamento por regras.",
+        "Correta. O EventBridge integra nativamente eventos de serviços AWS e SaaS de parceiros, com regras de roteamento e filtragem por conteúdo.",
+        "Errada. O SNS faz pub/sub e fan-out, mas não tem integração nativa com SaaS de parceiros nem barramento de eventos com regras avançadas.",
+        "Errada. O AWS Batch executa jobs de computação em lote, não roteia eventos."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa quer migrar rapidamente suas aplicações para a AWS sem alterar o código, movendo os servidores 'como estão'. Qual estratégia de migração descreve essa abordagem?",
+      "opcoes": ["Refatorar (refactor)", "Recomprar (repurchase)", "Re-hospedar (rehost, lift-and-shift)", "Reter (retain)"],
+      "correta": 2,
+      "explicacao": "Rehost (lift-and-shift) move as aplicações para a nuvem sem alterações, sendo a estratégia mais rápida de migração.",
+      "feedbacks": [
+        "Errada. Refatorar envolve reprojetar a aplicação para usar recursos nativos de nuvem, com mudanças profundas no código.",
+        "Errada. Recomprar significa trocar a aplicação por um produto SaaS equivalente, abandonando a versão atual.",
+        "Correta. Rehost (lift-and-shift) migra os servidores como estão, sem mudanças no código — a forma mais rápida.",
+        "Errada. Reter significa manter a aplicação onde está, sem migrar por enquanto."
+      ]
+    },
+    {
+      "pergunta": "Qual serviço da AWS permite criar e gerenciar chaves criptográficas usadas para criptografar dados em outros serviços, como S3 e EBS?",
+      "opcoes": ["AWS KMS", "AWS Secrets Manager", "AWS Certificate Manager", "Amazon Macie"],
+      "correta": 0,
+      "explicacao": "O KMS (Key Management Service) cria, armazena e gerencia chaves de criptografia integradas à maioria dos serviços da AWS.",
+      "feedbacks": [
+        "Correta. O KMS gerencia chaves criptográficas e se integra a serviços como S3, EBS e RDS para criptografia em repouso.",
+        "Errada. O Secrets Manager armazena e rotaciona segredos (senhas, credenciais), não gerencia chaves de criptografia de serviços.",
+        "Errada. O Certificate Manager provisiona certificados SSL/TLS para criptografia em trânsito, não chaves para dados em repouso.",
+        "Errada. O Macie descobre dados sensíveis no S3; não cria nem gerencia chaves criptográficas."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa quer hospedar um site estático (HTML, CSS e JavaScript) de forma altamente durável e com baixo custo, sem gerenciar servidores. Qual serviço deve usar?",
+      "opcoes": ["Amazon EC2", "Amazon EBS", "AWS Lambda", "Amazon S3"],
+      "correta": 3,
+      "explicacao": "O S3 hospeda sites estáticos diretamente de um bucket, com 11 noves de durabilidade e custo muito baixo.",
+      "feedbacks": [
+        "Errada. O EC2 exigiria gerenciar servidores, o que a empresa quer evitar, e custaria mais para conteúdo estático.",
+        "Errada. O EBS é um volume de disco para instâncias EC2; não hospeda sites por si só.",
+        "Errada. O Lambda executa código sob demanda; para servir arquivos estáticos, o S3 é mais simples e barato.",
+        "Correta. O S3 tem hospedagem de site estático nativa, altíssima durabilidade e cobrança apenas pelo armazenamento e tráfego."
+      ]
+    },
+    {
+      "pergunta": "Qual pilar do Well-Architected Framework enfatiza executar operações como código, fazer mudanças pequenas e reversíveis e refinar procedimentos operacionais com frequência?",
+      "opcoes": ["Confiabilidade", "Excelência operacional", "Sustentabilidade", "Otimização de custos"],
+      "correta": 1,
+      "explicacao": "Esses são princípios do pilar Excelência Operacional: operações como código, mudanças incrementais e melhoria contínua.",
+      "feedbacks": [
+        "Errada. Confiabilidade trata de recuperação de falhas e escala, não da execução e evolução das operações.",
+        "Correta. Excelência operacional prega operações como código, mudanças pequenas e reversíveis e aprendizado com falhas operacionais.",
+        "Errada. Sustentabilidade trata de reduzir o impacto ambiental das cargas de trabalho.",
+        "Errada. Otimização de custos trata de gastar de forma eficiente, não de procedimentos operacionais."
+      ]
+    },
+    {
+      "pergunta": "Quais serviços da AWS são considerados serverless, sem necessidade de provisionar ou gerenciar servidores? (Escolha DUAS)",
+      "opcoes": ["AWS Lambda", "Amazon EC2", "Amazon RDS", "Amazon DynamoDB", "Amazon EMR"],
+      "corretas": [0, 3],
+      "explicacao": "Lambda e DynamoDB são serverless: a AWS gerencia toda a infraestrutura e a capacidade escala automaticamente.",
+      "feedbacks": [
+        "Correta. O Lambda executa código sem nenhum servidor para gerenciar, cobrando por invocação e duração.",
+        "Errada. No EC2 o cliente escolhe, dimensiona e gerencia as instâncias (máquinas virtuais).",
+        "Errada. No RDS tradicional o cliente escolhe a classe de instância e gerencia capacidade; não é serverless por padrão.",
+        "Correta. O DynamoDB é totalmente gerenciado e serverless, escalando capacidade automaticamente sem instâncias visíveis.",
+        "Errada. O EMR provisiona clusters de instâncias para big data que o cliente dimensiona e gerencia."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa com dezenas de contas AWS no AWS Organizations quer que os funcionários façam login uma única vez (SSO) com as credenciais corporativas para acessar todas as contas. Qual serviço deve usar?",
+      "opcoes": ["Amazon Cognito", "Usuários IAM criados em cada conta", "AWS IAM Identity Center", "AWS KMS"],
+      "correta": 2,
+      "explicacao": "O IAM Identity Center fornece SSO centralizado para a força de trabalho acessar várias contas AWS com um único login, integrado ao IdP corporativo.",
+      "feedbacks": [
+        "Errada. O Cognito autentica usuários finais de aplicações (clientes), não funcionários acessando contas AWS.",
+        "Errada. Criar usuários IAM em cada conta multiplica credenciais e administração — exatamente o que o SSO evita.",
+        "Correta. O IAM Identity Center centraliza o acesso da força de trabalho a múltiplas contas do Organizations com um único login (SSO).",
+        "Errada. O KMS gerencia chaves de criptografia; não tem relação com login ou SSO."
+      ]
+    },
+    {
+      "pergunta": "Qual é o principal objetivo de habilitar a implantação Multi-AZ no Amazon RDS?",
+      "opcoes": ["Aumentar a disponibilidade com failover automático para uma instância em espera em outra AZ", "Melhorar o desempenho de leitura distribuindo as consultas", "Reduzir os custos do banco de dados", "Permitir consultas analíticas em petabytes de dados"],
+      "correta": 0,
+      "explicacao": "O Multi-AZ mantém uma réplica síncrona em espera em outra zona de disponibilidade e faz failover automático em caso de falha.",
+      "feedbacks": [
+        "Correta. O Multi-AZ existe para alta disponibilidade: replicação síncrona e failover automático para o standby em outra AZ.",
+        "Errada. Quem melhora desempenho de leitura são as read replicas; o standby do Multi-AZ não atende leituras (no modo clássico).",
+        "Errada. O Multi-AZ praticamente dobra o custo, pois mantém uma instância em espera.",
+        "Errada. Análises em petabytes são o caso de uso do Redshift, não do RDS Multi-AZ."
+      ]
+    },
+    {
+      "pergunta": "Uma instituição financeira roda cargas de missão crítica e exige tempo de resposta de 15 minutos para falhas de sistemas críticos, além de um Technical Account Manager (TAM) dedicado. Qual plano de suporte atende?",
+      "opcoes": ["Developer", "Business", "Enterprise On-Ramp", "Enterprise"],
+      "correta": 3,
+      "explicacao": "Somente o plano Enterprise oferece resposta em 15 minutos para sistemas críticos e um TAM dedicado.",
+      "feedbacks": [
+        "Errada. O Developer atende só em horário comercial, sem severidade crítica nem TAM.",
+        "Errada. O Business tem resposta < 1 hora para produção fora do ar, mas não 15 minutos nem TAM dedicado.",
+        "Errada. O Enterprise On-Ramp oferece resposta de 30 minutos e acesso a um pool de TAMs, não um TAM dedicado.",
+        "Correta. O Enterprise oferece resposta de 15 minutos para cargas críticas e TAM dedicado."
+      ]
+    },
+    {
+      "pergunta": "Qual serviço avalia automaticamente instâncias EC2 e imagens de contêiner em busca de vulnerabilidades de software (CVEs) e exposição de rede não intencional?",
+      "opcoes": ["Amazon GuardDuty", "Amazon Inspector", "AWS Trusted Advisor", "Amazon Detective"],
+      "correta": 1,
+      "explicacao": "O Inspector faz varredura contínua de vulnerabilidades (CVEs) e exposição de rede em EC2, ECR e Lambda.",
+      "feedbacks": [
+        "Errada. O GuardDuty detecta ameaças e atividades maliciosas em logs, não vulnerabilidades de software.",
+        "Correta. O Inspector escaneia EC2 e imagens de contêiner em busca de CVEs e caminhos de rede expostos.",
+        "Errada. O Trusted Advisor verifica boas práticas gerais da conta, não faz varredura de vulnerabilidades em instâncias.",
+        "Errada. O Detective investiga e correlaciona achados de segurança para análise de causa raiz, não faz varredura de CVEs."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa mantém parte das aplicações em seu próprio data center por exigências regulatórias e roda o restante na AWS, com conectividade entre os dois ambientes. Qual modelo de implantação descreve esse cenário?",
+      "opcoes": ["Nuvem privada", "Nuvem pública", "Nuvem híbrida", "Multicloud"],
+      "correta": 2,
+      "explicacao": "Nuvem híbrida combina infraestrutura on-premises com a nuvem pública, conectadas entre si.",
+      "feedbacks": [
+        "Errada. Nuvem privada seria rodar tudo em infraestrutura própria/dedicada, sem a parte na AWS.",
+        "Errada. Nuvem pública seria rodar tudo na AWS, sem o data center próprio.",
+        "Correta. Manter cargas on-premises conectadas a cargas na nuvem pública é a definição de nuvem híbrida.",
+        "Errada. Multicloud é usar mais de um provedor de nuvem pública (ex.: AWS e Azure), o que não é o caso."
+      ]
+    },
+    {
+      "pergunta": "Uma aplicação Windows requer um sistema de arquivos compartilhado com suporte nativo ao protocolo SMB e integração com o Microsoft Active Directory. Qual serviço deve usar?",
+      "opcoes": ["Amazon FSx for Windows File Server", "Amazon EFS", "Amazon S3", "Amazon EBS"],
+      "correta": 0,
+      "explicacao": "O FSx for Windows File Server é um sistema de arquivos totalmente gerenciado baseado em Windows, com SMB e integração com AD.",
+      "feedbacks": [
+        "Correta. O FSx for Windows oferece SMB nativo, ACLs do Windows e integração com Active Directory.",
+        "Errada. O EFS usa NFS e é voltado a cargas Linux; não oferece SMB nativo.",
+        "Errada. O S3 é armazenamento de objetos, não um sistema de arquivos SMB.",
+        "Errada. O EBS é armazenamento em bloco para uma instância; não é um compartilhamento de arquivos SMB."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa precisa descobrir e classificar automaticamente dados sensíveis, como informações de identificação pessoal (PII), armazenados em buckets do S3. Qual serviço deve usar?",
+      "opcoes": ["Amazon Inspector", "AWS Config", "Amazon GuardDuty", "Amazon Macie"],
+      "correta": 3,
+      "explicacao": "O Macie usa machine learning para descobrir, classificar e proteger dados sensíveis (como PII) no S3.",
+      "feedbacks": [
+        "Errada. O Inspector procura vulnerabilidades de software em EC2 e contêineres, não dados sensíveis.",
+        "Errada. O Config rastreia configurações de recursos e conformidade, não o conteúdo dos dados.",
+        "Errada. O GuardDuty detecta ameaças e comportamento malicioso, não classifica dados armazenados.",
+        "Correta. O Macie é especializado em descobrir e classificar dados sensíveis (PII) em buckets do S3."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa quer implantar sua aplicação em vários continentes em questão de minutos para reduzir a latência para os usuários locais. Qual característica da AWS torna isso possível?",
+      "opcoes": ["O modelo de responsabilidade compartilhada", "A infraestrutura global de regiões e zonas de disponibilidade", "O nível gratuito (Free Tier)", "O plano de suporte Enterprise"],
+      "correta": 1,
+      "explicacao": "A infraestrutura global da AWS (regiões e AZs pelo mundo) permite implantar aplicações perto dos usuários em minutos.",
+      "feedbacks": [
+        "Errada. O modelo de responsabilidade compartilhada define quem cuida do quê em segurança, não alcance global.",
+        "Correta. As regiões e zonas de disponibilidade espalhadas pelo mundo permitem implantação global rápida e de baixa latência.",
+        "Errada. O Free Tier oferece uso gratuito limitado para experimentação, não presença global.",
+        "Errada. Plano de suporte não tem relação com a capacidade de implantar globalmente."
+      ]
+    },
+    {
+      "pergunta": "Uma equipe de auditoria precisa registrar todas as chamadas de API feitas na conta e também acompanhar o histórico de alterações de configuração dos recursos, avaliando-as contra regras de conformidade. Quais serviços atendem a esses requisitos? (Escolha DUAS)",
+      "opcoes": ["AWS CloudTrail", "Amazon CloudWatch", "AWS Config", "AWS Trusted Advisor", "Amazon Inspector"],
+      "corretas": [0, 2],
+      "explicacao": "O CloudTrail registra as chamadas de API (quem, o quê, quando); o Config mantém o histórico de configurações e avalia conformidade com regras.",
+      "feedbacks": [
+        "Correta. O CloudTrail grava as chamadas de API da conta para auditoria e governança.",
+        "Errada. O CloudWatch monitora métricas e logs operacionais, não chamadas de API nem conformidade de configuração.",
+        "Correta. O Config registra o histórico de configuração dos recursos e avalia conformidade com regras definidas.",
+        "Errada. O Trusted Advisor dá recomendações de boas práticas, mas não registra APIs nem histórico de configurações.",
+        "Errada. O Inspector procura vulnerabilidades em cargas de trabalho, sem função de auditoria de API ou configuração."
+      ]
+    },
+    {
+      "pergunta": "Um desenvolvedor quer executar uma função de código por alguns segundos em resposta a uploads no S3, pagando apenas pelo tempo de execução e sem gerenciar servidores. Qual serviço deve usar?",
+      "opcoes": ["Amazon EC2", "Amazon ECS com instâncias EC2", "AWS Lambda", "AWS Elastic Beanstalk"],
+      "correta": 2,
+      "explicacao": "O Lambda executa código em resposta a eventos (como uploads no S3), cobrando por invocação e duração, sem servidores para gerenciar.",
+      "feedbacks": [
+        "Errada. O EC2 exige provisionar e pagar por instâncias mesmo ociosas, além de gerenciá-las.",
+        "Errada. ECS sobre EC2 ainda requer gerenciar o cluster de instâncias subjacente.",
+        "Correta. O Lambda é acionado por eventos do S3, cobra só pelo tempo de execução e dispensa servidores.",
+        "Errada. O Elastic Beanstalk facilita implantar aplicações, mas roda sobre instâncias EC2 provisionadas continuamente."
+      ]
+    },
+    {
+      "pergunta": "Um auditor externo solicita cópias dos relatórios de conformidade da AWS, como SOC 2 e ISO 27001. Onde o cliente pode baixar esses documentos por conta própria (self-service)?",
+      "opcoes": ["AWS Artifact", "AWS Config", "AWS Trusted Advisor", "AWS Secrets Manager"],
+      "correta": 0,
+      "explicacao": "O AWS Artifact é o portal self-service para baixar relatórios de conformidade e acordos da AWS.",
+      "feedbacks": [
+        "Correta. O Artifact disponibiliza sob demanda os relatórios de auditoria e conformidade da AWS (SOC, ISO, PCI).",
+        "Errada. O Config avalia a conformidade das SUAS configurações, não fornece os relatórios de auditoria DA AWS.",
+        "Errada. O Trusted Advisor faz verificações de boas práticas, não distribui relatórios de conformidade.",
+        "Errada. O Secrets Manager armazena credenciais e segredos, sem relação com relatórios de auditoria."
+      ]
+    },
+    {
+      "pergunta": "Qual pilar do Well-Architected Framework incentiva usar serviços gerenciados e arquiteturas serverless, experimentar com frequência e escolher o tipo certo de recurso para usar a computação com eficiência?",
+      "opcoes": ["Segurança", "Excelência operacional", "Confiabilidade", "Eficiência de performance"],
+      "correta": 3,
+      "explicacao": "O pilar Eficiência de Performance trata de selecionar e usar recursos computacionais de forma eficiente, adotando tecnologias avançadas via serviços gerenciados.",
+      "feedbacks": [
+        "Errada. Segurança trata de proteção de dados e sistemas, não de eficiência computacional.",
+        "Errada. Excelência operacional trata de como operar e melhorar processos, não da seleção eficiente de recursos.",
+        "Errada. Confiabilidade trata de recuperação de falhas e disponibilidade.",
+        "Correta. Eficiência de performance prega democratizar tecnologias avançadas (serviços gerenciados, serverless), experimentar e escolher o recurso certo."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa deve reter backups por 10 anos por exigência regulatória. Os dados raramente serão acessados e um tempo de recuperação de até 12 horas é aceitável. Qual classe de armazenamento do S3 tem o MENOR custo?",
+      "opcoes": ["S3 Standard-IA", "S3 Glacier Deep Archive", "S3 One Zone-IA", "S3 Intelligent-Tiering"],
+      "correta": 1,
+      "explicacao": "O Glacier Deep Archive é a classe mais barata do S3, ideal para retenção de longo prazo com recuperação em até 12 horas.",
+      "feedbacks": [
+        "Errada. O Standard-IA é para acesso infrequente com recuperação imediata; custa bem mais que o Deep Archive.",
+        "Correta. O Glacier Deep Archive tem o menor custo de armazenamento e recuperação padrão em até 12 horas — perfeito para retenção regulatória de 10 anos.",
+        "Errada. O One Zone-IA reduz custo armazenando em uma única AZ, mas ainda é mais caro que o Deep Archive e menos indicado para retenção regulatória.",
+        "Errada. O Intelligent-Tiering otimiza custos para padrões de acesso imprevisíveis, mas não é a opção mais barata para arquivamento de longo prazo conhecido."
+      ]
+    },
+    {
+      "pergunta": "Uma aplicação precisa armazenar credenciais de banco de dados com rotação automática programada. Qual serviço atende NATIVAMENTE a esse requisito?",
+      "opcoes": ["AWS KMS", "AWS Systems Manager Parameter Store", "AWS Secrets Manager", "AWS Certificate Manager"],
+      "correta": 2,
+      "explicacao": "O Secrets Manager armazena segredos e oferece rotação automática nativa, com integração direta ao RDS.",
+      "feedbacks": [
+        "Errada. O KMS gerencia chaves de criptografia, não armazena nem rotaciona credenciais de aplicação.",
+        "Errada. O Parameter Store armazena parâmetros e segredos, mas não possui rotação automática nativa como o Secrets Manager.",
+        "Correta. O Secrets Manager rotaciona segredos automaticamente em cronograma, com integração nativa a bancos como o RDS.",
+        "Errada. O Certificate Manager gerencia certificados TLS, não credenciais de banco de dados."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa tem uma carga de computação estável que rodará continuamente pelos próximos 3 anos, mas quer flexibilidade para mudar de família de instância, região e até usar Fargate ou Lambda. Qual opção oferece desconto significativo COM essa flexibilidade?",
+      "opcoes": ["Compute Savings Plans", "Instâncias reservadas Standard", "Instâncias spot", "Instâncias sob demanda"],
+      "correta": 0,
+      "explicacao": "O Compute Savings Plans dá desconto por compromisso de gasto (1 ou 3 anos) e se aplica a qualquer família, região, Fargate e Lambda.",
+      "feedbacks": [
+        "Correta. O Compute Savings Plans mantém o desconto mesmo mudando de família de instância, região, Fargate ou Lambda.",
+        "Errada. Instâncias reservadas Standard travam família/região; não oferecem a flexibilidade pedida.",
+        "Errada. Instâncias spot podem ser interrompidas a qualquer momento; inadequadas para carga contínua estável.",
+        "Errada. Sob demanda não oferece desconto algum por compromisso."
+      ]
+    },
+    {
+      "pergunta": "Qual ferramenta da AWS inspeciona a conta em relação a boas práticas e gera recomendações em categorias como otimização de custos, segurança, tolerância a falhas, performance e limites de serviço?",
+      "opcoes": ["AWS Config", "Amazon CloudWatch", "AWS Health Dashboard", "AWS Trusted Advisor"],
+      "correta": 3,
+      "explicacao": "O Trusted Advisor executa verificações de boas práticas nessas cinco categorias clássicas e recomenda melhorias.",
+      "feedbacks": [
+        "Errada. O Config avalia conformidade das configurações com SUAS regras, não recomendações prontas de boas práticas em categorias.",
+        "Errada. O CloudWatch monitora métricas e logs, não gera recomendações de boas práticas.",
+        "Errada. O Health Dashboard informa eventos e problemas dos serviços AWS que afetam sua conta, não recomendações de otimização.",
+        "Correta. O Trusted Advisor verifica custo, segurança, tolerância a falhas, performance e limites de serviço com recomendações."
+      ]
+    },
+    {
+      "pergunta": "Um bucket do S3 foi excluído e a equipe de segurança precisa identificar qual usuário fez a chamada de API DeleteBucket e quando ela ocorreu. Qual serviço fornece essa informação?",
+      "opcoes": ["Amazon CloudWatch", "AWS CloudTrail", "AWS Trusted Advisor", "Amazon Macie"],
+      "correta": 1,
+      "explicacao": "O CloudTrail registra as chamadas de API com identidade do chamador, horário, IP de origem e parâmetros — é a fonte para 'quem fez o quê'.",
+      "feedbacks": [
+        "Errada. O CloudWatch traz métricas e logs operacionais, mas não o registro de auditoria de quem chamou cada API.",
+        "Correta. O CloudTrail registra cada chamada de API (usuário, data/hora, origem), permitindo identificar quem excluiu o bucket.",
+        "Errada. O Trusted Advisor faz verificações de boas práticas, não auditoria de ações.",
+        "Errada. O Macie classifica dados sensíveis no S3; não registra chamadas de API."
+      ]
+    },
+    {
+      "pergunta": "Quais serviços da AWS podem ser usados sem custo adicional, pagando-se apenas pelos recursos que eles criam ou gerenciam? (Escolha DUAS)",
+      "opcoes": ["AWS CloudFormation", "Amazon Redshift", "AWS Auto Scaling", "Amazon CloudFront", "Amazon RDS"],
+      "corretas": [0, 2],
+      "explicacao": "CloudFormation e Auto Scaling são gratuitos em si — paga-se apenas pelos recursos (EC2, RDS etc.) que eles provisionam ou escalam.",
+      "feedbacks": [
+        "Correta. O CloudFormation não tem custo próprio; cobra-se apenas pelos recursos criados pelos templates.",
+        "Errada. O Redshift cobra pelos nós do cluster (ou pelo uso no modo serverless).",
+        "Correta. O Auto Scaling é gratuito; paga-se apenas pelas instâncias e recursos que ele adiciona.",
+        "Errada. O CloudFront cobra pela transferência de dados e pelas requisições atendidas.",
+        "Errada. O RDS cobra pelas instâncias de banco, armazenamento e backups."
+      ]
+    },
+    {
+      "pergunta": "Qual pilar do Well-Architected Framework recomenda adotar um modelo de consumo, medir a eficiência dos gastos e usar ferramentas como o Cost Explorer para eliminar despesas desnecessárias?",
+      "opcoes": ["Otimização de custos", "Eficiência de performance", "Excelência operacional", "Sustentabilidade"],
+      "correta": 0,
+      "explicacao": "O pilar Otimização de Custos trata de gastar apenas o necessário, medir eficiência e analisar os custos continuamente.",
+      "feedbacks": [
+        "Correta. Otimização de custos prega modelo de consumo, medição de eficiência financeira e eliminação de gastos desnecessários.",
+        "Errada. Eficiência de performance trata do uso eficiente de recursos computacionais, não de gastos.",
+        "Errada. Excelência operacional trata de executar e melhorar operações, não da gestão financeira.",
+        "Errada. Sustentabilidade trata do impacto ambiental, embora compartilhe práticas de eficiência."
+      ]
+    },
+    {
+      "pergunta": "Uma equipe quer executar contêineres no Amazon ECS sem provisionar nem gerenciar instâncias EC2. Qual opção de computação deve escolher?",
+      "opcoes": ["Instâncias Amazon EC2", "AWS Outposts", "AWS Fargate", "Amazon Lightsail"],
+      "correta": 2,
+      "explicacao": "O Fargate é o mecanismo de computação serverless para contêineres: a AWS gerencia toda a infraestrutura subjacente.",
+      "feedbacks": [
+        "Errada. Usar EC2 como capacidade do ECS exige provisionar e gerenciar as instâncias do cluster.",
+        "Errada. O Outposts leva infraestrutura AWS para o on-premises; não elimina o gerenciamento de servidores.",
+        "Correta. Com o Fargate, os contêineres rodam sem servidores visíveis — sem provisionar, escalar ou aplicar patch em instâncias.",
+        "Errada. O Lightsail oferece servidores virtuais simplificados, mas ainda são instâncias a gerenciar."
+      ]
+    },
+    {
+      "pergunta": "Um administrador está criando políticas do IAM para uma nova equipe. Segundo as boas práticas da AWS, qual princípio deve seguir?",
+      "opcoes": ["Conceder acesso de administrador a todos para evitar bloqueios", "Usar um único usuário compartilhado pela equipe", "Conceder permissões amplas no início e restringir depois", "Conceder apenas as permissões mínimas necessárias para cada tarefa (privilégio mínimo)"],
+      "correta": 3,
+      "explicacao": "O princípio do privilégio mínimo determina conceder somente as permissões estritamente necessárias para a tarefa.",
+      "feedbacks": [
+        "Errada. Acesso de administrador para todos viola o privilégio mínimo e amplia a superfície de ataque.",
+        "Errada. Usuários compartilhados eliminam a rastreabilidade individual e são má prática de segurança.",
+        "Errada. Começar amplo e restringir depois deixa janelas de exposição; o correto é começar restrito e ampliar se necessário.",
+        "Correta. Privilégio mínimo: conceder apenas o necessário para a tarefa é a boa prática central do IAM."
+      ]
+    },
+    {
+      "pergunta": "Como uma empresa deve arquitetar uma aplicação na AWS para alcançar alta disponibilidade dentro de uma região?",
+      "opcoes": ["Implantar em uma única AZ com instâncias maiores", "Distribuir a aplicação em várias zonas de disponibilidade", "Usar apenas instâncias spot", "Fazer backups diários para o S3"],
+      "correta": 1,
+      "explicacao": "Distribuir a aplicação em múltiplas AZs garante que a falha de uma zona não derrube o serviço.",
+      "feedbacks": [
+        "Errada. Uma única AZ é um ponto único de falha, por maiores que sejam as instâncias.",
+        "Correta. Implantar em várias AZs (com balanceador de carga) mantém a aplicação disponível mesmo se uma zona falhar.",
+        "Errada. Instâncias spot podem ser interrompidas a qualquer momento, reduzindo a disponibilidade.",
+        "Errada. Backups protegem os dados, mas não mantêm a aplicação no ar durante uma falha."
+      ]
+    },
+    {
+      "pergunta": "Qual serviço da AWS fornece DNS altamente disponível e escalável, com registro de domínios e políticas de roteamento como latência e failover?",
+      "opcoes": ["Amazon Route 53", "Amazon CloudFront", "AWS Direct Connect", "Elastic Load Balancing"],
+      "correta": 0,
+      "explicacao": "O Route 53 é o serviço de DNS da AWS, com registro de domínios e roteamento por políticas (latência, failover, geolocalização).",
+      "feedbacks": [
+        "Correta. O Route 53 resolve nomes de domínio, registra domínios e roteia tráfego por latência, failover, peso e geolocalização.",
+        "Errada. O CloudFront é uma CDN que entrega conteúdo em cache; não é um serviço de DNS.",
+        "Errada. O Direct Connect é uma conexão de rede dedicada entre on-premises e a AWS.",
+        "Errada. O ELB distribui tráfego entre destinos dentro da AWS, mas não faz resolução DNS nem registro de domínios."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa usa o Amazon RDS e também um banco de dados instalado por conta própria em uma instância EC2. Quem é responsável por aplicar patches no sistema operacional em cada caso?",
+      "opcoes": ["O cliente em ambos os casos", "A AWS em ambos os casos", "A AWS no RDS; o cliente na instância EC2", "O cliente no RDS; a AWS na instância EC2"],
+      "correta": 2,
+      "explicacao": "No RDS (serviço gerenciado) a AWS aplica os patches do SO; no EC2 (IaaS) o cliente gerencia o sistema operacional convidado.",
+      "feedbacks": [
+        "Errada. No RDS o cliente não tem acesso ao SO; quem aplica os patches é a AWS.",
+        "Errada. No EC2 o sistema operacional convidado é responsabilidade do cliente, incluindo patches.",
+        "Correta. A responsabilidade varia por serviço: a AWS gerencia o SO do RDS, e o cliente gerencia o SO da instância EC2.",
+        "Errada. Está invertido: a AWS cuida do SO no RDS e o cliente cuida do SO no EC2."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa possui 20 contas AWS e quer receber uma única fatura, combinando o uso de todas as contas para obter descontos por volume. Qual recurso deve usar?",
+      "opcoes": ["AWS Budgets", "Faturamento consolidado do AWS Organizations", "AWS Cost Explorer", "Tags de alocação de custos"],
+      "correta": 1,
+      "explicacao": "O faturamento consolidado do Organizations gera uma fatura única e agrega o uso das contas para atingir faixas de desconto por volume.",
+      "feedbacks": [
+        "Errada. O Budgets define limites e alertas de gastos, não unifica faturas.",
+        "Correta. O consolidated billing do Organizations emite uma única fatura e combina o uso para descontos por volume e compartilhamento de descontos.",
+        "Errada. O Cost Explorer analisa e visualiza custos, mas não consolida faturas de várias contas.",
+        "Errada. Tags ajudam a categorizar custos dentro das contas, não a unificar o faturamento."
+      ]
+    },
+    {
+      "pergunta": "Um administrador quer aplicar patches em uma frota de instâncias EC2 e abrir sessões de shell nelas sem chaves SSH nem portas de entrada abertas. Qual serviço da AWS oferece esses recursos?",
+      "opcoes": ["AWS OpsWorks", "AWS Config", "AWS CloudFormation", "AWS Systems Manager"],
+      "correta": 3,
+      "explicacao": "O Systems Manager oferece o Patch Manager para aplicar patches em escala e o Session Manager para acesso shell sem SSH nem portas abertas.",
+      "feedbacks": [
+        "Errada. O OpsWorks é gerenciamento de configuração com Chef/Puppet; não oferece Session Manager nem patching integrado dessa forma.",
+        "Errada. O Config rastreia configurações e conformidade, não executa patches nem sessões de acesso.",
+        "Errada. O CloudFormation provisiona infraestrutura como código, não gerencia operações em instâncias existentes.",
+        "Correta. O Systems Manager (Patch Manager + Session Manager) aplica patches em escala e dá acesso shell seguro sem SSH."
+      ]
+    },
+    {
+      "pergunta": "Qual framework da AWS fornece orientações organizadas em perspectivas (negócios, pessoas, governança, plataforma, segurança e operações) para ajudar organizações a planejar sua jornada de adoção da nuvem?",
+      "opcoes": ["AWS Cloud Adoption Framework (CAF)", "AWS Well-Architected Framework", "AWS Pricing Calculator", "AWS Migration Hub"],
+      "correta": 0,
+      "explicacao": "O AWS CAF organiza a adoção da nuvem em seis perspectivas, cobrindo aspectos de negócio e de tecnologia.",
+      "feedbacks": [
+        "Correta. O CAF estrutura a jornada de adoção da nuvem nas perspectivas de negócios, pessoas, governança, plataforma, segurança e operações.",
+        "Errada. O Well-Architected Framework avalia ARQUITETURAS de cargas de trabalho em pilares, não a jornada organizacional de adoção.",
+        "Errada. O Pricing Calculator estima custos de arquiteturas; não é um framework de adoção.",
+        "Errada. O Migration Hub acompanha o progresso de migrações, mas não fornece as perspectivas organizacionais do CAF."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa precisa conectar seu data center on-premises à sua VPC na AWS. Quais serviços permitem essa conectividade? (Escolha DUAS)",
+      "opcoes": ["AWS Direct Connect", "Amazon CloudFront", "AWS Site-to-Site VPN", "Amazon API Gateway", "AWS Global Accelerator"],
+      "corretas": [0, 2],
+      "explicacao": "O Direct Connect fornece um link físico dedicado e o Site-to-Site VPN cria um túnel criptografado pela internet entre o data center e a VPC.",
+      "feedbacks": [
+        "Correta. O Direct Connect estabelece uma conexão de rede privada e dedicada entre o on-premises e a AWS.",
+        "Errada. O CloudFront é uma CDN para entrega de conteúdo, não conectividade de rede com data centers.",
+        "Correta. O Site-to-Site VPN cria túneis IPsec criptografados pela internet entre a rede local e a VPC.",
+        "Errada. O API Gateway publica e gerencia APIs, não conecta redes.",
+        "Errada. O Global Accelerator melhora a performance de acesso global a aplicações, não conecta o data center à VPC."
+      ]
+    },
+    {
+      "pergunta": "Uma empresa quer proteção gerenciada contra ataques DDoS sofisticados e de grande escala, com acesso a uma equipe de resposta especializada e proteção financeira contra picos de custo causados pelos ataques. Qual serviço deve usar?",
+      "opcoes": ["AWS WAF", "AWS Shield Standard", "AWS Shield Advanced", "Amazon GuardDuty"],
+      "correta": 2,
+      "explicacao": "O Shield Advanced oferece proteção DDoS ampliada, acesso ao Shield Response Team e proteção de custos contra escalonamento durante ataques.",
+      "feedbacks": [
+        "Errada. O WAF filtra ataques de camada de aplicação (SQLi, XSS), mas não inclui equipe de resposta DDoS nem proteção financeira.",
+        "Errada. O Shield Standard é gratuito e automático, mas cobre apenas os ataques DDoS mais comuns, sem equipe dedicada nem proteção de custos.",
+        "Correta. O Shield Advanced adiciona detecção ampliada, o Shield Response Team 24x7 e proteção contra picos de custo por DDoS.",
+        "Errada. O GuardDuty detecta ameaças em logs, não mitiga ataques DDoS."
+      ]
+    },
+    {
+      "pergunta": "Qual pilar do Well-Architected Framework foca em reduzir o impacto ambiental das cargas de trabalho, maximizando a utilização dos recursos e adotando hardware e serviços gerenciados mais eficientes?",
+      "opcoes": ["Otimização de custos", "Sustentabilidade", "Confiabilidade", "Eficiência de performance"],
+      "correta": 1,
+      "explicacao": "Sustentabilidade é o sexto pilar do framework e trata de minimizar o impacto ambiental do uso da nuvem.",
+      "feedbacks": [
+        "Errada. Otimização de custos reduz gastos financeiros; o foco em impacto ambiental é do pilar Sustentabilidade.",
+        "Correta. O pilar Sustentabilidade orienta maximizar utilização e eficiência energética para reduzir o impacto ambiental.",
+        "Errada. Confiabilidade trata de disponibilidade e recuperação de falhas.",
+        "Errada. Eficiência de performance trata de desempenho computacional, embora práticas se sobreponham à sustentabilidade."
+      ]
+    },
+    {
+      "pergunta": "Um site global de mídia quer entregar vídeos e imagens com baixa latência a usuários do mundo todo, armazenando o conteúdo em cache em pontos próximos a eles. Qual serviço deve usar?",
+      "opcoes": ["Amazon Route 53", "AWS Global Accelerator", "Amazon S3 Transfer Acceleration", "Amazon CloudFront"],
+      "correta": 3,
+      "explicacao": "O CloudFront é a CDN da AWS: usa as edge locations para servir conteúdo em cache perto dos usuários, com baixa latência.",
+      "feedbacks": [
+        "Errada. O Route 53 resolve DNS e roteia tráfego, mas não faz cache de conteúdo.",
+        "Errada. O Global Accelerator melhora o caminho de rede até a aplicação, mas não armazena conteúdo em cache nas bordas.",
+        "Errada. O Transfer Acceleration acelera UPLOADS para o S3 usando as edge locations, não a entrega de conteúdo aos usuários.",
+        "Correta. O CloudFront distribui e armazena conteúdo em cache nas edge locations, entregando com baixa latência globalmente."
+      ]
+    },
+    {
+      "pergunta": "Qual é o principal benefício de desacoplar os componentes de uma aplicação usando filas ou eventos?",
+      "opcoes": ["Reduzir automaticamente os custos de licenciamento de software", "Eliminar a necessidade de testes de integração", "A falha de um componente não interrompe os demais, aumentando resiliência e permitindo escalar cada parte de forma independente", "Garantir que todos os componentes usem a mesma linguagem de programação"],
+      "correta": 2,
+      "explicacao": "Componentes desacoplados falham e escalam de forma independente: uma falha isolada não derruba o sistema inteiro.",
+      "feedbacks": [
+        "Errada. Desacoplamento é um padrão de arquitetura; não afeta custos de licenciamento.",
+        "Errada. Testes de integração continuam necessários; o desacoplamento não os elimina.",
+        "Correta. Com filas/eventos entre os componentes, uma falha fica isolada e cada parte escala conforme sua própria demanda.",
+        "Errada. Pelo contrário: componentes desacoplados podem usar linguagens e tecnologias diferentes."
+      ]
+    },
+    {
+      "pergunta": "Qual componente da VPC atua como firewall virtual COM estado (stateful) no nível da instância EC2, controlando o tráfego de entrada e de saída?",
+      "opcoes": ["Security group", "Network ACL", "Tabela de rotas", "Internet gateway"],
+      "correta": 0,
+      "explicacao": "O security group é o firewall stateful no nível da instância; a network ACL é stateless e atua no nível da sub-rede.",
+      "feedbacks": [
+        "Correta. Security groups filtram tráfego no nível da instância e são stateful (a resposta a um tráfego permitido é liberada automaticamente).",
+        "Errada. A network ACL atua no nível da SUB-REDE e é stateless (regras de ida e volta devem ser explícitas).",
+        "Errada. A tabela de rotas define para onde o tráfego é encaminhado, não filtra permissões.",
+        "Errada. O internet gateway conecta a VPC à internet; não é um firewall."
+      ]
+    },
+    {
+      "pergunta": "Antes de migrar, uma empresa quer estimar o custo mensal de uma arquitetura planejada na AWS com EC2, RDS e S3. Qual ferramenta deve usar?",
+      "opcoes": ["AWS Cost Explorer", "AWS Pricing Calculator", "AWS Budgets", "AWS Cost and Usage Report"],
+      "correta": 1,
+      "explicacao": "O Pricing Calculator estima o custo de arquiteturas ANTES da implantação, serviço por serviço.",
+      "feedbacks": [
+        "Errada. O Cost Explorer analisa custos JÁ incorridos na conta; sem uso ainda, não há o que explorar.",
+        "Correta. O Pricing Calculator monta estimativas de custo de arquiteturas planejadas, antes de qualquer implantação.",
+        "Errada. O Budgets define alertas sobre gastos reais ou previstos da conta, não estima arquiteturas futuras.",
+        "Errada. O Cost and Usage Report detalha o uso e custo reais da conta, não estimativas pré-migração."
+      ]
+    }
+  ]
+}

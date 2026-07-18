@@ -89,4 +89,4 @@ este formato-padrão. (Definição em `.claude/skills/retomar-curso/`.)
 
 | # | Curso | Diretório | Status |
 |---|-------|-----------|--------|
-| 1 | AWS & Cloud (mega intensivo) | `AWS/` | Em construção — Módulo 01 pronto |
+| 1 | AWS & Cloud (mega intensivo) | `AWS/` | ✅ Completo — 19 módulos + simulados CLF-C02/SAA-C03 |

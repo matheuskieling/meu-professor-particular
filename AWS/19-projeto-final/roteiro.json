@@ -179,7 +179,7 @@
         "Estilo troubleshooting: 'ALB responde 502 e o ASG está saudável — onde investigar?'",
         "Eu conduzo no chat e aprofundo cada tema que vacilar"
       ],
-      "acao": "Rodar: python3 AWS/apps/session.py start AWS/apps/modulo-19/questions.json",
+      "acao": "Rodar: python3 engine/session.py start AWS/apps/modulo-19/questions.json",
       "checkpoint": "Ao terminar, mapeie os temas errados para os módulos a revisar",
       "ref": "AWS/apps/modulo-19/questions.json"
     },
@@ -192,7 +192,7 @@
         "Feedback por alternativa; aprovação 70%",
         "Cobre do módulo 01 ao 18, sempre em situações cruzadas"
       ],
-      "acao": "Rodar: python3 AWS/apps/session.py start AWS/provas/modulo-19/questions.json --id prova",
+      "acao": "Rodar: python3 engine/session.py start AWS/provas/modulo-19/questions.json --id prova",
       "checkpoint": "Se passou: formatura! Se não, revisar os módulos dos erros e refazer",
       "ref": "AWS/provas/modulo-19/questions.json"
     },

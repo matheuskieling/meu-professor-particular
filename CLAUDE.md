@@ -41,40 +41,44 @@ para retomar depois. Os arquivos `.md` continuam existindo para quem quiser estu
 ### Estrutura padrão de um curso
 
 ```
-<Curso>/
-├── CLAUDE.md              ← plano do curso + anatomia dos módulos (fonte de verdade)
-├── README.md             ← como fazer o curso (para o aluno)
-├── NN-nome/              ← um diretório por módulo, numerado
-│   ├── roteiro.json      ← ESPINHA da aula ao vivo: "beats" ordenados que o Claude conduz
-│   ├── teoria.md         ← texto teórico (para estudo solo / referência)
-│   └── pratica.md        ← passo a passo da prática guiada
-├── apps/                 ← drivers + apps de teste (Python puro, sem dependências)
+courses/
+├── engine/               ← MOTOR COMPARTILHADO por todos os cursos (Python puro, sem dependências)
 │   ├── aula.py           ← driver da AULA ao vivo (lê roteiro.json, salva progresso)
 │   ├── session.py        ← driver de QUIZ/PROVA (lê questions.json)
 │   ├── revisar.py        ← revisão acumulada com repetição espaçada (estilo Anki)
 │   ├── quiz_engine.py    ← motor do quiz no modo solo (teclado)
-│   ├── reset.py          ← zera o progresso local (recomeçar do início)
-│   ├── .sessions/        ← progresso do aluno (commitado no fork/branch; zerado na main)
-│   └── modulo-NN/questions.json   ← banco de questões da aula
-├── provas/modulo-NN/     ← prova de fim de módulo (feedback por alternativa)
-└── (extras do curso)     ← ex.: AWS tem certificacoes/; outros cursos terão o que fizer sentido
+│   ├── reset.py          ← zera o progresso de um curso
+│   └── _common.py        ← resolução de curso/sessão (autodetecção + --curso)
+│
+└── <Curso>/              ← cada curso é SÓ CONTEÚDO (nenhum driver aqui)
+    ├── CLAUDE.md         ← plano do curso + anatomia dos módulos (fonte de verdade)
+    ├── README.md         ← como fazer o curso (para o aluno)
+    ├── .sessions/        ← progresso do aluno (commitado no fork/branch; zerado na main)
+    ├── NN-nome/          ← um diretório por módulo, numerado
+    │   ├── roteiro.json  ← ESPINHA da aula ao vivo: "beats" ordenados que o Claude conduz
+    │   ├── teoria.md     ← texto teórico (para estudo solo / referência)
+    │   └── pratica.md    ← passo a passo da prática guiada
+    ├── apps/modulo-NN/   ← questions.json (banco do quiz) + quiz.py (runner solo)
+    ├── provas/modulo-NN/ ← prova de fim de módulo (feedback por alternativa)
+    └── (extras do curso) ← ex.: AWS tem certificacoes/; outros cursos terão o que fizer sentido
 ```
 
-Os **drivers** (`aula.py`, `session.py`, `quiz_engine.py`) são **agnósticos de curso** — ao criar um
-curso novo, copie a pasta `apps/` de um curso existente e crie só o conteúdo (roteiros e questões).
+Os **drivers vivem só em `engine/`** e são **agnósticos de curso** — descobrem o curso pelo caminho
+do conteúdo ou por `--curso <dir>`/autodetecção. Um **curso novo é só conteúdo** (roteiros + bancos):
+não se copia nem se recria driver nenhum. Detalhes e "como criar um curso" em `engine/CLAUDE.md`.
 
 ### Os dois modos de cada módulo
 
-1. **Aula ao vivo (padrão):** o Claude roda `apps/aula.py`, que guarda o **roteiro** (o que ensinar)
+1. **Aula ao vivo (padrão):** o Claude roda `engine/aula.py`, que guarda o **roteiro** (o que ensinar)
    e o **progresso** (onde paramos). O Claude narra cada beat com as próprias palavras, tira dúvidas,
    e só avança (`aula.py next`) quando o aluno confirma. Ao chegar em beats de quiz/prova, dispara o
    `session.py`. O estado persiste → dá para **parar e retomar sempre de onde ficou**.
 2. **Solo:** o aluno lê os `.md` e roda os quizzes pelo teclado (`quiz.py`, `prova.py`).
 
-O **progresso** (`apps/.sessions/`) é **versionado**: cada aluno commita o próprio progresso no seu
+O **progresso** (`.sessions/`) é **versionado**: cada aluno commita o próprio progresso no seu
 **fork** (ou numa branch própria, ex.: `progresso/<nome>`) e continua **de qualquer máquina** com um
 `git pull`. A branch `main` do repositório principal fica sempre com **progresso zerado** — nunca
-commitar arquivos de `.sessions/` nela. Para recomeçar, `python3 <Curso>/apps/reset.py` (+ commit).
+commitar arquivos de `.sessions/` nela. Para recomeçar, `python3 engine/reset.py` (+ commit).
 
 ### Anatomia de um módulo (ciclo aprender → praticar → testar → avaliar)
 
@@ -91,7 +95,7 @@ salvo. Para revisão de longo prazo, a skill **`/revisar`** faz uma mini-prova e
 que siga o formato-padrão. (Definições em `.claude/skills/`.)
 
 Em agentes **sem suporte a skills**, o fluxo é o mesmo feito à mão: `git pull` (se estiver em
-fork/branch), `python3 <Curso>/apps/aula.py status` + `current` para resumir onde paramos, e
+fork/branch), `python3 engine/aula.py status` + `current` para resumir onde paramos, e
 conduzir a partir do beat atual. Os detalhes estão no `CLAUDE.md` de cada curso.
 
 ## Compatibilidade com outros agentes (harness-agnóstico)

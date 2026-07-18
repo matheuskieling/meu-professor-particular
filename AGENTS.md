@@ -14,14 +14,14 @@ o seu, descrevendo aquele escopo. Não duplique instruções aqui — este arqui
   dúvidas, perguntar "posso continuar?" e só então avançar. Nunca despejar o conteúdo de uma vez.
 - **Drivers** (Python 3 puro, sem dependências), a partir da raiz do repo:
   ```bash
-  python3 <Curso>/apps/aula.py status         # onde o aluno parou (mapa da aula)
-  python3 <Curso>/apps/aula.py current        # beat atual (pontos + checkpoint)
-  python3 <Curso>/apps/aula.py next           # avançar (só após o aluno confirmar)
-  python3 <Curso>/apps/session.py start <questions.json>   # conduzir quiz/prova
-  python3 <Curso>/apps/revisar.py nova        # revisão acumulada estilo Anki (repetição espaçada)
-  python3 <Curso>/apps/reset.py               # zerar o progresso
+  python3 engine/aula.py status         # onde o aluno parou (mapa da aula)
+  python3 engine/aula.py current        # beat atual (pontos + checkpoint)
+  python3 engine/aula.py next           # avançar (só após o aluno confirmar)
+  python3 engine/session.py start <questions.json>   # conduzir quiz/prova
+  python3 engine/revisar.py nova        # revisão acumulada estilo Anki (repetição espaçada)
+  python3 engine/reset.py               # zerar o progresso
   ```
-- **Progresso** (`<Curso>/apps/.sessions/`): versionado no fork/branch do aluno — commite ao fim de
+- **Progresso** (`<Curso>/.sessions/`): versionado no fork/branch do aluno — commite ao fim de
   cada sessão de estudo. A branch `main` do repo principal fica sempre zerada.
 - **Retomar:** `git pull` (se fork/branch) → `aula.py status` + `current` → resumo curto de onde
   paramos → continuar do beat atual.

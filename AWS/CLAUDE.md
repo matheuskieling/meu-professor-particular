@@ -30,12 +30,12 @@ O curso foi pensado para ser um **one-on-one com o Claude**, não uma leitura so
 **"posso continuar?"** antes de avançar. Ao fim da teoria, propõe passar à prática; guia a prática;
 depois conduz quiz e prova. **O estado (onde paramos) é salvo**, então dá pra parar e retomar sempre.
 
-Isso é operado pelo driver **`apps/aula.py`**, que lê o **`roteiro.json`** do módulo (a lista
-ordenada de "beats" a ensinar) e persiste o progresso. Guia de uso completo em `apps/CLAUDE.md`.
+Isso é operado pelo driver **`engine/aula.py`**, que lê o **`roteiro.json`** do módulo (a lista
+ordenada de "beats" a ensinar) e persiste o progresso. Guia de uso completo em `engine/CLAUDE.md`.
 Os arquivos `.md` (teoria/prática) continuam existindo para quem quiser **estudar sozinho** — ver `README.md`.
 
 **Como o Claude conduz uma aula:**
-1. `python3 AWS/apps/aula.py current` (ou `start ...` na primeira vez) para ver o beat atual.
+1. `python3 engine/aula.py current` (ou `start ...` na primeira vez) para ver o beat atual.
 2. Lê os `pontos` e **narra com as próprias palavras** — nunca cola os bullets crus.
 3. No `checkpoint`, pausa: convida dúvidas e pergunta se pode seguir.
 4. Ao "pode seguir", `aula.py next`. Se surgir dúvida relevante, `aula.py note "..."`.
@@ -50,7 +50,7 @@ Ao criar um módulo novo, replique exatamente este formato:
 ### 0. Roteiro da aula — `NN-nome/roteiro.json`
 A espinha da **aula ao vivo**: os "beats" ordenados (teoria → prática → quiz → prova → fechamento),
 cada um com pontos-chave, checkpoint e referência às seções de `teoria.md`/`pratica.md`. É o que o
-Claude segue ao conduzir. Formato no cabeçalho de `apps/aula.py`.
+Claude segue ao conduzir. Formato no cabeçalho de `engine/aula.py`.
 
 ### 1. Teoria — `NN-nome/teoria.md`
 Texto teórico explicando **o quê**, **o porquê** e o contexto. Linguagem direta, com analogias,
@@ -71,9 +71,9 @@ Um **quiz** que reforça a aula, com banco de questões em `questions.json`. Rod
   qualquer momento**, pede dicas ou para aprofundar; o Claude repassa a resposta à sessão e explica
   o resultado. É uma *máquina de estado* (sem stdin travado), então é robusto:
   ```bash
-  python3 AWS/apps/session.py start AWS/apps/modulo-NN/questions.json   # mostra a Q1
-  python3 AWS/apps/session.py answer B                                  # corrige e avança
-  python3 AWS/apps/session.py status                                    # progresso/nota
+  python3 engine/session.py start AWS/apps/modulo-NN/questions.json   # mostra a Q1
+  python3 engine/session.py answer B                                  # corrige e avança
+  python3 engine/session.py status                                    # progresso/nota
   ```
   Use `--id <nome>` para sessões paralelas (ex.: `--id prova`, `--id cert`). O mesmo `session.py`
   roda **qualquer** banco (aula, prova ou certificação).
@@ -98,7 +98,7 @@ Portões de prontidão e instruções de condução em `certificacoes/CLAUDE.md`
 > **Resumo do fluxo de uma aula:** ler `teoria.md` → fazer a `pratica.md` na AWS → rodar o **quiz**
 > (Claude conduz e tira dúvidas) → ao fim do módulo, a **prova** → periodicamente, **simulados de
 > certificação**. As apps são Python puro, **sem dependências** (`python3` e pronto). Detalhes do
-> formato de `questions.json` em `apps/CLAUDE.md`.
+> formato de `questions.json` em `engine/CLAUDE.md`.
 
 ---
 
@@ -177,23 +177,23 @@ o Claude deve avaliá-los e comunicá-los ao fim de cada simulado.
 
 ## Estrutura de arquivos
 
+Os **drivers** são compartilhados e ficam em **`engine/`** na raiz do repo (ver `engine/CLAUDE.md`);
+este curso é só conteúdo.
+
 ```
 AWS/
 ├── README.md                 ← como fazer o curso (para o aluno)
 ├── CLAUDE.md                 ← este arquivo
+├── .sessions/                ← progresso do aluno (versionado no fork; zerado na main)
 ├── 01-fundamentos/
 │   ├── roteiro.json          ← roteiro da aula ao vivo (o Claude conduz)
 │   ├── teoria.md
 │   └── pratica.md
 ├── 02-iam-seguranca/ ... 19-projeto-final/   (todos os 19 módulos, mesmo formato)
-├── apps/                     ← drivers (aula/quiz) + quizzes das aulas
+├── apps/                     ← bancos do quiz + runners solo (SEM drivers)
 │   ├── CLAUDE.md
-│   ├── aula.py               ← driver de aula ao vivo (roteiro + progresso)
-│   ├── session.py            ← driver de quiz/prova conduzido pelo Claude
-│   ├── quiz_engine.py        ← motor do quiz no modo solo
-│   ├── reset.py              ← zera o progresso local (recomeçar do início)
 │   └── modulo-01/
-│       ├── quiz.py
+│       ├── quiz.py           ← runner solo (importa engine/quiz_engine.py)
 │       └── questions.json
 ├── provas/                   ← provas de fim de módulo (feedback por alternativa)
 │   ├── CLAUDE.md
@@ -202,8 +202,8 @@ AWS/
 │       └── questions.json
 └── certificacoes/            ← simulados no formato dos exames oficiais
     ├── CLAUDE.md
-    └── clf-c02/
-        └── questions.json
+    ├── clf-c02/ · saa-c03/   ← banco rápido + prova-1/2/3 (65 questões)
+    └── ...
 ```
 
 ---

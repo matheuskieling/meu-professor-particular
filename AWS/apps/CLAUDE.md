@@ -1,143 +1,33 @@
-# AWS/apps — Drivers e aplicações de teste
+# AWS/apps — Bancos de questões e runners solo do curso de AWS
 
-Aqui vivem os **drivers que o Claude opera** para conduzir o curso, e as **apps de teste** (quizzes)
-de cada módulo. Dois drivers, propósitos diferentes:
+Esta pasta guarda **conteúdo** do curso de AWS, não drivers. Os drivers (aula, quiz/prova, revisão,
+reset) são **compartilhados** e vivem em `engine/` na raiz do repositório — veja `engine/CLAUDE.md`.
 
-- **`aula.py`** — conduz a **aula ao vivo** (teoria + prática) seguindo um `roteiro.json`, salvando
-  onde paramos. É o coração do formato one-on-one.
-- **`session.py`** — conduz **quiz/prova/simulado** a partir de um `questions.json`.
-
-Ambos são **máquinas de estado** (sem stdin travado), persistem em `.sessions/` (gitignored) e são
-pensados para o Claude rodar via Bash, narrando/explicando no chat.
-
----
-
-## `aula.py` — driver de aula ao vivo (conduzido pelo Claude)
-
-Guarda o **roteiro** (a lista ordenada de "beats" — os pontos a ensinar) e o **progresso**. Quem
-ensina é o Claude; o driver só entrega o próximo beat e registra o avanço. Fluxo típico:
-
-```bash
-python3 AWS/apps/aula.py start AWS/01-fundamentos/roteiro.json   # mostra o beat atual
-python3 AWS/apps/aula.py next                                    # avança quando o aluno topar
-python3 AWS/apps/aula.py current                                 # retomar de onde paramos
-python3 AWS/apps/aula.py status                                  # mapa de progresso
-python3 AWS/apps/aula.py revisao                                 # conteúdo da última sessão + nº de perguntas sugerido
-python3 AWS/apps/aula.py marco                                   # marca o conteúdo como já revisado
-python3 AWS/apps/aula.py goto p1                                 # pular para um beat (ex.: prática)
-python3 AWS/apps/aula.py note "aluno teve dúvida em AZ x Região" # registrar nota/dúvida
-```
-
-**Revisão espaçada na retomada:** ao retomar, depois do resumo, rode `revisao` — ele lista os beats
-de teoria/prática vistos desde o último `marco` (a "última sessão") e sugere quantas perguntas fazer
-(o tamanho acompanha o volume). Ofereça a mini-prova ao aluno; ao terminar (feita ou dispensada),
-rode `marco` para não repetir aquele conteúdo na próxima vez. (A skill `/retomar-curso` já faz isso.)
-- Cada beat traz `pontos` (o que desenvolver), `checkpoint` (a deixa do "posso continuar?"), e às
-  vezes `acao` (ex.: rodar o quiz) e `ref` (seção de apoio em teoria.md/pratica.md).
-- O `--id` padrão é `aula-<modulo>`; o beat atual sobrevive entre sessões, então dá pra **retomar**.
-- **Como o Claude usa:** rode `current`/`next`, leia os pontos, **narre com suas palavras** (não cole
-  os bullets crus), convide dúvidas, e só chame `next` após o aluno confirmar. Ao chegar num beat de
-  fase `quiz`/`prova`, dispare o `session.py` correspondente.
-
-Formato do `roteiro.json`: ver cabeçalho de `aula.py` (campos `modulo`, `titulo`, `beats[]`).
-
----
-
-## `revisar.py` — revisão acumulada com repetição espaçada (estilo Anki)
-
-Complementa a revisão-da-sessão do `aula.py`: em vez de recapitular só a última sessão, monta uma
-**mini-prova amostrando de tudo que o aluno já concluiu** e **agenda** cada pergunta para reaparecer
-com o tempo (caixas de Leitner: 1, 3, 7, 16, 35 dias — acertou sobe de caixa, errou volta pra caixa 1).
-
-```bash
-python3 AWS/apps/revisar.py nova --n 8     # monta e inicia a mini-prova (prioriza vencidas + novas + aleatórias)
-python3 AWS/apps/session.py answer C --id revisao   # responde (motor de sempre, com feedback)
-python3 AWS/apps/revisar.py fechar         # processa os acertos/erros no baralho e reagenda
-python3 AWS/apps/revisar.py status         # estado do baralho (rastreadas, dominadas, vencidas)
-```
-- **Fonte:** os bancos que já existem (quizzes + provas). Cada pergunta ganha um `qid` estável.
-- **Elegibilidade:** só módulos **concluídos** (todos os beats de teoria/prática vistos na aula), para
-  nunca perguntar algo ainda não estudado. Use `--ate NN` para incluir módulos 01..NN no estudo solo.
-- **Baralho:** `apps/.sessions/revisao-deck.json` — versionado no fork do aluno (acompanha entre
-  máquinas); o `reset.py` limpa junto. Conduz reusando o `session.py` (id `revisao`).
-- **Quando oferecer:** de vez em quando na retomada (ver a skill `/retomar-curso`) ou quando o aluno
-  pedir "quero revisar". Distinção: `aula.py revisao` = última sessão; `revisar.py` = tudo acumulado.
-
-## `session.py` — aplicações de teste (quiz/prova/certificação)
-
-As apps de teste reforçam o conteúdo. Compartilham o formato `questions.json` e rodam em **dois modos**.
-
-## Dois modos de uso
-
-### 1. Modo conduzido pelo Claude (preferido) — `session.py`
-Uma **máquina de estado** que persiste a sessão em arquivo. É o Claude quem opera: apresenta cada
-pergunta no chat, recebe a resposta do aluno em linguagem natural, chama `answer` e explica o
-retorno — **tirando dúvidas ao longo do caminho**. Sem interação de stdin, então é robusto.
-
-```bash
-python3 AWS/apps/session.py start AWS/apps/modulo-01/questions.json   # mostra a Q1
-python3 AWS/apps/session.py answer B                                  # corrige e avança
-python3 AWS/apps/session.py status                                    # progresso/nota
-python3 AWS/apps/session.py current                                   # remostra a questão
-python3 AWS/apps/session.py reset                                     # zera a sessão
-```
-Use `--id <nome>` para múltiplas sessões simultâneas (ex.: `--id prova`, `--id cert`).
-O mesmo `session.py` roda **qualquer** banco: quiz de aula, prova de módulo ou simulado de certificação.
-
-### 2. Modo solo — `quiz_engine.py` + `quiz.py`
-O aluno roda sozinho e responde pelo teclado. Cada módulo tem um `quiz.py` fininho:
-```bash
-python3 AWS/apps/modulo-01/quiz.py
-```
-
-## Estrutura
+## O que tem aqui
 
 ```
 apps/
 ├── CLAUDE.md
-├── aula.py             ← driver de AULA ao vivo (roteiro + progresso)
-├── session.py          ← driver de QUIZ/PROVA conduzido pelo Claude
-├── revisar.py          ← revisão acumulada com repetição espaçada (estilo Anki)
-├── quiz_engine.py      ← motor do quiz no modo solo (lê do teclado)
-├── reset.py            ← zera o progresso local (apaga .sessions/)
-├── .sessions/          ← progresso do aluno (commitado no fork/branch; zerado na main)
-└── modulo-01/
-    ├── quiz.py         ← runner solo do quiz do módulo
-    └── questions.json  ← banco de questões da aula
+└── modulo-NN/
+    ├── questions.json   ← banco de questões do quiz da aula NN (10 questões)
+    └── quiz.py          ← runner do MODO SOLO (roda o quiz pelo teclado)
 ```
 
-> O **roteiro** de cada aula (`roteiro.json`) fica junto do módulo (ex.: `01-fundamentos/roteiro.json`),
-> não aqui — é conteúdo do módulo. Aqui ficam só os drivers e os quizzes.
+- **`questions.json`** — o banco do quiz de cada módulo. Formato documentado em `engine/CLAUDE.md`.
+- **`quiz.py`** — stub que roda o quiz no modo solo: `python3 AWS/apps/modulo-NN/quiz.py`. Ele só
+  importa o motor de `engine/quiz_engine.py` e aponta para o `questions.json` ao lado.
 
-## Resetar o progresso — `reset.py`
-O progresso (aula + quizzes/provas) vive em `.sessions/` e é **versionado no fork/branch do aluno**
-(a `main` do repo principal fica zerada). Para recomeçar do zero sem tocar no conteúdo do curso:
-```bash
-python3 AWS/apps/reset.py          # apaga todo o progresso
-python3 AWS/apps/reset.py --list   # lista sessões sem apagar
-python3 AWS/apps/reset.py --id aula-01   # reseta só uma sessão
-```
+As **provas** de módulo ficam em `AWS/provas/modulo-NN/` e os **simulados de certificação** em
+`AWS/certificacoes/`. O **progresso** do aluno fica em `AWS/.sessions/` (versionado no fork).
 
-## Formato do `questions.json`
+## Como isso é usado
 
-```json
-{
-  "titulo": "Módulo 01 — ...",
-  "aprovacao": 70,
-  "questoes": [
-    {
-      "pergunta": "texto",
-      "opcoes": ["A ...", "B ...", "C ...", "D ..."],
-      "correta": 0,
-      "explicacao": "justificativa da resposta correta",
-      "feedbacks": ["por que A ...", "por que B ...", "..."]
-    }
-  ]
-}
-```
-- `feedbacks` (opcional) dá retorno **por alternativa** — essencial nas provas. Sem ele, mostra só a `explicacao`.
+- **Modo conduzido pelo Claude (padrão):** o driver `engine/session.py` conduz o quiz/prova a partir
+  do `questions.json` — o Claude apresenta as perguntas no chat, o aluno responde em linguagem
+  natural e tira dúvidas. Ex.: `python3 engine/session.py start AWS/apps/modulo-01/questions.json`.
+- **Modo solo:** `python3 AWS/apps/modulo-01/quiz.py` (responde pelo teclado).
 
-## Convenção ao criar uma nova aula
-1. Crie `apps/modulo-NN/questions.json` com as questões da aula.
-2. Crie `apps/modulo-NN/quiz.py` (copie o do módulo 01, só muda o caminho).
-3. Prefira Python puro, **sem dependências externas** (roda com `python3` e pronto).
+## Ao criar um módulo novo neste curso
+1. Crie `apps/modulo-NN/questions.json` com as 10 questões do quiz.
+2. Crie `apps/modulo-NN/quiz.py` (copie de outro módulo — muda só o docstring).
+3. A prova vai em `provas/modulo-NN/` (12 questões, com `feedbacks` por alternativa).

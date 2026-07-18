@@ -3,8 +3,8 @@ description = "Revisão acumulada estilo Anki: mini-prova do conteúdo já concl
 prompt = """
 Leia o arquivo `.claude/skills/revisar/SKILL.md` deste repositório (é a definição canônica deste
 comando, válida para qualquer agente) e siga exatamente as instruções dele: detectar o curso, montar
-uma mini-prova de revisão acumulada com `apps/revisar.py nova`, conduzi-la e fechar com
-`apps/revisar.py fechar` para reagendar as perguntas.
+uma mini-prova de revisão acumulada com `engine/revisar.py nova`, conduzi-la e fechar com
+`engine/revisar.py fechar` para reagendar as perguntas.
 
 Argumentos do usuário (curso, opcional): {{args}}
 """

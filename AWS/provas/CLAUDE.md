@@ -7,13 +7,13 @@ Diferente do quiz da aula, a prova dá retorno **baseado na alternativa que o al
 - se acertou → por que aquela opção está certa;
 - se errou → por que a sua escolha está errada **e** qual é a correta e por quê.
 
-Isso vem do campo `feedbacks` no `questions.json` (um texto por opção). Ver `AWS/apps/CLAUDE.md`.
+Isso vem do campo `feedbacks` no `questions.json` (um texto por opção). Ver `engine/CLAUDE.md`.
 
 ## Como aplicar (conduzido pelo Claude)
 ```bash
-python3 AWS/apps/session.py start AWS/provas/modulo-01/questions.json --id prova
-python3 AWS/apps/session.py answer C --id prova
-python3 AWS/apps/session.py status --id prova
+python3 engine/session.py start AWS/provas/modulo-01/questions.json --id prova
+python3 engine/session.py answer C --id prova
+python3 engine/session.py status --id prova
 ```
 O Claude conduz pelo chat, tira dúvidas e explica cada resultado. **Aprovação: 70%.**
 

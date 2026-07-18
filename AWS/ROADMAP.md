@@ -133,7 +133,7 @@ AWS/
 
 ## Mecanismo de navegação por trilhas (a implementar)
 
-Hoje o `apps/aula.py` conduz um roteiro linear. Para as trilhas, o curso precisará de:
+Hoje o `engine/aula.py` conduz um roteiro linear. Para as trilhas, o curso precisará de:
 
 1. **Registro de trilhas** — um índice (ex.: `AWS/trilhas/trilhas.json`) listando cada trilha:
    código da cert, título, pré-requisitos, ordem dos módulos, e status (`bloqueada`/`disponível`/
@@ -142,14 +142,14 @@ Hoje o `apps/aula.py` conduz um roteiro linear. Para as trilhas, o curso precisa
    CLF/SAA), o `/retomar-curso` deixa de seguir linearmente e **apresenta as trilhas disponíveis**,
    pedindo qual seguir (o aluno pode navegar/explorar as ramificações com ajuda do agente).
 3. **Persistência da escolha** — a trilha escolhida (e o progresso dentro dela) é **salva no estado**
-   (`apps/.sessions/`, versionado no fork/branch do aluno). Ao retomar, o curso **parte da trilha
+   (`.sessions/`, versionado no fork/branch do aluno). Ao retomar, o curso **parte da trilha
    corrente** automaticamente.
 4. **Marcar como concluída** — ao terminar uma trilha (módulos + simulados no portão de prontidão),
    o curso **marca a trilha como feita** no estado e **oferece a próxima** disponível.
 5. **Trocar de trilha** — o aluno pode pausar uma trilha e começar/retomar outra a qualquer momento;
    o estado guarda o progresso de cada uma separadamente.
 
-Arquivos que serão tocados quando formos implementar: `apps/aula.py` (suporte a trilhas + estado de
+Arquivos que serão tocados quando formos implementar: `engine/aula.py` (suporte a trilhas + estado de
 múltiplas trilhas), `.claude/skills/retomar-curso/SKILL.md` (passo de escolha/retomada de trilha) e
 os ponteiros dos outros harnesses (só referenciam o SKILL.md, então seguem válidos).
 
@@ -176,11 +176,11 @@ construída e você quer avançar nela agora, **não precisa esperar** — é s�
 > me conduza por ela."
 
 O agente tem tudo o que precisa: este roadmap diz **o que** cada trilha exige, e o `CLAUDE.md` do
-curso + `apps/CLAUDE.md` dizem **como** um módulo/prova é montado (formato dos arquivos, drivers,
+curso + `engine/CLAUDE.md` dizem **como** um módulo/prova é montado (formato dos arquivos, drivers,
 padrão das questões). Como o conteúdo mora no **seu fork**, você pode construir e estudar sua trilha
 sem depender do repositório principal — e, se quiser, depois abrir um PR para contribuir de volta.
 
 > Enquanto o **mecanismo de navegação por trilhas** (menu automático ao fim do tronco, escolha
 > salva no estado, marcação de concluída) não existir, a condução é manual: peça ao agente para
-> conduzir a trilha recém-criada com `apps/aula.py` apontando para os novos `roteiro.json`, do mesmo
+> conduzir a trilha recém-criada com `engine/aula.py` apontando para os novos `roteiro.json`, do mesmo
 > jeito que o tronco. Funciona igual — só não é automático ainda.

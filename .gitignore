@@ -13,7 +13,7 @@ aws-credentials*
 *.tfstate.*
 *.tfvars
 
-# Progresso (apps/.sessions/) é VERSIONADO de propósito: cada aluno commita o
+# Progresso (<curso>/.sessions/) é VERSIONADO de propósito: cada aluno commita o
 # próprio progresso no seu fork/branch para continuar de qualquer máquina.
 # A branch main do repo principal deve ficar sempre com progresso zerado.
 

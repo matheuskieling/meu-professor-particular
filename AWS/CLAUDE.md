@@ -210,8 +210,16 @@ AWS/
 
 ## Estado atual
 
-- ✅ **CURSO COMPLETO** — os 19 módulos prontos (roteiro + teoria + prática + quiz de 10 questões +
-  prova de 12 questões com feedback por alternativa, cada um).
-- ✅ **Certificações:** CLF-C02 e SAA-C03 com banco rápido + 3 provas completas cada (65 questões,
-  formato do exame real) e portões de prontidão definidos.
+- ✅ **TRONCO COMUM COMPLETO** — os 19 módulos prontos (roteiro + teoria + prática + quiz de 10
+  questões + prova de 12 questões com feedback por alternativa, cada um).
+- ✅ **Certificações básicas:** CLF-C02 e SAA-C03 com banco rápido + 3 provas completas cada
+  (65 questões, formato do exame real) e portões de prontidão definidos.
 - 🎓 O aluno pode fazer o curso do início ao fim: `/retomar-curso` (ou "vamos começar o módulo 1").
+
+## Próximos passos (futuro) — ramificação em trilhas
+
+Depois do tronco comum + CLF/SAA, o curso vai se **ramificar em trilhas de especialização**
+(caminhos separados por certificação: DVA, SOA, DEA, MLA, AIF, SCS, ANS, SAP, DOP), escolhidas por
+interesse, com um mecanismo de escolha/retomada/marcação de trilha. **Nada disso está implementado
+ainda** — o plano completo (módulos por certificação, estrutura de pastas e o mecanismo de navegação)
+está registrado em **`AWS/ROADMAP.md`**. Consulte-o antes de começar qualquer expansão do curso.

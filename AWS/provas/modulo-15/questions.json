@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 15: Arquitetura & Well-Architected",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Um cliente pede 'a arquitetura mais confiável possível' para um blog interno com 50 usuários. Qual a resposta de um bom arquiteto?",
+      "opcoes": [
+        "Multi-região ativa-ativa com failover global, sem discutir",
+        "Perguntar os requisitos reais (SLA, orçamento, impacto de indisponibilidade) — confiabilidade máxima tem custo que este workload provavelmente não justifica",
+        "Recusar o projeto por ser pequeno demais",
+        "Uma única EC2 grande, que é mais simples"
+      ],
+      "correta": 1,
+      "explicacao": "Arquitetura é trade-off guiado por requisitos. Um blog interno tolera indisponibilidade; pagar por 99,99% seria desperdício — os pilares de custo e confiabilidade se equilibram pelo requisito.",
+      "feedbacks": [
+        "Multi-região ativa-ativa é a opção mais cara e complexa que existe — vender isso pra um blog interno de 50 pessoas é ignorar o pilar de custos e os requisitos.",
+        "Exato: requisitos primeiro, serviços depois. A pergunta 'qual o impacto real de ficar fora do ar?' define quanto vale investir em redundância.",
+        "Tamanho pequeno não é motivo pra recusa — é motivo pra uma solução proporcional.",
+        "Uma EC2 única é um SPOF; pode até ser aceitável PARA ESTE caso, mas a resposta profissional é decidir isso a partir dos requisitos, não do 'mais simples' por padrão."
+      ]
+    },
+    {
+      "pergunta": "Durante uma revisão, você descobre que o time faz deploys gigantes, manuais e trimestrais, difíceis de reverter. Qual pilar isso fere mais diretamente?",
+      "opcoes": [
+        "Sustentabilidade",
+        "Excelência operacional — que prega mudanças pequenas, frequentes e reversíveis, de preferência automatizadas",
+        "Otimização de custos",
+        "Eficiência de performance"
+      ],
+      "correta": 1,
+      "explicacao": "Excelência operacional: tudo como código, mudanças pequenas/frequentes/reversíveis, aprender com falhas. Deploy trimestral gigante é o oposto — risco acumulado e rollback difícil.",
+      "feedbacks": [
+        "Sustentabilidade trata de impacto ambiental/utilização de recursos — não de processo de deploy.",
+        "Correto: é o coração da excelência operacional. Mudanças grandes e raras concentram risco; pequenas e reversíveis reduzem o raio da explosão. É a ponte pro módulo 16 (CI/CD).",
+        "Custo não é o problema central aqui (embora incidentes de deploy custem caro indiretamente).",
+        "Performance fala de usar os recursos certos com eficiência — o problema descrito é de processo de operação/mudança."
+      ]
+    },
+    {
+      "pergunta": "Uma aplicação roda em 6 instâncias pequenas atrás de um ALB em vez de 1 instância gigante. Qual princípio de confiabilidade isso aplica?",
+      "opcoes": [
+        "Pare de gastar com datacenters",
+        "Escale horizontalmente para reduzir o impacto de uma falha única (SPOF)",
+        "Vá global em minutos",
+        "Democratize tecnologias avançadas"
+      ],
+      "correta": 1,
+      "explicacao": "Escala horizontal: perder 1 de 6 instâncias tira 1/6 da capacidade; perder a instância única tira 100%. Muitas unidades pequenas > uma gigante.",
+      "feedbacks": [
+        "'Pare de gastar com datacenters' é princípio de CUSTO (migrar pro modelo de consumo da nuvem) — não é o que o cenário mostra.",
+        "Correto: substituir um recurso grande por vários pequenos reduz o impacto de cada falha — e o ALB + health checks tiram a instância doente do jogo automaticamente.",
+        "'Global em minutos' é princípio de performance (chegar perto do usuário) — o cenário é sobre falha, não geografia.",
+        "'Democratizar tecnologias avançadas' fala de usar serviços gerenciados em vez de operar você mesmo — não é o ponto aqui."
+      ]
+    },
+    {
+      "pergunta": "Startup de 4 desenvolvedores vai lançar um MVP com requisitos ainda voláteis. Qual abordagem de arquitetura tende a ser a mais adequada?",
+      "opcoes": [
+        "20 microservices desde o dia 1, para 'já nascer escalável'",
+        "Um monolito bem modularizado (ALB + ASG), evoluindo para extrair serviços QUANDO houver dor real",
+        "Nenhuma arquitetura; codar direto em produção",
+        "Multi-região ativa-ativa"
+      ],
+      "correta": 1,
+      "explicacao": "Monolito não é anti-padrão. Com time pequeno e domínio ainda instável, microservices adicionam custo operacional sem benefício — extraia serviços quando a dor (escala, times) aparecer.",
+      "feedbacks": [
+        "20 microservices para 4 devs é otimização prematura: cada serviço cobra observabilidade, deploy, versionamento... o time afunda em operação antes de validar o produto.",
+        "Correto: comece simples e modular; a modularidade interna preserva a opção de extrair microservices depois, com fronteiras que o uso real revelou.",
+        "'Sem arquitetura' não é opção — mesmo um MVP precisa do mínimo: versionamento, deploy razoável, backup.",
+        "Multi-região pra um MVP é a otimização mais prematura de todas — custo e complexidade máximos para usuários que ainda nem existem."
+      ]
+    },
+    {
+      "pergunta": "No desenho de referência, por que colocar CloudFront + S3 servindo o conteúdo estático em vez de servi-lo pelas próprias EC2?",
+      "opcoes": [
+        "Porque EC2 não consegue servir arquivos",
+        "Tira a carga do estático dos servidores (que ficam só com o dinâmico), entrega da edge com menor latência e reduz custo por requisição",
+        "Porque o S3 é a única origem aceita pelo ALB",
+        "Apenas por estética do diagrama"
+      ],
+      "correta": 1,
+      "explicacao": "A maior parte das requisições de uma web app é estática. Movê-las pra CDN+S3 libera o ASG pra escalar só pelo dinâmico — performance E custo melhoram juntos.",
+      "feedbacks": [
+        "EC2 serve arquivos normalmente — só é a forma mais cara e menos eficiente de fazer isso em escala.",
+        "Correto: cada requisição que a edge resolve é uma que não consome CPU do seu ASG nem viaja até a origem. Menos servidores, menos latência.",
+        "ALB não tem essa restrição (e o CloudFront é quem fica na frente do S3, não o ALB).",
+        "Não é estética: é uma das decisões de melhor custo-benefício do desenho — por isso aparece em quase toda arquitetura web."
+      ]
+    },
+    {
+      "pergunta": "Uma API síncrona chama o serviço A, que chama B, que chama C, que chama D. Qualquer um fora do ar derruba a requisição inteira. Qual anti-padrão e qual mitigação típica?",
+      "opcoes": [
+        "AZ única; mitigar com uma instância maior",
+        "Acoplamento síncrono em cadeia; mitigar desacoplando com filas/eventos onde a resposta imediata não é necessária",
+        "Pets vs. cattle; mitigar renomeando os servidores",
+        "Otimização prematura; mitigar removendo os serviços B, C e D"
+      ],
+      "correta": 1,
+      "explicacao": "Cadeias síncronas somam latências e multiplicam pontos de falha. Onde o fluxo tolerar assincronismo, uma fila (SQS) ou evento quebra a dependência temporal entre os serviços.",
+      "feedbacks": [
+        "O problema descrito é acoplamento entre serviços, não redundância de AZ — e instância maior não muda a cadeia de dependências.",
+        "Correto: com fila no meio, A publica e responde; B consome no seu ritmo. Falha de B vira backlog + retry, não erro pro usuário. (Timeouts, retries com backoff e circuit breakers ajudam no que restar síncrono.)",
+        "Pets vs. cattle é sobre servidores manuais insubstituíveis — nomes não têm nada a ver com a falha em cascata.",
+        "Remover serviços que o negócio precisa não é mitigação; o ponto é mudar COMO eles conversam."
+      ]
+    },
+    {
+      "pergunta": "Um relatório batch roda toda madrugada por ~2 h, processa itens independentes de uma fila e pode ser interrompido/retomado. O que oferece o MENOR custo de compute?",
+      "opcoes": [
+        "EC2 on-demand ligada 24/7 para 'garantir'",
+        "Instâncias Spot disparadas no horário, consumindo da fila, escalando a zero ao terminar",
+        "Reserved Instances de 3 anos",
+        "Uma instância dedicada (dedicated host)"
+      ],
+      "correta": 1,
+      "explicacao": "Trabalho interruptível + tolerante a atraso é o caso perfeito de Spot (até ~90% off). A fila garante retry do que a interrupção devolver; fora da janela, custo zero.",
+      "feedbacks": [
+        "Pagar 24 h pra usar 2 h é ~92% de desperdício — o anti-padrão clássico de recurso ocioso.",
+        "Correto: o requisito 'pode ser interrompido' é o passe livre pro Spot; a fila absorve interrupções e o desligamento pós-job zera o custo. Custo mínimo com risco controlado.",
+        "RIs valem pra uso CONTÍNUO e previsível; comprometer 3 anos pra 2 h/dia é pagar capacidade parada.",
+        "Dedicated host é das opções mais CARAS — serve a requisitos de licenciamento/compliance, não a economia."
+      ]
+    },
+    {
+      "pergunta": "Na revisão do Well-Architected Tool, apareceram 4 HRIs no pilar de confiabilidade. O que isso significa e o que fazer?",
+      "opcoes": [
+        "A AWS vai suspender a conta se não corrigir em 30 dias",
+        "São riscos ALTOS identificados pelas suas respostas; avaliar cada um (impacto × custo de resolver) e priorizar conscientemente — a ferramenta não impõe nada",
+        "Significa que o workload está reprovado e precisa ser refeito do zero",
+        "É um erro da ferramenta; HRIs só existem no pilar de segurança"
+      ],
+      "correta": 1,
+      "explicacao": "HRI = High Risk Issue. O tool é um espelho: aponta riscos e sugere melhorias priorizadas; decidir o que resolver (ou aceitar conscientemente) é seu papel de arquiteto.",
+      "feedbacks": [
+        "A ferramenta é de autoavaliação — não tem poder punitivo nem prazo. Ninguém da AWS 'cobra' o resultado.",
+        "Correto: cada HRI merece a pergunta 'o risco é real pro meu caso? quanto custa resolver? vale agora?'. Aceitar um risco conscientemente também é decisão de arquitetura válida.",
+        "Não existe 'reprovado': o relatório é o começo de um plano de melhoria incremental, não um veredito.",
+        "HRIs existem em todos os pilares; não é erro."
+      ]
+    },
+    {
+      "pergunta": "Qual cenário justifica MELHOR uma arquitetura serverless (API Gateway + Lambda + DynamoDB) em vez de ALB + ASG de EC2?",
+      "opcoes": [
+        "Carga alta, constante e previsível 24/7, sensível a cada milissegundo",
+        "Tráfego esporádico e imprevisível (às vezes zero), time pequeno que não quer operar servidores",
+        "Um job que roda por 4 horas seguidas de processamento contínuo",
+        "Necessidade de acesso root ao sistema operacional"
+      ],
+      "correta": 1,
+      "explicacao": "Serverless brilha com carga variável/baixa (escala a zero = custo zero no ocioso) e menos operação. Carga constante alta pode sair mais barata em EC2; job de 4 h estoura o limite de 15 min do Lambda.",
+      "feedbacks": [
+        "Com carga constante e alta, a conta por requisição do Lambda tende a superar EC2 reservada — e cold starts incomodam quem é sensível a ms.",
+        "Correto: paga por requisição (zero uso = ~zero custo), escala sozinho e não há frota pra operar — o encaixe perfeito do perfil descrito.",
+        "Lambda tem limite de 15 minutos por execução — um job contínuo de 4 h não cabe (seria caso pra EC2/Spot/Batch/ECS).",
+        "Lambda não dá acesso ao SO — esse requisito descarta serverless e pede IaaS (EC2)."
+      ]
+    },
+    {
+      "pergunta": "Sua empresa quer reduzir o impacto ambiental do workload (pilar de sustentabilidade). Qual ação está MAIS alinhada ao pilar?",
+      "opcoes": [
+        "Dobrar o número de instâncias ociosas 'por garantia'",
+        "Aumentar a utilização: right-sizing, desligar o ocioso, lifecycle nos dados parados e preferir serviços gerenciados/eficientes",
+        "Imprimir menos relatórios no escritório",
+        "Migrar tudo pra instâncias maiores"
+      ],
+      "correta": 1,
+      "explicacao": "Sustentabilidade na prática = maximizar utilização: recurso ocioso desperdiça energia e dinheiro (desperdício duplo). Repare como o pilar anda de mãos dadas com o de custos.",
+      "feedbacks": [
+        "Capacidade ociosa 'por garantia' é exatamente o que o pilar combate — desperdício de energia e de dinheiro.",
+        "Correto: utilização alta, dados com lifecycle (arquivar/expirar o que não se usa) e serviços gerenciados (infra compartilhada e otimizada pela AWS) são as alavancas típicas.",
+        "Louvável, mas fora do escopo: o pilar trata do impacto do WORKLOAD na nuvem.",
+        "Instâncias maiores sem necessidade DIMINUEM a utilização — é a direção errada."
+      ]
+    },
+    {
+      "pergunta": "Um desenho tem: EC2 única em subnet pública com app + MySQL local, porta 3306 aberta pra 0.0.0.0/0, dump semanal salvo na própria instância, deploy via SSH manual. Qual conjunto de correções ataca os problemas MAIS críticos primeiro?",
+      "opcoes": [
+        "Trocar a cor do diagrama e documentar o SSH",
+        "Fechar o 3306 ao mundo, mover o banco pra RDS em subnet privada, backup externo à instância (e testado), e pelo menos 2 instâncias em AZs distintas atrás de um ALB",
+        "Aumentar a instância pra m5.24xlarge",
+        "Adicionar uma CDN na frente e considerar resolvido"
+      ],
+      "correta": 1,
+      "explicacao": "Os riscos mortais: banco exposto à internet, backup que morre junto com a máquina e SPOF total. Segurança em camadas + dados fora da instância + redundância mínima vêm antes de qualquer refinamento.",
+      "feedbacks": [
+        "Estética e documentação não reduzem nenhum dos riscos reais (invasão do banco, perda total de dados, SPOF).",
+        "Correto: prioriza por impacto — exposição do 3306 é incidente esperando data; backup na mesma máquina não sobrevive à falha que deveria cobrir; multi-AZ + ALB elimina o SPOF. IaC/CI-CD vêm logo em seguida.",
+        "Escala vertical não corrige exposição, backup frágil nem SPOF — só adia o colapso pagando mais.",
+        "CDN ajuda performance do estático, mas não toca nos riscos críticos de segurança e confiabilidade."
+      ]
+    },
+    {
+      "pergunta": "Por que o Well-Architected Framework recomenda 'tudo como código' (IaC) mesmo para infra pequena?",
+      "opcoes": [
+        "Porque o console web será descontinuado",
+        "Reproduzibilidade, versionamento e revisão: ambientes idênticos, mudanças auditáveis/reversíveis e recuperação rápida — a base de vários pilares ao mesmo tempo",
+        "Porque IaC deixa as instâncias mais rápidas",
+        "Porque é obrigatório para usar o Free Tier"
+      ],
+      "correta": 1,
+      "explicacao": "IaC serve à excelência operacional (mudanças reversíveis), à confiabilidade (recriar ambiente = recuperação) e à segurança (config revisável). É das práticas com melhor retorno por esforço.",
+      "feedbacks": [
+        "O console não vai sumir — ele só não é reproduzível: o que se clica não fica versionado nem revisável.",
+        "Correto: com a infra em código você recria tudo igual (inclusive num desastre), revisa mudanças como revisa código e reverte com um git revert + apply. Vários pilares atendidos de uma vez.",
+        "IaC não muda a performance das instâncias — muda a qualidade e a segurança do PROCESSO de mudanças.",
+        "Não há relação com o Free Tier; IaC é boa prática, não pré-requisito de cobrança."
+      ]
+    }
+  ]
+}

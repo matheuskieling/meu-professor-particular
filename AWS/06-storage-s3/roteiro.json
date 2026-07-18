@@ -1,0 +1,224 @@
+{
+  "modulo": "06",
+  "titulo": "Storage: S3 & cia",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o balde mais famoso da internet",
+      "pontos": [
+        "Objetivo: dominar o S3 de ponta a ponta + saber escolher entre EBS, EFS e S3",
+        "S3 é a espinha dorsal de meio mundo: backups, data lakes, sites, uploads, logs",
+        "Ao fim: prática com bucket real, versionamento, presigned URL e site estático no ar",
+        "Boa notícia: Free Tier de 5 GB cobre tudo — módulo de custo ≈ zero"
+      ],
+      "checkpoint": "Confirme que o aluno está pronto e pergunte se já usou S3 em algum projeto",
+      "ref": "06-storage-s3/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "S3: buckets, objetos, chaves e consistência",
+      "pontos": [
+        "Armazenamento de OBJETOS via API HTTP — não é disco, não monta, não edita byte no meio",
+        "Bucket: nome globalmente único, criado numa região; objeto: arquivo+metadados até 5 TB",
+        "Chave = caminho completo; 'pastas' são ilusão criada pelas barras na chave",
+        "Durabilidade 11 noves; consistência FORTE desde 2020 (material antigo fala 'eventual')",
+        "Armadilha: regras de nome (minúsculas, 3-63 chars) e disputa global pelo nome"
+      ],
+      "checkpoint": "Pergunte: por que 'pasta' no S3 é ilusão, e o que significa consistência forte?",
+      "ref": "06-storage-s3/teoria.md#1-s3-em-uma-frase-e-por-que-ele-é-tão-importante"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "Classes de armazenamento — a temperatura do dado",
+      "pontos": [
+        "Modelo mental: mais frio = guardar mais barato, recuperar mais caro/lento",
+        "Standard (quente) → Intelligent-Tiering (não sei o padrão) → Standard-IA / One Zone-IA (raro)",
+        "Glacier: Instant (ms), Flexible (min-horas), Deep Archive (12h, o mais barato)",
+        "Períodos mínimos de cobrança: 30/90/180 dias — apagar antes não devolve dinheiro",
+        "Armadilha: jogar tudo em classe fria e pagar caro na recuperação"
+      ],
+      "checkpoint": "Dê cenários (logs quentes, backup anual, compliance 7 anos) e peça a classe certa",
+      "ref": "06-storage-s3/teoria.md#2-classes-de-armazenamento--pagando-o-preço-certo-pela-temperatura-do-dado"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "Versionamento e lifecycle rules",
+      "pontos": [
+        "Versioning: cada PUT vira versão nova; DELETE só insere um delete marker (dá pra ressuscitar)",
+        "Proteção contra sobrescrita/deleção acidental; uma vez ligado, só suspende, não desliga",
+        "Custo: cada versão cobra espaço — versionamento sem lifecycle = fatura silenciosa",
+        "Lifecycle: transições por idade (Standard→IA→Glacier), expiração, limpeza de versões antigas",
+        "Regras filtram por prefixo e tags; exemplo clássico: política de logs 30/90/365"
+      ],
+      "checkpoint": "Pergunte o que acontece de verdade num DELETE com versioning ligado",
+      "ref": "06-storage-s3/teoria.md#3-versionamento--o-ctrlz-do-bucket"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Segurança: policies, ACLs (legado) e Block Public Access",
+      "pontos": [
+        "Bucket policy (JSON estilo IAM) = o jeito recomendado de dar acesso, inclusive público/entre contas",
+        "ACLs = legado pré-IAM; buckets novos vêm com ACLs DESABILITADAS (bucket owner enforced) — deixe assim",
+        "Block Public Access: trava de 4 chaves que bloqueia público mesmo com policy permissiva; ON por padrão",
+        "Ordem simplificada: deny explícito vence → BPA barra público → soma IAM + bucket policy → default é negar",
+        "S3 já foi campeão de vazamento por config — hoje o padrão é seguro; quem abre é você"
+      ],
+      "checkpoint": "Teste: policy permite público mas BPA está ligado — o que acontece?",
+      "ref": "06-storage-s3/teoria.md#5-segurança-quem-pode-acessar-o-quê"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Criptografia e presigned URLs",
+      "pontos": [
+        "SSE-S3 (AES-256): padrão automático e gratuito desde 2023 — todo objeto novo já nasce criptografado",
+        "SSE-KMS: quando precisa auditar/controlar a chave (CloudTrail de uso, rotação, políticas); custa por request",
+        "SSE-C/client-side: você guarda a chave; casos especiais",
+        "Presigned URL: URL temporária assinada com SUAS credenciais pra UM objeto — bucket segue privado",
+        "Uso típico: 'baixar boleto', 'subir anexo' — GET ou PUT com prazo de expiração"
+      ],
+      "checkpoint": "Pergunte quando escolher SSE-KMS sobre SSE-S3 e o que uma presigned URL carrega",
+      "ref": "06-storage-s3/teoria.md#5-segurança-quem-pode-acessar-o-quê"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "Static website hosting",
+      "pontos": [
+        "S3 serve sites estáticos (HTML/CSS/JS) direto do bucket: habilitar hosting + index/error docs",
+        "Exige conscientemente: desligar BPA do bucket + policy pública de s3:GetObject",
+        "Endpoint de website é HTTP, sem domínio próprio",
+        "Produção de verdade: CloudFront na frente (HTTPS + CDN) — Módulo 14"
+      ],
+      "checkpoint": "Confirme os 3 passos pra pôr um site no ar e a limitação de HTTPS",
+      "ref": "06-storage-s3/teoria.md#6-static-website-hosting"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "EBS vs. EFS vs. S3 + snapshots",
+      "pontos": [
+        "EBS = bloco: o 'HD' de UMA instância, preso a uma AZ — boot, banco na instância",
+        "EFS = arquivo (NFS): VÁRIAS instâncias juntas, multi-AZ — uploads compartilhados, CMS",
+        "S3 = objeto: API de qualquer lugar, 11 noves — backup, mídia, data lake, site",
+        "Snapshot EBS: incremental, vive no S3, restaura inclusive em OUTRA AZ; base das AMIs",
+        "Regra rápida: disco pro EC2? EBS. Arquivos compartilhados? EFS. Resto? Pense S3 primeiro"
+      ],
+      "checkpoint": "Recap da teoria com os 3 cenários do comparativo; pergunte: 'partimos pra prática?'",
+      "ref": "06-storage-s3/teoria.md#7-ebs-vs-efs-vs-s3--qual-storage-usar"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Criar bucket + primeiros objetos (Console)",
+      "pontos": [
+        "Custo: Free Tier 5 GB — prática inteira ≈ US$ 0, sem pressa",
+        "Criar bucket curso-aws-<nome>-<numero> e sentir a unicidade global na prática",
+        "Observar os padrões seguros: ACLs disabled + Block Public Access ligado",
+        "Subir ola.txt, ver SSE-S3 automático, e o Access Denied da Object URL (privado por padrão)",
+        "Criar 'pasta' e entender que é só prefixo na chave"
+      ],
+      "acao": "Guiar criação do bucket e upload no Console",
+      "checkpoint": "Confirme bucket criado e o Access Denied visto antes de seguir",
+      "ref": "06-storage-s3/pratica.md#parte-a--criar-o-bucket-e-subir-objetos-console"
+    },
+    {
+      "id": "p2",
+      "fase": "pratica",
+      "titulo": "CLI: cp, sync, ls",
+      "pontos": [
+        "aws s3 ls / cp (upload e download) — o dia a dia",
+        "aws s3 sync: sobe diretório inteiro e só transfere diffs (rodar 2x pra provar)",
+        "Diferença aws s3 (amigável) vs aws s3api (API crua)"
+      ],
+      "acao": "Guiar os comandos cp/sync/ls no terminal do aluno",
+      "checkpoint": "Confirme que o sync na 2ª rodada não transferiu nada e o porquê",
+      "ref": "06-storage-s3/pratica.md#parte-b--cli-cp-sync-ls-o-dia-a-dia-de-verdade"
+    },
+    {
+      "id": "p3",
+      "fase": "pratica",
+      "titulo": "Versionamento: sobrescrever, deletar, ressuscitar",
+      "pontos": [
+        "Habilitar versioning no bucket",
+        "Sobrescrever 2x via CLI e listar as 3 versões (list-object-versions e Show versions no Console)",
+        "aws s3 rm: objeto 'some', mas é só um delete marker",
+        "Deletar o delete marker no Console e ver o objeto voltar"
+      ],
+      "acao": "Guiar o ciclo completo de versões e a ressurreição do objeto",
+      "checkpoint": "Confirme que o aluno ressuscitou o objeto e entendeu o delete marker",
+      "ref": "06-storage-s3/pratica.md#parte-c--versionamento-console--cli"
+    },
+    {
+      "id": "p4",
+      "fase": "pratica",
+      "titulo": "Lifecycle rule + presigned URL",
+      "pontos": [
+        "Criar regra 'esfriar-e-limpar': transição pra Standard-IA aos 30 dias + expirar versões antigas",
+        "Explicar: não veremos rodar (30 dias), o que importa é saber montar",
+        "aws s3 presign --expires-in: abrir no navegador funcionando, depois expirada",
+        "Conectar: é assim que se entrega arquivo privado sem abrir o bucket"
+      ],
+      "acao": "Guiar a lifecycle rule no Console e o presign na CLI",
+      "checkpoint": "Confirme a URL testada (funcionando e expirada) antes de seguir",
+      "ref": "06-storage-s3/pratica.md#parte-d--lifecycle-rule-console"
+    },
+    {
+      "id": "p5",
+      "fase": "pratica",
+      "titulo": "Site estático no ar + teardown",
+      "pontos": [
+        "Segundo bucket (será público de propósito): index.html + erro.html",
+        "Desligar BPA conscientemente + bucket policy de GetObject público",
+        "Habilitar static website hosting e abrir o endpoint no navegador (e testar o 404)",
+        "Teardown: aws s3 rb --force nos dois buckets (Empty no Console se versões segurarem)",
+        "Verificar: aws s3 ls limpo"
+      ],
+      "acao": "Guiar o site até abrir no navegador e executar o teardown verificado",
+      "checkpoint": "Site visto no ar + teardown confirmado; feche o checklist do módulo",
+      "ref": "06-storage-s3/pratica.md#parte-f--site-estático-console--cli"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/apps/modulo-06/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "AWS/apps/modulo-06/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões de cenário, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 07 após passar"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/provas/modulo-06/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 07; se não, revise os pontos errados",
+      "ref": "AWS/provas/modulo-06/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 06",
+      "pontos": [
+        "Recap: bucket, classes, versionamento+lifecycle, segurança em camadas, presigned, site no ar",
+        "Você agora sabe ESCOLHER storage: EBS (disco), EFS (compartilhado), S3 (objeto)",
+        "S3 volta o curso inteiro: Lambda, CloudFront, data lake, backups",
+        "Próximo: Módulo 07 — Bancos de dados (RDS, Aurora, DynamoDB, ElastiCache)"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 07 ou parar por aqui",
+      "ref": "AWS/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "titulo": "Módulo 04 — Compute: EC2",
+  "questoes": [
+    {
+      "pergunta": "No tipo de instância 't3.micro', o que significam o 't', o '3' e o 'micro'?",
+      "opcoes": [
+        "Território, terabytes e velocidade",
+        "Família (burstable), geração e tamanho",
+        "Tipo de disco, número de CPUs e RAM",
+        "Tier, zona e categoria de preço"
+      ],
+      "correta": 1,
+      "explicacao": "Letra = família (t = burstable), número = geração (maior = mais novo), após o ponto = tamanho."
+    },
+    {
+      "pergunta": "O que é uma AMI?",
+      "opcoes": [
+        "O firewall da instância",
+        "A imagem-molde (SO + software) a partir da qual a instância é criada; regional",
+        "O serviço de monitoramento do EC2",
+        "Um tipo de volume EBS"
+      ],
+      "correta": 1,
+      "explicacao": "AMI = Amazon Machine Image. É regional (o ID muda entre regiões) e você pode criar as suas."
+    },
+    {
+      "pergunta": "Você perdeu o arquivo .pem da sua key pair. O que a AWS pode fazer?",
+      "opcoes": [
+        "Reenviar a chave privada por e-mail",
+        "Nada: a AWS não guarda cópia da chave privada",
+        "Gerar o mesmo .pem novamente no console",
+        "Recuperá-la pelo suporte em até 24h"
+      ],
+      "correta": 1,
+      "explicacao": "A privada é baixada uma única vez e só você a tem. Perdeu = crie outra key pair (há contornos, mas trabalhosos)."
+    },
+    {
+      "pergunta": "Para que serve o user data de uma instância?",
+      "opcoes": [
+        "Armazenar os dados dos usuários da aplicação",
+        "Executar um script como root no primeiro boot (bootstrap: instalar pacotes, subir serviços)",
+        "Definir o tipo da instância",
+        "Configurar o security group automaticamente"
+      ],
+      "correta": 1,
+      "explicacao": "User data roda uma vez no primeiro boot. Log em /var/log/cloud-init-output.log. Nunca coloque segredos nele."
+    },
+    {
+      "pergunta": "Qual é o tipo de volume EBS padrão e recomendado atualmente para uso geral?",
+      "opcoes": ["gp2", "gp3", "st1", "magnetic"],
+      "correta": 1,
+      "explicacao": "gp3 é o padrão atual: 3000 IOPS/125 MB/s de base ajustáveis, mais barato que o antigo gp2."
+    },
+    {
+      "pergunta": "Uma instância EBS-backed está PARADA (stopped). O que você continua pagando?",
+      "opcoes": [
+        "Nada, parada é 100% grátis",
+        "O compute (horas de instância)",
+        "O armazenamento EBS (e um Elastic IP ocioso, se houver)",
+        "Apenas a transferência de dados"
+      ],
+      "correta": 2,
+      "explicacao": "Stopped: compute não cobra, mas o volume EBS persiste e cobra por GB·mês. EIP ocioso também cobra."
+    },
+    {
+      "pergunta": "Qual a diferença entre stop e terminate?",
+      "opcoes": [
+        "São sinônimos",
+        "Stop desliga preservando o EBS (pode dar start depois); terminate destrói a instância e o volume raiz, irreversível",
+        "Terminate preserva tudo; stop apaga o disco",
+        "Stop só funciona em instâncias com instance store"
+      ],
+      "correta": 1,
+      "explicacao": "Stop = desligar (EBS fica, IP público muda no start). Terminate = destruir de vez (volume raiz deletado por padrão)."
+    },
+    {
+      "pergunta": "O que acontece com o IP público (não-elástico) de uma instância após um stop/start?",
+      "opcoes": [
+        "Permanece o mesmo para sempre",
+        "Muda: um novo IP público é atribuído no start",
+        "A instância fica sem IP até você comprar um",
+        "Vira automaticamente um Elastic IP"
+      ],
+      "correta": 1,
+      "explicacao": "IP público dinâmico é devolvido no stop e outro é atribuído no start. IP fixo = Elastic IP (que custa, mesmo ocioso)."
+    },
+    {
+      "pergunta": "No IMDSv2, o que é necessário ANTES de consultar http://169.254.169.254/latest/meta-data/...?",
+      "opcoes": [
+        "Nada, basta um GET simples",
+        "Obter um token de sessão via requisição PUT e enviá-lo no header das consultas",
+        "Uma senha definida no launch",
+        "Abrir a porta 169 no security group"
+      ],
+      "correta": 1,
+      "explicacao": "IMDSv2 exige PUT em /latest/api/token e o header X-aws-ec2-metadata-token. Sem token → 401. Isso mitiga SSRF."
+    },
+    {
+      "pergunta": "Sobre snapshots EBS, qual afirmação está CORRETA?",
+      "opcoes": [
+        "São incrementais: após o primeiro, só os blocos alterados são copiados",
+        "Cada snapshot copia o disco inteiro do zero",
+        "São gratuitos e ilimitados",
+        "Só podem ser restaurados na mesma AZ do volume original"
+      ],
+      "correta": 0,
+      "explicacao": "Incrementais e baratos — mas cobram por GB·mês, e podem virar volume em OUTRA AZ ou uma AMI."
+    }
+  ]
+}

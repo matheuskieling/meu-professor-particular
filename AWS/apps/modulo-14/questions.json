@@ -1,0 +1,100 @@
+{
+  "titulo": "Módulo 14 — DNS & Entrega de Conteúdo",
+  "questoes": [
+    {
+      "pergunta": "Qual tipo de registro DNS traduz um nome diretamente para um endereço IPv4?",
+      "opcoes": ["CNAME", "A", "TXT", "MX"],
+      "correta": 1,
+      "explicacao": "O registro A mapeia nome → IPv4. AAAA faz o mesmo para IPv6; CNAME aponta pra outro nome; TXT é texto; MX é e-mail."
+    },
+    {
+      "pergunta": "O que o TTL de um registro DNS controla?",
+      "opcoes": [
+        "Quantos usuários podem resolver o nome por segundo",
+        "Por quanto tempo os resolvers podem cachear a resposta",
+        "O tempo de vida do domínio antes de expirar",
+        "A latência máxima aceitável até o servidor"
+      ],
+      "correta": 1,
+      "explicacao": "TTL = tempo de cache nos resolvers. TTL alto propaga mudanças devagar; baixo, rápido (com mais consultas)."
+    },
+    {
+      "pergunta": "Por que apontar o apex do domínio (exemplo.com, sem www) pro CloudFront exige um alias record em vez de CNAME?",
+      "opcoes": [
+        "Porque CNAME é mais caro que alias",
+        "Porque o padrão DNS proíbe CNAME no apex; o alias do Route 53 contorna isso",
+        "Porque CNAME não funciona com HTTPS",
+        "Porque o CloudFront só aceita registros do tipo MX"
+      ],
+      "correta": 1,
+      "explicacao": "O apex precisa coexistir com NS/SOA, e CNAME não permite isso. O alias é a extensão do Route 53 que resolve o problema (e ainda tem consultas grátis pra recursos AWS)."
+    },
+    {
+      "pergunta": "Qual a diferença entre uma hosted zone pública e uma privada no Route 53?",
+      "opcoes": [
+        "A pública é grátis e a privada é paga",
+        "A pública responde pra internet; a privada só responde dentro das VPCs associadas",
+        "A privada exige um domínio registrado; a pública não",
+        "Não há diferença, é só o nome"
+      ],
+      "correta": 1,
+      "explicacao": "Zona privada só resolve dentro das VPCs associadas (e aceita qualquer nome). Ambas custam US$ 0,50/mês por zona."
+    },
+    {
+      "pergunta": "Você quer mandar 10% do tráfego para uma versão nova da aplicação e 90% para a antiga. Qual política de roteamento do Route 53 usar?",
+      "opcoes": ["Simple", "Failover", "Weighted", "Geolocation"],
+      "correta": 2,
+      "explicacao": "Weighted distribui as respostas por pesos definidos por você — o clássico canary/teste A-B via DNS."
+    },
+    {
+      "pergunta": "Qual política de roteamento direciona cada usuário ao endpoint que responde mais rápido pra ele (ex.: brasileiros → sa-east-1)?",
+      "opcoes": ["Latency", "Simple", "Weighted", "Failover"],
+      "correta": 0,
+      "explicacao": "Latency-based routing responde com o recurso de menor latência medida para aquele usuário — o coração de apps multi-região."
+    },
+    {
+      "pergunta": "No CloudFront, o que significa o header 'X-Cache: Miss from cloudfront'?",
+      "opcoes": [
+        "A distribuição está com erro de configuração",
+        "A edge não tinha o objeto em cache e foi buscá-lo na origem",
+        "O objeto foi bloqueado pelo WAF",
+        "O TTL do objeto é infinito"
+      ],
+      "correta": 1,
+      "explicacao": "Miss = a edge foi até a origem (e cacheou pro próximo). Na requisição seguinte à mesma edge, você vê Hit."
+    },
+    {
+      "pergunta": "O que o OAC (Origin Access Control) permite?",
+      "opcoes": [
+        "Servir um bucket S3 privado através do CloudFront, sem torná-lo público",
+        "Acelerar uploads para o S3",
+        "Criar certificados TLS automaticamente",
+        "Balancear carga entre dois buckets"
+      ],
+      "correta": 0,
+      "explicacao": "Com OAC, o bucket fica fechado e a bucket policy autoriza só o serviço CloudFront (condicionado ao ARN da sua distribuição). É o sucessor do OAI."
+    },
+    {
+      "pergunta": "Sobre invalidações no CloudFront, qual afirmação está correta?",
+      "opcoes": [
+        "Toda invalidação é cobrada desde a primeira",
+        "As primeiras 1.000 invalidações de caminho por mês são grátis, e /* conta como 1 caminho",
+        "Invalidações são instantâneas e ilimitadas para sempre",
+        "Só é possível invalidar a distribuição inteira, nunca um arquivo"
+      ],
+      "correta": 1,
+      "explicacao": "1.000 caminhos/mês grátis; depois US$ 0,005 por caminho. A boa prática é versionar assets e invalidar raramente."
+    },
+    {
+      "pergunta": "Você vai anexar um certificado ACM a uma distribuição CloudFront. Em qual região o certificado precisa ser emitido?",
+      "opcoes": [
+        "Na região da origem (ex.: sa-east-1)",
+        "Em qualquer região, tanto faz",
+        "Sempre em us-east-1 (N. Virginia)",
+        "Na região mais próxima dos usuários"
+      ],
+      "correta": 2,
+      "explicacao": "CloudFront é global e só enxerga certificados de us-east-1. (Para ALB, o certificado vai na região do ALB.) É A pegadinha do módulo."
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+{
+  "titulo": "Módulo 13 — Segurança Avançada",
+  "questoes": [
+    {
+      "pergunta": "O que é 'defesa em profundidade'?",
+      "opcoes": [
+        "Concentrar todo o orçamento de segurança em um único firewall muito forte",
+        "Várias camadas independentes de proteção, cada uma assumindo que a anterior pode falhar",
+        "Esconder os recursos em regiões pouco usadas",
+        "Usar senhas muito longas em todos os sistemas"
+      ],
+      "correta": 1,
+      "explicacao": "Borda, rede, identidade, dados, segredos e detecção — camadas independentes. Se o invasor passa uma, ainda enfrenta as outras."
+    },
+    {
+      "pergunta": "Qual afirmação sobre as chaves do KMS está CORRETA?",
+      "opcoes": [
+        "A chave sai do KMS e fica na sua máquina para você usar",
+        "A chave nunca sai do KMS: você pede pro serviço usar a chave, e cada uso passa pelo IAM e vai pro CloudTrail",
+        "Chaves KMS são gratuitas em qualquer modalidade",
+        "Uma chave deletada pode ser recuperada a qualquer momento"
+      ],
+      "correta": 1,
+      "explicacao": "O material da chave jamais é entregue a você. Isso transforma criptografia em controle de acesso auditável. Customer managed keys custam ~US$ 1/mês; deleção concluída é irreversível."
+    },
+    {
+      "pergunta": "Qual a diferença entre uma chave AWS managed (ex.: aws/s3) e uma customer managed (CMK)?",
+      "opcoes": [
+        "Nenhuma: são o mesmo objeto com nomes diferentes",
+        "A AWS managed é grátis mas sem controle (policy fixa); a CMK custa ~US$ 1/mês e dá controle total (key policy, rotação, deleção)",
+        "A CMK é grátis e a AWS managed é paga",
+        "A AWS managed só funciona em us-east-1"
+      ],
+      "correta": 1,
+      "explicacao": "AWS managed: zero custo e zero administração, mas você não edita a policy nem apaga. CMK: você paga US$ 1/mês pelo controle total e auditoria fina."
+    },
+    {
+      "pergunta": "Por que o envelope encryption existe, já que o KMS tem uma API Encrypt?",
+      "opcoes": [
+        "Porque a API Encrypt só aceita até 4 KB; dados maiores são cifrados localmente com uma data key",
+        "Porque a API Encrypt é insegura",
+        "Porque envelope encryption dispensa permissões do IAM",
+        "Porque data keys são mais baratas de armazenar que arquivos"
+      ],
+      "correta": 0,
+      "explicacao": "kms encrypt limita a 4 KB de propósito. Pra dados grandes: GenerateDataKey → cifra local com a data key → guarda a data key cifrada junto do dado. A CMK nunca sai do KMS."
+    },
+    {
+      "pergunta": "No envelope encryption, o que se guarda junto do arquivo criptografado?",
+      "opcoes": [
+        "A data key em texto claro, para facilitar a leitura depois",
+        "A data key criptografada pela CMK (a versão em claro é apagada após o uso)",
+        "A própria CMK exportada",
+        "Nada: o KMS memoriza qual data key foi usada"
+      ],
+      "correta": 1,
+      "explicacao": "O 'envelope' é a data key cifrada pela CMK. A versão em claro se usa e se apaga. Pra reabrir: kms decrypt da data key (se o IAM deixar) e decifra local."
+    },
+    {
+      "pergunta": "O que acontece quando você pede pra deletar uma chave KMS customer managed?",
+      "opcoes": [
+        "Ela é apagada imediatamente",
+        "A deleção é AGENDADA (janela de 7 a 30 dias); durante a espera a chave fica inutilizável e dá pra cancelar",
+        "Ela vira uma chave AWS managed",
+        "Só o suporte da AWS pode deletar chaves"
+      ],
+      "correta": 1,
+      "explicacao": "Apagar uma chave torna irrecuperável tudo que ela protege — por isso a espera obrigatória (schedule-key-deletion, mínimo 7 dias), com direito a arrependimento (cancel-key-deletion)."
+    },
+    {
+      "pergunta": "Uma senha de banco RDS precisa ser trocada automaticamente a cada 30 dias, sem intervenção humana. Qual serviço tem esse recurso NATIVO?",
+      "opcoes": [
+        "SSM Parameter Store (standard)",
+        "AWS Secrets Manager (rotação automática via Lambda, com integração pronta pro RDS)",
+        "S3 com versionamento",
+        "CloudWatch Logs"
+      ],
+      "correta": 1,
+      "explicacao": "Rotação automática nativa é o diferencial que justifica os US$ 0,40/secret/mês do Secrets Manager. O Parameter Store não rotaciona sozinho."
+    },
+    {
+      "pergunta": "O que é um parâmetro do tipo SecureString no Parameter Store?",
+      "opcoes": [
+        "Um parâmetro validado contra SQL injection",
+        "Um parâmetro criptografado via KMS; a leitura em claro exige --with-decryption (e permissão na chave)",
+        "Um parâmetro que só o root consegue ler",
+        "Um parâmetro somente leitura"
+      ],
+      "correta": 1,
+      "explicacao": "SecureString cifra o valor com KMS (por padrão a chave aws/ssm, grátis). Ler em claro exige a flag --with-decryption e permissão de kms:Decrypt."
+    },
+    {
+      "pergunta": "Qual serviço detecta AMEAÇAS EM ANDAMENTO (credencial usada de IP anômalo, instância minerando cripto) analisando CloudTrail, VPC Flow Logs e DNS logs?",
+      "opcoes": ["Amazon Inspector", "AWS Security Hub", "Amazon GuardDuty", "AWS WAF"],
+      "correta": 2,
+      "explicacao": "GuardDuty = detecção de ameaças por ML, ativado em 1 clique (trial 30 dias). Inspector caça CVEs; Security Hub agrega achados e mede postura; WAF filtra tráfego na borda."
+    },
+    {
+      "pergunta": "Numa policy que NEGA ações quando não há MFA, por que usar BoolIfExists em vez de Bool na condition aws:MultiFactorAuthPresent?",
+      "opcoes": [
+        "Porque Bool não existe na sintaxe do IAM",
+        "Porque em sessões com access key de longo prazo a key nem existe; com Bool a condição não casa e o Deny deixa passar justamente o caso perigoso",
+        "Porque BoolIfExists é mais rápido de avaliar",
+        "Não faz diferença: os dois se comportam igual"
+      ],
+      "correta": 1,
+      "explicacao": "BoolIfExists trata a AUSÊNCIA da key como violação. Com Bool simples, sessões sem a key (access keys de longo prazo, sem MFA) escapariam do Deny."
+    }
+  ]
+}

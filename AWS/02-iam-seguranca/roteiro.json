@@ -1,0 +1,221 @@
+{
+  "modulo": "02",
+  "titulo": "Conta, IAM & Segurança",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — por que IAM vem antes de qualquer infra",
+      "pontos": [
+        "Objetivo: dominar quem-pode-o-quê na conta (users, groups, roles, policies)",
+        "Motivação: erro de IAM é a causa nº 1 de vazamentos e sustos na nuvem",
+        "Ao fim: prática 100% gratuita (IAM/STS não custam), quiz e prova",
+        "Pré-requisito: Módulo 01 completo (conta, user admin, CLI funcionando)"
+      ],
+      "checkpoint": "Confirme que o aluno fez o M01 e que a CLI responde ao get-caller-identity",
+      "ref": "02-iam-seguranca/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "Root vs. usuários IAM",
+      "pontos": [
+        "Root = e-mail do cadastro; pode TUDO e nenhuma policy o restringe",
+        "Serve só para as poucas ações exclusivas (fechar conta, billing/config de conta)",
+        "Regras: MFA no root, NUNCA criar access keys pro root, dia a dia com IAM",
+        "Armadilha: chave de root 'pra facilitar' é a pior credencial possível pra vazar"
+      ],
+      "checkpoint": "Pergunte: por que o root não deve ter access keys e pra que ele ainda serve?",
+      "ref": "02-iam-seguranca/teoria.md#1-root-vs-usuários-iam--por-que-o-root-fica-no-cofre"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "Os quatro blocos: users, groups, roles, policies",
+      "pontos": [
+        "User = identidade permanente com credenciais (crachá)",
+        "Group = agrupador de users; não loga, só carrega policies (departamento)",
+        "Role = identidade assumível com credenciais temporárias (colete de visitante)",
+        "Policy = JSON que define permissões; sozinha não faz nada, precisa estar anexada",
+        "Modelo de gestão: policy → group/role; user → group; anexar direto no user é exceção"
+      ],
+      "checkpoint": "Peça pro aluno explicar as 4 peças com as próprias palavras/analogias",
+      "ref": "02-iam-seguranca/teoria.md#2-os-quatro-blocos-do-iam-users-groups-roles-policies"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "Anatomia de uma policy: o JSON e os ARNs",
+      "pontos": [
+        "Campos: Version (2012-10-17 sempre), Statement, Sid, Effect, Action, Resource, Condition",
+        "Action no formato servico:Operacao (s3:GetObject), aceita curingas",
+        "ARN: arn:aws:serviço:região:conta:recurso — serviços globais deixam campos vazios",
+        "Detalhe clássico: bucket (ListBucket) vs bucket/* (GetObject) — muitas vezes precisa dos dois",
+        "Mostrar o exemplo de policy de leitura do S3 e ler campo a campo"
+      ],
+      "checkpoint": "Peça pro aluno ler um ARN em voz alta e dizer o que cada parte significa",
+      "ref": "02-iam-seguranca/teoria.md#3-anatomia-de-uma-policy-o-json-que-manda-em-tudo"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Lógica de avaliação: Deny explícito > Allow > Deny implícito",
+      "pontos": [
+        "Padrão = tudo negado (implicit deny); precisa de Allow em alguma policy aplicável",
+        "Deny explícito SEMPRE vence, não importa quantos Allows existam",
+        "Permissões de user + groups se somam (união dos Allows)",
+        "Uso do Deny explícito como trava inquebrável (ex.: ninguém deleta produção)",
+        "Diagnóstico de AccessDenied: qual identidade? quais policies? Allow bate? tem Deny?"
+      ],
+      "checkpoint": "Teste com o cenário: Allow s3:* num group e Deny s3:DeleteObject noutro — pode deletar?",
+      "ref": "02-iam-seguranca/teoria.md#4-como-a-aws-decide-a-lógica-de-avaliação-de-policies"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Policies gerenciadas vs. inline + least privilege + MFA",
+      "pontos": [
+        "AWS managed (prontas, amplas), customer managed (suas, versionadas), inline (coladas numa identidade)",
+        "Preferência: customer managed em groups/roles; inline dificulta auditoria",
+        "Least privilege: começar do zero e conceder o mínimo; ações e ARNs específicos",
+        "Last accessed do IAM ajuda a podar permissões nunca usadas",
+        "MFA além do root; rotação de access keys; nunca chave em código/commit"
+      ],
+      "checkpoint": "Pergunte a diferença managed vs inline e o que é least privilege na prática",
+      "ref": "02-iam-seguranca/teoria.md#5-policies-gerenciadas-vs-inline-e-as-da-aws-vs-as-suas"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "Roles e STS: credenciais temporárias",
+      "pontos": [
+        "Pergunta-guia: como um EC2 acessa o S3? Resposta certa: role, nunca chave dentro da máquina",
+        "Role tem trust policy (quem pode assumir) + permission policies (o que pode fazer)",
+        "STS emite credenciais temporárias com SessionToken e expiração (sts:AssumeRole)",
+        "Casos: serviço→serviço, cross-account, federação/Identity Center, elevação temporária",
+        "Regra de bolso: pessoa permanente = user num group; serviço/temporário = role"
+      ],
+      "checkpoint": "Pergunte: por que role no EC2 é melhor que access keys dentro da instância?",
+      "ref": "02-iam-seguranca/teoria.md#7-roles--identidade-temporária-o-jeito-certo-de-dar-permissão-a-serviços"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "Identity Center (visão geral) + billing e alertas",
+      "pontos": [
+        "Identity Center = SSO da AWS: humanos entram via roles temporárias, sem chave eterna",
+        "Feito pra multi-conta (Organizations); é o padrão nas empresas; CLI via aws sso login",
+        "No curso seguimos com user IAM (conta solo de estudos), mas o conceito fica",
+        "Billing: liberar acesso a IAM users (ação de root), Budgets, Free Tier alerts, Cost Explorer"
+      ],
+      "checkpoint": "Recapitule a teoria e pergunte: 'podemos partir pra prática no IAM?'",
+      "ref": "02-iam-seguranca/teoria.md#8-iam-identity-center-visão-geral"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Prática A — policy customizada + group + user de teste (Console)",
+      "pontos": [
+        "Criar a customer managed policy CursoS3SomenteLeitura (colar o JSON e ler junto)",
+        "Criar o group curso-observadores-s3 e anexar a policy",
+        "Criar o user teste-leitor (sem console), colocar no group, gerar access keys",
+        "Reforço: chaves de teste com o mesmo cuidado — nada no repo"
+      ],
+      "acao": "Guiar os passos 1-3 da pratica.md no Console",
+      "checkpoint": "Confirme policy, group e user criados e as chaves copiadas antes de seguir",
+      "ref": "02-iam-seguranca/pratica.md#parte-a--group--policy-customizada-console"
+    },
+    {
+      "id": "p2",
+      "fase": "pratica",
+      "titulo": "Prática B — least privilege na pele (CLI, profiles)",
+      "pontos": [
+        "aws configure --profile teste-leitor e conferir identidades nos dois profiles",
+        "Comando permitido: aws s3 ls (ListAllMyBuckets em ação)",
+        "Comandos negados: criar bucket e listar users — AccessDenied é o SUCESSO do exercício",
+        "Fixar o diagnóstico de AccessDenied (identidade → policies → Allow/Deny)"
+      ],
+      "acao": "Guiar os passos 4-7 da pratica.md na CLI do aluno e interpretar os erros",
+      "checkpoint": "Confirme que o aluno viu e ENTENDEU os AccessDenied antes de seguir",
+      "ref": "02-iam-seguranca/pratica.md#parte-b--sentir-o-least-privilege-na-pele-cli"
+    },
+    {
+      "id": "p3",
+      "fase": "pratica",
+      "titulo": "Prática C — criar a role e ler a trust policy",
+      "pontos": [
+        "Criar curso-role-ec2-readonly (trusted entity: a própria conta)",
+        "Anexar AmazonEC2ReadOnlyAccess (AWS managed)",
+        "Abrir Trust relationships e ler o JSON: Principal + sts:AssumeRole",
+        "Conectar: trust policy = quem entra; permission policy = o que pode"
+      ],
+      "acao": "Guiar os passos 8-9 da pratica.md no Console",
+      "checkpoint": "Peça pro aluno explicar a trust policy que acabou de ler",
+      "ref": "02-iam-seguranca/pratica.md#parte-c--criar-e-assumir-uma-role-console--cli"
+    },
+    {
+      "id": "p4",
+      "fase": "pratica",
+      "titulo": "Prática C (cont.) — assumir a role via STS",
+      "pontos": [
+        "aws sts assume-role e ler a resposta: AccessKeyId ASIA..., SessionToken, Expiration",
+        "Exportar as 3 variáveis e ver o ARN virar assumed-role/...",
+        "Testar limites: ec2 describe-instances passa, s3 ls é negado",
+        "unset das variáveis pra voltar a ser o admin (env vars têm precedência)"
+      ],
+      "acao": "Guiar os passos 10-12 da pratica.md na CLI",
+      "checkpoint": "Confirme que o aluno voltou ao próprio user após o unset",
+      "ref": "02-iam-seguranca/pratica.md#passo-10--assumir-a-role-via-cli"
+    },
+    {
+      "id": "p5",
+      "fase": "pratica",
+      "titulo": "Prática D + E — billing para IAM users e teardown",
+      "pontos": [
+        "Como root (raro!): ativar IAM access to Billing; deslogar do root em seguida",
+        "Free Tier alerts + conferir Budgets + habilitar Cost Explorer",
+        "Teardown: deletar chaves e user teste-leitor; manter group/policy/role (grátis, reusáveis)",
+        "Higiene: remover profile do ~/.aws e conferir env | grep AWS_"
+      ],
+      "acao": "Guiar os passos 13-14 e o teardown da pratica.md",
+      "checkpoint": "Feche a prática confirmando o checklist de conclusão do módulo",
+      "ref": "02-iam-seguranca/pratica.md#parte-d--fechar-as-travas-de-billing-console"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/apps/modulo-02/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "AWS/apps/modulo-02/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões de cenário, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 03 após passar"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/provas/modulo-02/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 03; se não, revise os pontos errados",
+      "ref": "AWS/provas/modulo-02/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 02",
+      "pontos": [
+        "Recap: root no cofre, policies em JSON, Deny > Allow > implicit deny, roles/STS",
+        "A partir de agora, todo acesso que criarmos no curso seguirá least privilege",
+        "Próximo: Módulo 03 — Rede (VPC): subnets, route tables, IGW, security groups"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 03 ou parar por aqui",
+      "ref": "AWS/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

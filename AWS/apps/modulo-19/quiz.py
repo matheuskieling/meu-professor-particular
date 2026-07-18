@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+"""
+Quiz do Módulo 19 — Projeto Final (Capstone): revisão geral do curso.
+
+Uso:
+    python3 AWS/apps/modulo-19/quiz.py
+
+Questões integradoras que cruzam módulos — revisão do curso inteiro.
+"""
+
+import os
+import sys
+
+# permite importar o motor da pasta apps/ independente de onde você chama
+APPS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, APPS_DIR)
+
+from quiz_engine import run_quiz  # noqa: E402
+
+QUESTOES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "questions.json")
+
+if __name__ == "__main__":
+    run_quiz(QUESTOES)

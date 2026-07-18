@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 07: Bancos de dados",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Seu RDS MySQL de produção não pode ficar fora do ar se a AZ dele falhar, e o failover deve ser automático e transparente pra aplicação. O que habilitar?",
+      "opcoes": [
+        "Uma read replica na mesma região",
+        "Multi-AZ",
+        "Backups automáticos com retenção de 35 dias",
+        "Um snapshot manual por hora"
+      ],
+      "correta": 1,
+      "explicacao": "Multi-AZ mantém um standby síncrono em outra AZ; no failover, o mesmo endpoint passa a apontar pro standby — a app nem muda de connection string.",
+      "feedbacks": [
+        "Read replica é assíncrona (pode perder as últimas escritas) e exige promoção MANUAL — não é failover automático nem transparente.",
+        "Correto: replicação síncrona + failover automático no mesmo endpoint é exatamente a proposta do Multi-AZ.",
+        "Backups permitem RESTAURAR (criando instância nova, com downtime) — não mantêm o serviço no ar durante a falha.",
+        "Snapshots horários dão pontos de restauração, não continuidade automática do serviço."
+      ]
+    },
+    {
+      "pergunta": "Sua aplicação está com o banco afogado em consultas de leitura (dashboards), enquanto as escritas são poucas. O time habilitou Multi-AZ e nada melhorou. Por quê?",
+      "opcoes": [
+        "O Multi-AZ foi configurado errado",
+        "Multi-AZ não melhora performance: o standby não atende query nenhuma. O caso pede read replicas (e/ou cache)",
+        "Faltou aumentar a janela de manutenção",
+        "O RDS não suporta cargas de leitura"
+      ],
+      "correta": 1,
+      "explicacao": "Multi-AZ é o pneu estepe: só serve na emergência. Pra escalar leitura, o carro extra é a read replica — ou um cache na frente.",
+      "feedbacks": [
+        "Não há configuração de Multi-AZ que faça o standby servir leituras — ele é invisível por design.",
+        "Correto: confundir os dois é a armadilha clássica do módulo. Disponibilidade (Multi-AZ) ≠ escala de leitura (replica/cache).",
+        "Janela de manutenção define QUANDO a AWS aplica patches; zero relação com performance.",
+        "Suporta perfeitamente — a questão é usar o mecanismo certo pra distribuir as leituras."
+      ]
+    },
+    {
+      "pergunta": "Um relatório apontou que a read replica exibe dados de alguns segundos atrás do primário. O que isso indica?",
+      "opcoes": [
+        "Um bug grave que deve ser reportado à AWS",
+        "Comportamento esperado: a replicação é ASSÍNCRONA, e esse atraso é o replication lag",
+        "Que a réplica virou o novo primário",
+        "Que o Multi-AZ está desligado"
+      ],
+      "correta": 1,
+      "explicacao": "Read replicas replicam de forma assíncrona: lag de segundos é normal e a app precisa tolerar (ou ler do primário quando exigir dado fresquíssimo).",
+      "feedbacks": [
+        "Não é bug: é a natureza da replicação assíncrona. Sistemas que exigem leitura 100% atual devem ler do primário.",
+        "Correto: lag é inerente às replicas. Por isso elas servem performance, não consistência forte nem HA primária.",
+        "Promoção de réplica é uma ação manual e explícita — não acontece sozinha nem silenciosamente.",
+        "Multi-AZ é um mecanismo independente; ligado ou não, a réplica continuaria assíncrona."
+      ]
+    },
+    {
+      "pergunta": "Você deletou uma instância RDS de laboratório usando --skip-final-snapshot e --delete-automated-backups. Dias depois, quer os dados de volta. Qual a situação?",
+      "opcoes": [
+        "É só restaurar do backup automático",
+        "Os dados se foram: sem snapshot final, sem backups automáticos (apagados) e sem snapshots manuais, não há de onde restaurar",
+        "A AWS guarda uma cópia por 90 dias pra qualquer conta",
+        "O point-in-time restore funciona mesmo após a deleção"
+      ],
+      "correta": 1,
+      "explicacao": "Backups automáticos morrem com a instância (ainda mais com --delete-automated-backups). Sem snapshot manual/final, não existe fonte de restauração.",
+      "feedbacks": [
+        "Os backups automáticos foram apagados junto — era exatamente o efeito das flags usadas.",
+        "Correto: em lab é o desejado (nada cobrando depois); em produção seria catástrofe — por isso lá o final snapshot é obrigatório.",
+        "A AWS não guarda cópias secretas dos seus bancos; deletou com essas flags, acabou.",
+        "Point-in-time depende dos backups automáticos, que deixaram de existir."
+      ]
+    },
+    {
+      "pergunta": "Um SaaS tem carga extremamente variável: quase zero de madrugada, picos fortes e imprevisíveis durante o dia. O banco é relacional (PostgreSQL). Qual opção equilibra custo e elasticidade?",
+      "opcoes": [
+        "RDS numa instância gigante fixa dimensionada pro pico",
+        "Aurora Serverless v2 (compatível com PostgreSQL)",
+        "DynamoDB, porque é serverless",
+        "MySQL num EC2 spot"
+      ],
+      "correta": 1,
+      "explicacao": "Aurora Serverless v2 escala a capacidade (ACUs) finamente com a carga: paga pouco na madrugada, acompanha o pico — mantendo o modelo relacional.",
+      "feedbacks": [
+        "Funciona, mas você paga o pico 24/7 — o desperdício clássico que a elasticidade resolve.",
+        "Correto: capacidade acompanha a carga e a app continua falando PostgreSQL normalmente.",
+        "Serverless sim, mas trocaria o MODELO de dados (relacional → chave-valor) — decisão muito maior que o problema pede.",
+        "Spot pode ser encerrado a qualquer momento — inaceitável pra um banco de produção stateful."
+      ]
+    },
+    {
+      "pergunta": "Tabela DynamoDB: PK=user_id, SK=timestamp. Você precisa listar os eventos do usuário u42 de julho/2026. Qual a operação correta e por quê?",
+      "opcoes": [
+        "Scan com filtro user_id = u42 e timestamp entre as datas",
+        "Query com key condition: user_id = u42 AND timestamp BETWEEN as duas datas",
+        "get-item com a chave u42",
+        "Exportar a tabela pro S3 e filtrar com script"
+      ],
+      "correta": 1,
+      "explicacao": "É o caso perfeito de query: PK localiza a partição, e o BETWEEN na sort key aproveita a ordenação. Custo proporcional ao retornado.",
+      "feedbacks": [
+        "Funcionaria, mas leria a TABELA INTEIRA pagando por tudo — o antipadrão que a modelagem por chaves evita.",
+        "Correto: query com condição de intervalo na SK é exatamente pra isso que a sort key existe.",
+        "get-item exige a chave COMPLETA (PK+SK exatos) e retorna UM item — não serve pra intervalo.",
+        "Export+script pra uma consulta pontual é matar mosca com canhão (e com latência de horas)."
+      ]
+    },
+    {
+      "pergunta": "Sua tabela de pedidos (PK=cliente_id) agora precisa de uma tela 'todos os pedidos com status=PENDENTE'. A tabela já está em produção com milhões de itens. Qual a solução correta?",
+      "opcoes": [
+        "Rodar um scan com filtro a cada carregamento da tela",
+        "Criar um GSI com partition key = status (por ex., status + data como sort key)",
+        "Criar um LSI com sort key = status",
+        "Migrar tudo pro RDS"
+      ],
+      "correta": 1,
+      "explicacao": "GSI cria uma 'visão' com chaves novas, mantida automaticamente, e pode ser adicionado a qualquer momento — a busca vira query barata.",
+      "feedbacks": [
+        "Scan em milhões de itens a cada carregamento = lentidão e custo explosivo — paga-se pelo LIDO, não pelo retornado.",
+        "Correto: novo padrão de acesso → novo índice. GSI pode nascer depois da tabela e resolve a consulta como query direta.",
+        "LSI só pode ser criado JUNTO com a tabela — impossível adicioná-lo agora. (E LSI mantém a mesma PK, o que não atende.)",
+        "Trocar de banco por causa de UMA consulta indexável é desproporcional; o DynamoDB resolve nativamente com GSI."
+      ]
+    },
+    {
+      "pergunta": "Sua tabela DynamoDB em capacidade PROVISIONADA começou a lançar ProvisionedThroughputExceededException nos horários de pico. O que está acontecendo e quais saídas fazem sentido?",
+      "opcoes": [
+        "A tabela corrompeu; é preciso restaurar backup",
+        "As requisições excederam a capacidade reservada (throttling); aumentar a capacidade, habilitar auto scaling ou migrar pra on-demand",
+        "O TTL está deletando itens demais",
+        "Falta criar um LSI"
+      ],
+      "correta": 1,
+      "explicacao": "Capacidade provisionada é um teto: estourou, o DynamoDB rejeita (throttle). Ajustar o provisionamento, auto scaling ou on-demand são as saídas.",
+      "feedbacks": [
+        "Nada corrompeu — a exceção indica limite de capacidade, não integridade.",
+        "Correto: é o trade-off do modo provisionado (barato quando estável, throttling quando estoura). On-demand elimina o planejamento.",
+        "TTL remove itens expirados de graça, em background — não gera throttling de requisições.",
+        "Índices não aumentam capacidade; LSI nem poderia ser criado numa tabela existente."
+      ]
+    },
+    {
+      "pergunta": "Você guarda sessões de usuário no DynamoDB e quer que expirem sozinhas após 24h, sem pagar por deleções nem rodar jobs de limpeza. Qual recurso usar?",
+      "opcoes": [
+        "Uma lifecycle rule do S3",
+        "TTL: um atributo de timestamp de expiração na tabela",
+        "Um cron num EC2 deletando itens velhos",
+        "Global Tables"
+      ],
+      "correta": 1,
+      "explicacao": "TTL nativo: marque o item com o timestamp de expiração e o DynamoDB o remove automaticamente, sem custo de escrita.",
+      "feedbacks": [
+        "Lifecycle rule é conceito do S3 (objetos/classes) — não se aplica a tabelas DynamoDB.",
+        "Correto: TTL é feito exatamente pra sessões/caches/dados temporários — expiração automática e gratuita.",
+        "Funciona, mas cria infraestrutura, custo (EC2 + WCUs das deleções) e pontos de falha pra algo que o serviço faz de graça.",
+        "Global Tables replicam a tabela entre REGIÕES (ativa-ativa) — nada a ver com expiração de itens."
+      ]
+    },
+    {
+      "pergunta": "Um e-commerce relacional sofre com a MESMA consulta pesada de catálogo executada milhares de vezes por minuto. O dado muda poucas vezes ao dia. Qual a primeira otimização de arquitetura?",
+      "opcoes": [
+        "Dobrar a classe da instância RDS",
+        "ElastiCache (Redis) com padrão cache-aside e TTL na frente do banco",
+        "Criar 15 read replicas",
+        "Migrar o catálogo pro Glacier"
+      ],
+      "correta": 1,
+      "explicacao": "Leitura repetida + dado quase estático = caso perfeito de cache: hits em microssegundos e o banco respira. Mais barato que escalar o banco.",
+      "feedbacks": [
+        "Scale up ajuda mas é caro e adia o problema — a mesma consulta repetida continuaria batendo no banco.",
+        "Correto: cache-aside transforma milhares de queries idênticas em hits de memória. É a primeira arma, antes de escalar o banco.",
+        "Replicas escalam leitura, mas manter 15 instâncias pra servir a MESMA resposta repetida é desperdício — cache resolve por uma fração.",
+        "Glacier é ARQUIVAMENTO frio do S3 — recuperação em minutos/horas, absurdo pra um catálogo online."
+      ]
+    },
+    {
+      "pergunta": "Qual cenário abaixo é uma MÁ escolha pra DynamoDB (e pediria um banco relacional)?",
+      "opcoes": [
+        "Carrinho de compras acessado por user_id",
+        "Relatórios ad-hoc de BI com JOINs e agregações livres que mudam toda semana",
+        "Sessões de usuários com expiração automática",
+        "Telemetria IoT gravada por device_id + timestamp"
+      ],
+      "correta": 1,
+      "explicacao": "DynamoDB brilha com padrões de acesso CONHECIDOS por chave. Perguntas livres, JOINs e agregações são o território do SQL.",
+      "feedbacks": [
+        "Carrinho por chave de usuário é caso de livro-texto PRO DynamoDB.",
+        "Correto: sem padrões de acesso estáveis, você viveria de scans e GSIs infinitos — relacional (ou um warehouse) é o caminho.",
+        "Sessões com TTL são outro caso clássico a favor do DynamoDB.",
+        "IoT com PK=device e SK=timestamp é exatamente a modelagem que vimos — ótimo pro DynamoDB."
+      ]
+    },
+    {
+      "pergunta": "Ao terminar o laboratório de RDS, qual sequência garante que NADA continue gerando custo?",
+      "opcoes": [
+        "Parar (stop) a instância e desligar o monitor",
+        "Deletar a instância com --skip-final-snapshot, conferir que não restou nenhum snapshot, e remover o security group",
+        "Só fechar o Console",
+        "Deletar apenas o security group"
+      ],
+      "correta": 1,
+      "explicacao": "Os dois vazamentos clássicos: instância viva e snapshots órfãos (cobram storage). A verificação com describe-db-snapshots fecha a conta.",
+      "feedbacks": [
+        "Instância PARADA no RDS ainda cobra storage — e a AWS a religa automaticamente após 7 dias.",
+        "Correto: deletar sem snapshot final (lab), verificar zero snapshots e limpar o SG — teardown completo e verificado.",
+        "Fechar o Console não muda nada no lado da AWS: os recursos (e a cobrança) continuam.",
+        "O SG é gratuito; o que custa é a instância e os snapshots — deletar só o SG não resolve (e nem funcionaria com a instância usando-o)."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,222 @@
+{
+  "modulo": "15",
+  "titulo": "Arquitetura & Well-Architected",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o módulo que amarra tudo",
+      "pontos": [
+        "Objetivo: sair do 'sei usar cada serviço' para o 'sei DESENHAR sistemas'",
+        "Vamos ver o Well-Architected Framework (6 pilares), padrões, anti-padrões e o desenho de referência que junta o curso inteiro",
+        "Prática diferente: é módulo de DESENHO — papel e caneta + Well-Architected Tool (grátis), nada de provisionar",
+        "Custo: US$ 0"
+      ],
+      "checkpoint": "Confirme que o aluno topa o formato (desenhar e defender escolhas) e está pronto pra começar",
+      "ref": "15-arquitetura-well-architected/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "Arquitetar = escolher trade-offs",
+      "pontos": [
+        "Não existe resposta única: todo desenho troca algo por algo",
+        "Disponibilidade ↔ custo; consistência ↔ latência; flexibilidade ↔ complexidade; menos operação ↔ menos controle",
+        "A resposta de arquiteto: 'depende dos requisitos' — SLA, orçamento, RTO/RPO, pico",
+        "Requisitos primeiro, serviços depois — quem começa pelo serviço faz de trás pra frente"
+      ],
+      "checkpoint": "Pergunte: 'todo sistema deveria ser multi-região?' e discuta o porquê do 'depende'",
+      "ref": "15-arquitetura-well-architected/teoria.md#1-o-que-é-arquitetar-e-por-que-não-existe-resposta-única"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "Well-Architected Framework: os 6 pilares",
+      "pontos": [
+        "A régua oficial da AWS, destilada de milhares de arquiteturas reais",
+        "Excelência operacional (operar/evoluir), Segurança (proteger), Confiabilidade (resistir a falhas)",
+        "Eficiência de performance (recursos certos), Otimização de custos (gastar só o necessário), Sustentabilidade (impacto ambiental)",
+        "Cada pilar tem uma pergunta central — apresentar a tabela",
+        "⚠️ Os pilares CONFLITAM de propósito: a pergunta nunca é 'o melhor pilar', é 'o requisito prioritário DESTE workload'"
+      ],
+      "checkpoint": "Peça pro aluno citar os 6 pilares e um exemplo de conflito entre dois deles",
+      "ref": "15-arquitetura-well-architected/teoria.md#2-o-well-architected-framework"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "Princípios-chave por pilar",
+      "pontos": [
+        "Operacional: tudo como código; mudanças pequenas e reversíveis; aprender com incidentes",
+        "Segurança: least privilege, rastreabilidade, defesa em todas as camadas, criptografia, automação",
+        "Confiabilidade: recuperação automática, TESTAR a recuperação, escalar horizontal, parar de adivinhar capacidade",
+        "Performance: serviços gerenciados, ir global em minutos, serverless quando couber, medir sempre",
+        "Custos: consciência de gasto (FinOps), tags/atribuição, modelo de consumo — desligar o ocioso",
+        "Sustentabilidade: maximizar utilização; recurso ocioso é desperdício duplo"
+      ],
+      "checkpoint": "Teste: 'backup nunca testado fere qual princípio de qual pilar?' Confirme antes de seguir",
+      "ref": "15-arquitetura-well-architected/teoria.md#2-o-well-architected-framework"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Padrões: multi-tier, serverless e event-driven",
+      "pontos": [
+        "Multi-tier clássico: apresentação → app → dados, cada camada em subnet própria, escalando e falhando separada (módulos 03–07 combinados)",
+        "Serverless: S3+CloudFront no front, API Gateway → Lambda → DynamoDB; paga por requisição, escala a zero",
+        "Trade-offs do serverless: cold start, limite de 15 min, lock-in, debug diferente",
+        "Event-driven: produtores e consumidores desacoplados via SQS/SNS/EventBridge (módulo 10)",
+        "SQS = buffer (picos viram fila, retry, DLQ); SNS/EventBridge = fan-out; custo: consistência eventual"
+      ],
+      "checkpoint": "Pergunte qual padrão o aluno usaria pra uma carga rara e imprevisível, e por quê",
+      "ref": "15-arquitetura-well-architected/teoria.md#3-padrões-de-arquitetura"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Microservices vs. monolito (sem hype)",
+      "pontos": [
+        "Monolito: deploy único, escala tudo junto, complexidade no código — e NÃO é anti-padrão",
+        "Microservices: deploy independente, escala por serviço, autonomia de times — complexidade migra pra operação",
+        "Quando cada um: time pequeno/produto novo → monolito modular; escala grande/times múltiplos/domínios claros → microservices",
+        "Anti-padrão real: o monolito DISTRIBUÍDO — microservices acoplados que deployam juntos (complexidade dos dois, benefício de nenhum)"
+      ],
+      "checkpoint": "Pergunte: 'startup de 4 devs lançando o MVP — micro ou mono?' e explore a justificativa",
+      "ref": "15-arquitetura-well-architected/teoria.md#3-padrões-de-arquitetura"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "O desenho de referência — amarrando o curso inteiro",
+      "pontos": [
+        "Percorrer o diagrama camada por camada, citando o módulo de cada peça: Route 53/CloudFront/ACM (M14), ALB+ASG (M05), EC2 (M04), VPC/SGs (M03), RDS Multi-AZ e ElastiCache (M07), SQS/workers (M10/M08), S3+OAC (M06/M14)",
+        "Transversais: IAM (M02), CloudWatch/CloudTrail (M12), KMS/WAF (M13), IaC (M11)",
+        "A lógica de cada peça: 2+ AZs em tudo, ALB+ASG substituem adivinhação, cache antes do banco, fila absorve pico",
+        "Regra do arquiteto: pra cada caixa, saber qual requisito ela atende e o que acontece se ela falhar"
+      ],
+      "checkpoint": "Escolha 2 peças do desenho e pergunte ao aluno 'por que existe? e se falhar?' antes de seguir",
+      "ref": "15-arquitetura-well-architected/teoria.md#4-o-desenho-de-referência--uma-web-app-resiliente-amarrando-o-curso"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "Anti-padrões + Well-Architected Tool",
+      "pontos": [
+        "Museu dos horrores: AZ única, pet server, banco público/SG 0.0.0.0/0, escala vertical infinita",
+        "Acoplamento síncrono em cadeia (falha propaga), backup nunca restaurado (= esperança), otimização prematura",
+        "Pets vs. cattle: servidores substituíveis por automação",
+        "Well-Architected Tool (console, GRÁTIS): define workload → responde perguntas por pilar → HRIs/MRIs + improvement plan + milestones",
+        "Não é prova com nota: é um espelho — o valor está na conversa que provoca"
+      ],
+      "checkpoint": "Recapitule a teoria e pergunte: 'podemos partir pros exercícios de desenho?'",
+      "ref": "15-arquitetura-well-architected/teoria.md#5-anti-padrões-comuns-o-museu-dos-horrores"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Exercício 1 — E-commerce com picos",
+      "pontos": [
+        "Apresentar o cenário: 200 req/s normal, 20× na Black Friday, checkout não pode cair, orçamento consciente",
+        "Aluno lista requisitos, desenha e DEFENDE; Claude atua como revisor (não dar a resposta antes!)",
+        "Explorar: CDN/estático, ALB+ASG multi-AZ, cache, e a jogada-chave: checkout → SQS (pico vira fila, não erro)",
+        "Nomear os pilares em tensão: custo × confiabilidade → resposta é elasticidade"
+      ],
+      "acao": "Conduzir o exercício: cenário → desenho do aluno → crítica construtiva → comparar com as pistas",
+      "checkpoint": "Só avance quando o aluno souber explicar como o sistema absorve 20× sem pagar 20× sempre",
+      "ref": "15-arquitetura-well-architected/pratica.md#exercício-1--e-commerce-com-picos"
+    },
+    {
+      "id": "p2",
+      "fase": "pratica",
+      "titulo": "Exercício 2 — API global de baixa latência",
+      "pontos": [
+        "Cenário: leitura pesada, escrita rara, p95 < 100 ms no Brasil, EUA e Europa",
+        "Provocar: física do RTT — uma região só não fecha o p95 na Europa",
+        "Explorar: multi-região + Route 53 latency routing (M14), CloudFront cacheando a API, DynamoDB global tables",
+        "Discutir consistência eventual e por que serverless casa com o perfil de carga"
+      ],
+      "acao": "Conduzir o exercício com o mesmo formato: desenho do aluno primeiro, pistas depois",
+      "checkpoint": "Confirme que o aluno amarrou latency routing + cache + réplica de dados antes de seguir",
+      "ref": "15-arquitetura-well-architected/pratica.md#exercício-2--api-global-de-baixa-latência"
+    },
+    {
+      "id": "p3",
+      "fase": "pratica",
+      "titulo": "Exercício 3 — Batch noturno barato + Exercício 4 — caça aos anti-padrões",
+      "pontos": [
+        "Batch: roda 1×/noite, 2h, interruptível, custo mínimo → Spot + SQS + EventBridge Scheduler + escala a zero",
+        "Insight: relaxar requisitos (latência, interrupção) derruba o preço",
+        "Exercício 4: apresentar o desenho DEFEITUOSO (EC2 única pública com app+banco, dump local, SSH/3306 abertos, escala vertical)",
+        "Aluno caça 5+ anti-padrões e propõe a correção (que é o desenho de referência)"
+      ],
+      "acao": "Conduzir os dois exercícios; no 4, apresentar o desenho ruim e deixar o aluno atacar",
+      "checkpoint": "Confirme os 5+ problemas achados e a correção proposta antes de ir pro console",
+      "ref": "15-arquitetura-well-architected/pratica.md#exercício-3--batch-noturno-barato"
+    },
+    {
+      "id": "p4",
+      "fase": "pratica",
+      "titulo": "Well-Architected Tool: criar workload e revisar confiabilidade",
+      "pontos": [
+        "Console → Well-Architected Tool → Define workload (curso-aws-webapp, pre-production, us-east-1, lente padrão)",
+        "Start reviewing → pilar Reliability → responder com HONESTIDADE sobre o que construiu no curso",
+        "Usar os painéis de ajuda das perguntas (documentação de primeira)",
+        "Só confiabilidade já basta pro exercício (20–30 min)"
+      ],
+      "acao": "Guiar a criação do workload e a revisão do pilar de confiabilidade no console",
+      "checkpoint": "Confirme que a revisão do pilar foi concluída antes de olhar o relatório",
+      "ref": "15-arquitetura-well-architected/pratica.md#parte-b--revisão-real-no-well-architected-tool-console"
+    },
+    {
+      "id": "p5",
+      "fase": "pratica",
+      "titulo": "Relatório, HRIs e teardown (grátis)",
+      "pontos": [
+        "Ler o overview: High/Medium risks; abrir o Improvement plan priorizado",
+        "Escolher 2 HRIs e discutir como arquiteto: risco real? custo de resolver? vale AGORA? (trade-off de novo)",
+        "Opcional: salvar milestone e ver a CLI (list-workloads, get-lens-review)",
+        "Teardown: nada pago foi criado; deletar o workload de teste (ou manter — é grátis)"
+      ],
+      "acao": "Guiar a leitura do relatório e a discussão dos HRIs; fechar com o teardown simbólico",
+      "checkpoint": "Feche a prática confirmando o checklist de conclusão do módulo",
+      "ref": "15-arquitetura-well-architected/pratica.md#passo-3--ler-o-relatório"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/apps/modulo-15/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "AWS/apps/modulo-15/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões de cenário, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 16 após passar"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/provas/modulo-15/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 16; se não, revise os pontos errados",
+      "ref": "AWS/provas/modulo-15/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 15",
+      "pontos": [
+        "Recap: 6 pilares, trade-offs, padrões (multi-tier/serverless/event-driven), anti-padrões, desenho de referência",
+        "Você agora pensa como arquiteto: requisitos primeiro, cada caixa com um porquê",
+        "Este módulo é o coração do exame SAA-C03 — vale revisitar os simulados",
+        "Próximo: Módulo 16 — CI/CD & DevOps (automatizar o caminho até produção)"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 16 ou parar por aqui",
+      "ref": "AWS/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

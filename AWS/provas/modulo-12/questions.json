@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 12: Observabilidade",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Usuários reclamam que o checkout está lento. Sua arquitetura: API Gateway → Lambda → DynamoDB → SQS → outra Lambda. Qual ferramenta mostra EM QUAL trecho a requisição gasta mais tempo?",
+      "opcoes": [
+        "CloudWatch Logs de cada serviço, lidos um a um",
+        "AWS X-Ray: o trace segue a requisição e mostra a duração de cada segmento",
+        "CloudTrail Event history",
+        "AWS Budgets"
+      ],
+      "correta": 1,
+      "explicacao": "Esse é o caso de uso do tracing distribuído: o trace ID acompanha a requisição e a linha do tempo mostra onde os milissegundos foram parar (ex.: 1,9 s numa query do DynamoDB).",
+      "feedbacks": [
+        "Dá pra tentar, mas logs de cada serviço são ilhas isoladas — correlacionar UMA requisição entre 5 serviços à mão é exatamente a dor que o X-Ray resolve.",
+        "Correto: X-Ray costura os serviços com um trace ID. O service map mostra latência por nó e o trace individual aponta o gargalo exato.",
+        "CloudTrail audita chamadas de API de GESTÃO (quem criou/apagou o quê) — não mede latência de requisições da aplicação.",
+        "Budgets é controle de custos — nada a ver com latência."
+      ]
+    },
+    {
+      "pergunta": "Você quer alarmar sobre a latência de uma API, mas sabe que a MÉDIA esconde os piores casos. Qual estatística usar no alarme?",
+      "opcoes": [
+        "Average, porque suaviza os picos",
+        "Um percentil alto, como p99: captura a experiência dos piores 1% das requisições",
+        "Minimum: mostra o melhor caso",
+        "SampleCount: mostra o volume"
+      ],
+      "correta": 1,
+      "explicacao": "Percentis são o padrão pra latência: p99 = 99% das requisições foram mais rápidas que esse valor. Uma média de 100 ms pode esconder 1% dos usuários sofrendo 5 s.",
+      "feedbacks": [
+        "É justamente o problema: a média dilui os picos. Com 1% das requisições a 5 s e o resto a 80 ms, a média parece saudável enquanto usuários sofrem.",
+        "Exato: p99 (ou p95) expõe a cauda da distribuição — a experiência real dos usuários azarados, que é o que você quer vigiar.",
+        "Minimum é o melhor caso — inútil pra detectar degradação.",
+        "SampleCount conta requisições; serve pra tráfego, não pra latência."
+      ]
+    },
+    {
+      "pergunta": "A fatura de CloudWatch Logs cresce todo mês há um ano, mesmo com tráfego estável. Qual é a causa mais provável?",
+      "opcoes": [
+        "A AWS reajusta o preço dos logs mensalmente",
+        "Log groups com retenção 'Never expire': o armazenamento acumula indefinidamente",
+        "O Logs Insights cobra mensalidade fixa crescente",
+        "Alarmes antigos cobram juros"
+      ],
+      "correta": 1,
+      "explicacao": "Com retenção infinita, cada mês SOMA armazenamento ao acumulado — a fatura cresce mesmo com ingestão constante. Solução: put-retention-policy em todos os log groups.",
+      "feedbacks": [
+        "Não há reajuste mensal automático de preço; o que cresce é o VOLUME armazenado.",
+        "Correto: ingestão estável + retenção infinita = estoque de logs sempre crescendo, e você paga por GB/mês armazenado. Defina retenção (7/30/90 dias) e o acúmulo para.",
+        "Insights cobra por GB escaneado nas consultas que você roda — não é mensalidade nem explica crescimento contínuo do armazenamento.",
+        "Alarmes custam um valor fixo por alarme/mês fora do Free Tier — não 'acumulam juros'."
+      ]
+    },
+    {
+      "pergunta": "Seu alarme de 'aplicação viva' (heartbeat) está em INSUFFICIENT_DATA há 30 minutos. Qual é a interpretação mais prudente?",
+      "opcoes": [
+        "Está tudo bem: sem dados = sem problemas",
+        "A fonte pode ter morrido e parado de publicar a métrica — investigar já; ausência de dados é sinal",
+        "O CloudWatch está fora do ar, é só esperar",
+        "O alarme foi apagado automaticamente"
+      ],
+      "correta": 1,
+      "explicacao": "Pra um heartbeat, ausência de dados é o pior sinal: a aplicação pode ter morrido sem conseguir avisar. Configure 'treat missing data as breaching' nesses casos.",
+      "feedbacks": [
+        "Perigoso: 'sem dados' não é 'sem problemas'. Se a aplicação morre, ela para de publicar — e o silêncio vira falso 'tudo bem'.",
+        "Exato: em heartbeats, o silêncio é o alarme. Por isso existe o 'treat missing data': configurar como breaching faz a ausência de dados disparar o ALARM.",
+        "Indisponibilidade do CloudWatch é raríssima; a hipótese provável (e acionável) é a sua fonte ter parado. Investigue a aplicação primeiro.",
+        "Alarmes não se apagam sozinhos; INSUFFICIENT_DATA é um estado normal do alarme, não deleção."
+      ]
+    },
+    {
+      "pergunta": "O time é acordado de madrugada por 3 pages simultâneos (CPU alta, erros 5xx, latência) que na verdade são UM único incidente. Qual recurso reduz esse ruído?",
+      "opcoes": [
+        "Deletar dois dos três alarmes",
+        "Composite alarm: combinar os alarmes com lógica booleana e notificar só quando o conjunto disparar",
+        "Aumentar todos os limiares até os alarmes pararem",
+        "Trocar SNS por e-mail manual"
+      ],
+      "correta": 1,
+      "explicacao": "Composite alarms combinam alarmes (ALARM(a) AND ALARM(b)...) e disparam UMA notificação para o cenário composto — os alarmes individuais continuam existindo pra diagnóstico.",
+      "feedbacks": [
+        "Você perderia visibilidade dos sinais individuais — eles continuam úteis pra diagnóstico; o problema é só a notificação triplicada.",
+        "Correto: o composite vira a 'porta AND' dos alarmes — um page só quando o quadro completo indica incidente real, sem perder os alarmes-filhos.",
+        "Afrouxar limiares mascara problemas reais: você troca ruído por cegueira.",
+        "O transporte não é o problema — é a lógica de quando notificar. E-mail manual não escala nem acorda ninguém."
+      ]
+    },
+    {
+      "pergunta": "Uma instância EC2 de produção sumiu. Você precisa saber QUEM a terminou e QUANDO, sem ter configurado nada de auditoria antes. É possível?",
+      "opcoes": [
+        "Não: sem um trail configurado previamente, não há registro algum",
+        "Sim: o CloudTrail Event history guarda 90 dias de management events de graça — procure o evento TerminateInstances",
+        "Sim, mas só abrindo ticket com o suporte AWS",
+        "Sim, olhando as métricas de CPU da instância no CloudWatch"
+      ],
+      "correta": 1,
+      "explicacao": "O event history vem ligado por padrão em toda conta: 90 dias de management events, grátis. Filtre por event name TerminateInstances e veja identidade, IP e horário.",
+      "feedbacks": [
+        "O trail só é necessário pra reter ALÉM de 90 dias. Os últimos 90 dias de management events já estão no event history, sem configuração.",
+        "Exato: Event history → filtro por TerminateInstances (ou pelo resource ID) → o evento mostra quem, quando e de que IP. É a primeira parada de toda investigação.",
+        "Não precisa de suporte: a informação está no seu Console/CLI, no event history do CloudTrail.",
+        "Métricas mostram COMO a instância estava, não QUEM executou a API de terminate. Auditoria é CloudTrail."
+      ]
+    },
+    {
+      "pergunta": "Você precisa auditar cada GetObject num bucket S3 sensível (quem leu cada arquivo). O que é necessário saber sobre isso no CloudTrail?",
+      "opcoes": [
+        "Nada: GetObject já aparece no event history gratuito",
+        "GetObject é DATA event: alto volume, desligado por padrão e pago — precisa habilitar explicitamente",
+        "GetObject é management event e aparece após 24h",
+        "O CloudTrail não registra operações de S3"
+      ],
+      "correta": 1,
+      "explicacao": "Operações NOS dados (GetObject/PutObject, Invoke de Lambda) são data events: volume altíssimo, por isso vêm desligados e são cobrados. O event history gratuito cobre só management events.",
+      "feedbacks": [
+        "GetObject NÃO está no event history: lá vivem só management events (criar/alterar/apagar recursos). Leituras de objetos são data events.",
+        "Correto: data events exigem habilitação explícita (num trail) e têm custo por volume. Faz sentido: um bucket movimentado gera milhões desses eventos.",
+        "Não é management event (não gerencia recurso — opera no dado) e não há espera de 24h nessa distinção.",
+        "Registra sim: CreateBucket/DeleteBucket como management; Get/PutObject como data events opcionais."
+      ]
+    },
+    {
+      "pergunta": "Sua aplicação processa pedidos e você quer um alarme quando o número de pedidos POR MINUTO despencar. O que fazer primeiro?",
+      "opcoes": [
+        "Nada: o CloudWatch já conhece as métricas de negócio de qualquer aplicação",
+        "Publicar uma métrica custom (put-metric-data/SDK) num namespace seu e alarmar sobre ela",
+        "Criar um trail do CloudTrail para contar os pedidos",
+        "Aumentar a resolução das métricas de CPU"
+      ],
+      "correta": 1,
+      "explicacao": "Métricas de negócio não existem até VOCÊ publicá-las. A aplicação envia PedidosProcessados via put-metric-data/SDK; daí em diante, dá pra grafar, alarmar e dashboards.",
+      "feedbacks": [
+        "O CloudWatch só conhece o que os serviços AWS publicam (CPU, invocações...). 'Pedidos' é conceito SEU — precisa ser publicado pela aplicação.",
+        "Exato: métrica custom no namespace da aplicação (ex.: MeuApp/PedidosProcessados), e o alarme vigia a queda (ex.: Sum < limiar). Foi o que ensaiamos na prática.",
+        "CloudTrail audita chamadas de API de gestão da AWS — não vê os pedidos do seu negócio.",
+        "CPU não tem correlação confiável com pedidos; resolução maior não cria a métrica que falta."
+      ]
+    },
+    {
+      "pergunta": "Qual consulta do Logs Insights mostra a CONTAGEM de erros agrupada em janelas de 5 minutos?",
+      "opcoes": [
+        "fields @message | limit 5",
+        "filter @message like /ERRO/ | stats count() by bin(5m)",
+        "SELECT COUNT(*) FROM logs GROUP BY time(5m)",
+        "sort @timestamp desc | filter ERRO"
+      ],
+      "correta": 1,
+      "explicacao": "filter seleciona os eventos com ERRO; stats count() by bin(5m) agrega por janela de 5 minutos — o clássico 'erros por período' de qualquer investigação.",
+      "feedbacks": [
+        "Isso só mostra 5 mensagens quaisquer — sem filtro de erro nem agregação temporal.",
+        "Correto: é o padrão filter + stats com bin() pra janelas de tempo. Com isso você vê o formato do pico de erros em segundos.",
+        "É SQL — o Insights tem linguagem própria de comandos encadeados por pipe, não SQL.",
+        "A sintaxe do filter exige uma expressão (like /ERRO/) e a ordem está trocada; e falta a agregação com stats/bin."
+      ]
+    },
+    {
+      "pergunta": "Você quer que, sempre que uma instância EC2 entrar em estado 'stopped', uma função Lambda registre e notifique o time automaticamente. Qual é o encaixe correto?",
+      "opcoes": [
+        "Uma regra do EventBridge casando o evento de state-change do EC2, com a Lambda como alvo",
+        "Um dashboard do CloudWatch com o gráfico de instâncias paradas",
+        "Um trail do CloudTrail entregue num bucket S3",
+        "Um alarme de CPU a 0%"
+      ],
+      "correta": 0,
+      "explicacao": "Eventos de infra → EventBridge → regra (padrão JSON do state-change) → alvo (Lambda/SNS). É o trilho da resposta automática a incidentes.",
+      "feedbacks": [
+        "Correto: o EC2 emite o evento de mudança de estado, a regra filtra 'stopped' e dispara a Lambda. Avisar é bom; reagir sozinho é melhor.",
+        "Dashboard é passivo: mostra pra quem estiver olhando. O requisito é REAGIR automaticamente — isso é EventBridge.",
+        "O trail registra o evento pra auditoria, mas não dispara ações. Quem liga evento→ação é o EventBridge.",
+        "CPU 0% é um proxy ruim (instância parada nem publica métrica) e o caminho métrica→alarme é indireto; o evento de state-change é o sinal exato e imediato."
+      ]
+    },
+    {
+      "pergunta": "Um colega propõe uma métrica custom com uma dimensão UserId (a empresa tem 200 mil usuários). Qual é o problema?",
+      "opcoes": [
+        "Nenhum: dimensões são gratuitas e ilimitadas",
+        "Cada combinação de dimensão cria uma série cobrada à parte: 200 mil séries custom = explosão de custo",
+        "O CloudWatch limita métricas a 10 dimensões por conta",
+        "Dimensões com texto não são permitidas"
+      ],
+      "correta": 1,
+      "explicacao": "Métrica custom é cobrada por série (métrica×dimensões) fora do Free Tier de 10. Alta cardinalidade (UserId) multiplica séries aos milhares — a 'cardinality bomb' da fatura.",
+      "feedbacks": [
+        "Dimensões multiplicam séries, e séries custom são cobradas (~US$ 0,30/métrica/mês além das 10 grátis). 200 mil séries seria uma fatura de dezenas de milhares de dólares.",
+        "Correto: cardinalidade alta em dimensão é a armadilha clássica de custo de métricas. Agregue (ex.: por plano, por região) ou use logs/Insights pra análise por usuário.",
+        "O limite de 10 é do Free Tier de métricas custom (as 10 primeiras grátis), não um teto de dimensões por conta.",
+        "Dimensões aceitam texto normalmente — o problema não é o tipo, é a cardinalidade."
+      ]
+    },
+    {
+      "pergunta": "Terminando o laboratório de observabilidade, qual conjunto de ações completa o teardown corretamente?",
+      "opcoes": [
+        "Apagar alarme, dashboard, log group e tópico SNS; a métrica custom some sozinha sem custo",
+        "Apagar só o alarme; o resto é sempre gratuito pra sempre",
+        "Desativar o CloudTrail Event history pra não pagar",
+        "Apagar a conta AWS inteira"
+      ],
+      "correta": 0,
+      "explicacao": "Alarme, dashboard, log group (armazenamento!) e tópico são recursos criados — removem-se. Métricas sem novos datapoints expiram da listagem sozinhas e não custam paradas.",
+      "feedbacks": [
+        "Correto: são exatamente os 4 deletes da prática (delete-alarms, delete-dashboards, delete-log-group, delete-topic) + a nota de que métrica custom parada não custa e some sozinha.",
+        "Alarmes e dashboards além do Free Tier custam, e log groups acumulam armazenamento. O hábito certo é remover TUDO que o lab criou.",
+        "O event history é gratuito e nem pode ser desligado — não há o que 'economizar' ali; o teardown é dos recursos que você criou.",
+        "Exagero desnecessário: teardown é cirúrgico — remove o que a prática criou, preservando sua conta e o resto do curso."
+      ]
+    }
+  ]
+}

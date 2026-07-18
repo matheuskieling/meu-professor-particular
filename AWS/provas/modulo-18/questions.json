@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 18: Alta Disponibilidade & Disaster Recovery",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "O negócio declara: 'podemos ficar no máximo 30 minutos fora do ar e perder no máximo 5 minutos de pedidos'. Traduzindo para métricas de DR:",
+      "opcoes": [
+        "RTO = 5 min; RPO = 30 min",
+        "RTO = 30 min; RPO = 5 min",
+        "SLA = 30 min; RTO = 5 min",
+        "RPO e RTO = 35 min somados"
+      ],
+      "correta": 1,
+      "explicacao": "Tempo fora do ar = RTO (30 min). Dados perdidos, medidos em tempo = RPO (5 min). Essas duas frases do negócio são exatamente a definição das métricas.",
+      "feedbacks": [
+        "Invertido: 'fora do ar' fala de tempo de recuperação (RTO); 'perder pedidos' fala de dados (RPO).",
+        "Exato: indisponibilidade máxima → RTO 30 min; janela máxima de dados perdidos → RPO 5 min. Agora dá pra escolher a estratégia.",
+        "SLA é o compromisso contratual de disponibilidade contínua — não é o nome da janela de recuperação de um desastre.",
+        "RTO e RPO são métricas independentes (alavancas diferentes: failover vs. replicação) — somá-las não significa nada."
+      ]
+    },
+    {
+      "pergunta": "Com RPO de 5 minutos para o banco de dados, qual mecanismo é NECESSÁRIO?",
+      "opcoes": [
+        "Backup diário automatizado no AWS Backup",
+        "Replicação contínua (ex.: read replica cross-region) ou backups/PITR com granularidade de minutos",
+        "Snapshot manual toda semana",
+        "Aumentar o TTL do DNS"
+      ],
+      "correta": 1,
+      "explicacao": "RPO vem da frequência de cópia dos dados. Backup diário dá RPO de até 24h; pra 5 min é preciso replicação contínua ou point-in-time recovery.",
+      "feedbacks": [
+        "Backup diário dá RPO de até 24 horas — 288 vezes pior que o exigido. A frequência da cópia define o RPO.",
+        "Correto: só replicação contínua (assíncrona, lag de segundos) ou PITR com logs contínuos chega em RPO de minutos.",
+        "Snapshot semanal = RPO de até 7 dias. Serviria pra um blog, nunca pra este requisito.",
+        "TTL de DNS influencia o RTO do failover, não tem relação nenhuma com perda de dados (RPO)."
+      ]
+    },
+    {
+      "pergunta": "Sua API depende, em série, de API Gateway (99,95%), Lambda (99,95%) e DynamoDB (99,999%). Qual afirmação sobre a disponibilidade composta está CORRETA?",
+      "opcoes": [
+        "É 99,999%, o melhor componente puxa pra cima",
+        "É a média aritmética dos três",
+        "É ~99,9% — menor que o pior componente individual, porque dependências em série se multiplicam",
+        "SLAs de serviços diferentes não podem ser combinados"
+      ],
+      "correta": 2,
+      "explicacao": "0,9995 × 0,9995 × 0,99999 ≈ 0,9990. Em série, cada dependência multiplica (e derruba) o total — o composto é sempre pior que o pior componente.",
+      "feedbacks": [
+        "O melhor componente não compensa os demais: basta UM da cadeia cair pra requisição falhar. Série sempre piora.",
+        "Média não modela dependência: se qualquer um falha, o todo falha. A matemática é multiplicação das disponibilidades.",
+        "Correto: ≈99,90% (~8,7h/ano). Por isso arquitetos contam dependências em série como quem conta furos no casco.",
+        "Podem e devem: multiplicar disponibilidades em série é exatamente como se estima o teto teórico da aplicação."
+      ]
+    },
+    {
+      "pergunta": "Às 14h, alguém executa DELETE sem WHERE na tabela de clientes do RDS Multi-AZ de produção. O que te salva?",
+      "opcoes": [
+        "O failover automático para a standby Multi-AZ",
+        "Restaurar backup/point-in-time recovery para um momento anterior às 14h",
+        "A read replica, que ignora deleções",
+        "O SLA do RDS, que cobre erro humano"
+      ],
+      "correta": 1,
+      "explicacao": "O DELETE replicou sincronamente pra standby (e assíncronamente pra réplica). Erro lógico só se resolve voltando NO TEMPO: backup ou PITR pra antes das 14h.",
+      "feedbacks": [
+        "A standby tem os MESMOS dados — o DELETE chegou lá sincronamente. Failover te dá outra cópia igualmente vazia.",
+        "Exato: contra erro lógico, só viagem no tempo — restaurar snapshot ou PITR para 13h59. Por isso Multi-AZ é HA, não DR.",
+        "A réplica replica TUDO, inclusive deleções (com pequeno lag — se você for mais rápido que o lag, boa sorte, mas não é um plano).",
+        "SLA cobre disponibilidade da infraestrutura da AWS, jamais os comandos que VOCÊS executam — responsabilidade compartilhada, lembra?"
+      ]
+    },
+    {
+      "pergunta": "Startup com orçamento apertado: tolera RTO de ~12h e RPO de ~24h, mas não pode perder tudo se a região cair. Qual estratégia de DR é a mais adequada?",
+      "opcoes": [
+        "Multi-site active/active em 3 regiões",
+        "Warm standby",
+        "Backup & restore: backups automáticos com cópia cross-region + infra reconstruível via IaC",
+        "Nenhuma; multi-AZ já cobre queda de região"
+      ],
+      "correta": 2,
+      "explicacao": "RTO de horas e RPO de até um dia é exatamente o perfil do backup & restore — a estratégia mais barata, viabilizada por IaC pra reconstruir rápido.",
+      "feedbacks": [
+        "Active/active custa ~2x+ a produção inteira pra entregar RTO de segundos que o negócio nem pediu. Desperdício clássico.",
+        "Warm standby mantém ambiente rodando 24/7 no destino — paga-se por um RTO de minutos que o requisito de 12h não exige.",
+        "Correto: requisitos folgados pedem a estratégia barata. AWS Backup com cross-region copy + IaC no Git = DR digno por quase nada.",
+        "Multi-AZ NÃO cobre queda regional: todas as AZs estão na mesma região. Sem cópia fora da região, a startup perderia tudo."
+      ]
+    },
+    {
+      "pergunta": "Na estratégia warm standby, o que caracteriza a região secundária?",
+      "opcoes": [
+        "Só backups armazenados, nada rodando",
+        "Uma cópia funcional do ambiente rodando em capacidade REDUZIDA, que escala na virada",
+        "Banco replicando, mas zero instância de aplicação ligada",
+        "Capacidade idêntica à produção, servindo tráfego ativamente"
+      ],
+      "correta": 1,
+      "explicacao": "Warm standby = ambiente completo e funcional, porém mínimo (ex.: 1 instância em vez de 10). A virada é apontar o DNS e escalar — RTO de minutos.",
+      "feedbacks": [
+        "Só backups é a estratégia backup & restore — RTO de horas, não de minutos.",
+        "Exato: tudo ligado e funcional, mas pequeno. Failover = DNS + scale-up. É o meio-termo entre pilot light e active/active.",
+        "Dados replicando com aplicação desligada é pilot light — a 'chama' acesa é só o núcleo de dados.",
+        "Capacidade total servindo tráfego nas duas regiões é multi-site active/active, o degrau mais caro."
+      ]
+    },
+    {
+      "pergunta": "Sua empresa teme ransomware: um atacante com credenciais de admin poderia criptografar os dados E apagar os backups. Qual recurso do AWS Backup ataca exatamente esse risco?",
+      "opcoes": [
+        "Backup vault com Vault Lock (WORM), impedindo deleção dos recovery points mesmo por administradores",
+        "Aumentar a frequência dos backups para de hora em hora",
+        "Dar a todos os devs acesso ao vault para restaurarem rápido",
+        "Usar tags nos backups"
+      ],
+      "correta": 0,
+      "explicacao": "Vault Lock em modo compliance torna os recovery points imutáveis (WORM) pelo período definido — nem admin, nem root apagam. Cross-account copy complementa.",
+      "feedbacks": [
+        "Correto: imutabilidade é o antídoto. Se nem o admin comprometido consegue apagar os backups, o ransomware perde a alavanca de extorsão.",
+        "Backups mais frequentes melhoram RPO, mas continuam DELETÁVEIS pelo atacante com admin — não resolvem o risco descrito.",
+        "Ampliar acesso ao vault AUMENTA a superfície de ataque — é a direção oposta de proteger os backups.",
+        "Tags organizam e atribuem recursos a planos; não impedem ninguém de deletar recovery point."
+      ]
+    },
+    {
+      "pergunta": "Você ativou S3 CRR ontem num bucket com 10.000 objetos antigos e subiu 50 novos hoje. O que existe no bucket de destino?",
+      "opcoes": [
+        "Os 10.050 objetos",
+        "Apenas os 50 objetos novos (o estoque antigo exigiria S3 Batch Replication)",
+        "Nenhum objeto: CRR leva 30 dias pra começar",
+        "Apenas os 10.000 antigos"
+      ],
+      "correta": 1,
+      "explicacao": "CRR replica objetos criados APÓS a regra. Objetos pré-existentes só via S3 Batch Replication (ou re-upload).",
+      "feedbacks": [
+        "O estoque antigo não replica sozinho — pegadinha clássica que deixa 'furos' silenciosos no plano de DR.",
+        "Exato: só os novos. Se o DR depende do histórico, rode Batch Replication e VALIDE a contagem dos dois lados.",
+        "CRR começa a valer imediatamente para objetos novos — a replicação leva segundos/minutos, não dias.",
+        "É o inverso: os antigos são justamente os que ficam de fora; os novos replicam automaticamente."
+      ]
+    },
+    {
+      "pergunta": "Em um desastre na região primária, qual é o procedimento com uma read replica cross-region do RDS?",
+      "opcoes": [
+        "Nada: ela assume automaticamente como primária em segundos",
+        "Promovê-la (promote) a banco independente e apontar a aplicação/DNS pra ela — uma ação deliberada, com possível perda do lag assíncrono",
+        "Deletá-la e restaurar um snapshot",
+        "Convertê-la em Multi-AZ primeiro, depois esperar o failover"
+      ],
+      "correta": 1,
+      "explicacao": "Réplica cross-region não tem failover automático: você a PROMOVE (vira um banco standalone gravável) e redireciona o tráfego. O lag assíncrono pendente é seu RPO real.",
+      "feedbacks": [
+        "Promoção automática é comportamento do Multi-AZ (na mesma região). Réplica cross-region espera sua decisão — por runbook.",
+        "Correto: promote + repontar conexões/DNS. E honestidade intelectual: o que não tinha replicado (lag) foi perdido — RPO de segundos/minutos.",
+        "Deletar a réplica é destruir sua cópia mais recente dos dados no meio do desastre — o oposto do runbook.",
+        "Conversão pra Multi-AZ é um passo pós-promoção (pra dar HA à nova primária), não um pré-requisito do failover."
+      ]
+    },
+    {
+      "pergunta": "Você montou failover no Route 53: primário com health check, secundário numa página estática. O registro tem TTL de 4 horas. Qual o problema?",
+      "opcoes": [
+        "Nenhum; TTL não interfere no failover",
+        "Mesmo com o health check detectando a falha em ~2 min, clientes com a resposta em cache continuarão indo ao endpoint morto por até 4h — o RTO efetivo explode",
+        "TTL alto faz o health check rodar menos vezes",
+        "O Route 53 proíbe TTL acima de 5 minutos"
+      ],
+      "correta": 1,
+      "explicacao": "O DNS 'novo' só chega quando o cache expira. Detecção rápida + TTL de 4h = failover que ninguém vê. Registros failover pedem TTL de 30-60s.",
+      "feedbacks": [
+        "Interfere diretamente: o failover muda a RESPOSTA do DNS, mas quem tem cache válido nem pergunta de novo.",
+        "Exato: RTO efetivo ≈ detecção + TTL remanescente. Por isso a regra prática: TTL baixo (30-60s) em qualquer registro com failover.",
+        "Health check e TTL são independentes — a frota de verificadores testa o endpoint no intervalo dela (10/30s), sempre.",
+        "Não há essa proibição; o Route 53 aceita TTLs longos — e é justamente por isso que o erro é comum e silencioso."
+      ]
+    },
+    {
+      "pergunta": "Qual experimento abaixo é chaos engineering LEGÍTIMO (e não vandalismo)?",
+      "opcoes": [
+        "Derrubar o banco de produção na Black Friday sem avisar ninguém, 'pra testar de verdade'",
+        "Com hipótese definida, dashboards/alarmes prontos, raio de explosão limitado e botão de parada: terminar uma instância do ASG em horário controlado e observar",
+        "Desligar os alarmes do CloudWatch pra ver se alguém percebe",
+        "Apagar backups antigos pra testar a sorte"
+      ],
+      "correta": 1,
+      "explicacao": "Chaos engineering é método: hipótese → experimento controlado (blast radius + stop condition) → observação → correção. Sem observabilidade e controle, é só sabotagem.",
+      "feedbacks": [
+        "Sem hipótese, sem controle, no pior momento possível: isso é roleta-russa com o faturamento, não engenharia.",
+        "Correto: todos os elementos do método presentes — hipótese ('usuários não percebem'), observabilidade, raio limitado, reversão. É o espírito do AWS FIS e dos GameDays.",
+        "Desligar a observabilidade é o ANTI-experimento: chaos engineering depende dela pra ter conclusão. Sem medir, nada foi testado.",
+        "Destruir a rede de segurança (backups) não testa resiliência — remove-a. Experimentos não podem causar dano irreversível."
+      ]
+    },
+    {
+      "pergunta": "Depois da prática deste módulo, qual item do teardown, se esquecido, gera cobrança RECORRENTE mesmo sem nenhum uso?",
+      "opcoes": [
+        "A regra de replicação em si (sem novos objetos)",
+        "O health check do Route 53 (~US$ 0,50/mês) e os recovery points/volumes que ficarem no vault",
+        "O backup plan vazio, que custa por hora",
+        "A tag Backup=lab"
+      ],
+      "correta": 1,
+      "explicacao": "Health check cobra por existir; recovery points e volumes cobram por GB-mês. Regra de replicação parada e tags não custam; plano vazio também não.",
+      "feedbacks": [
+        "A regra de replicação sem tráfego novo não cobra por si — o custo era dos objetos armazenados/replicados, que você removeu.",
+        "Exato: são os 'cobram por existir' deste módulo. E lembre: deletar o PLANO não deleta os recovery points já criados — eles se apagam à parte, no vault.",
+        "Backup plan é política — não cobra por hora. O que cobra é o storage dos recovery points que ele gera.",
+        "Tags são gratuitas, sempre. Deixá-la não custa nada (mas remover mantém a conta arrumada)."
+      ]
+    }
+  ]
+}

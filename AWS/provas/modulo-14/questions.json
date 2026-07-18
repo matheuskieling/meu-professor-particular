@@ -1,0 +1,205 @@
+{
+  "titulo": "PROVA — Módulo 14: DNS & Entrega de Conteúdo",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Sua empresa vai migrar a API de um IP antigo para um novo na sexta-feira. O registro A tem TTL de 86400 (1 dia). O que fazer pra minimizar o tempo em que usuários batem no IP antigo?",
+      "opcoes": [
+        "Nada; a mudança de DNS é sempre instantânea",
+        "Baixar o TTL (ex.: 60s) dias antes da migração, migrar, e depois subir o TTL de volta",
+        "Deletar a hosted zone e recriá-la na hora da migração",
+        "Trocar o registro A por um MX"
+      ],
+      "correta": 1,
+      "explicacao": "Resolvers respeitam o TTL vigente quando cachearam. Baixando o TTL com antecedência, na hora da troca o cache antigo já expirou rápido.",
+      "feedbacks": [
+        "Não é instantânea: resolvers pelo mundo cacheiam pelo TTL. Com 86400, alguns usuários veriam o IP antigo por até 1 dia.",
+        "Exato: baixar o TTL com antecedência (antes que os caches de 1 dia expirem), migrar com TTL curto e depois restaurar. É o procedimento padrão de migração.",
+        "Deletar a zona derrubaria TODO o seu DNS — e não limpa os caches dos resolvers do mundo, que continuam respeitando o TTL antigo.",
+        "MX é registro de e-mail; não tem relação com a migração de IP de uma API."
+      ]
+    },
+    {
+      "pergunta": "Você precisa apontar o domínio raiz 'exemplo.com' (apex, sem www) para uma distribuição CloudFront usando Route 53. Qual a forma correta?",
+      "opcoes": [
+        "Registro CNAME apontando pra dXXXX.cloudfront.net",
+        "Registro A do tipo Alias apontando pra distribuição CloudFront",
+        "Registro TXT com o domínio da distribuição",
+        "Não é possível apontar o apex; só subdomínios funcionam"
+      ],
+      "correta": 1,
+      "explicacao": "O padrão DNS proíbe CNAME no apex. O alias do Route 53 existe exatamente pra isso: A-Alias no apex apontando pro recurso AWS, com consultas grátis.",
+      "feedbacks": [
+        "CNAME no apex viola o padrão DNS (conflita com NS/SOA) — o Route 53 nem deixa criar. Essa é a limitação que o alias resolve.",
+        "Correto: A-Alias funciona no apex, devolve os IPs da distribuição direto, acompanha mudanças e as consultas são gratuitas.",
+        "TXT é texto livre (verificações, SPF) — não roteia tráfego pra lugar nenhum.",
+        "É possível, sim — desde que com alias (proprietário do Route 53). A limitação é só do CNAME."
+      ]
+    },
+    {
+      "pergunta": "Uma aplicação roda em us-east-1 e eu-west-1, e você quer que cada usuário seja atendido pela região que responde mais rápido PRA ELE. Qual política de roteamento?",
+      "opcoes": ["Weighted", "Geolocation", "Latency", "Simple"],
+      "correta": 2,
+      "explicacao": "Latency-based routing usa medições reais de latência entre o usuário e as regiões, respondendo sempre o endpoint mais rápido.",
+      "feedbacks": [
+        "Weighted divide por percentuais fixos que VOCÊ define — não considera a latência de cada usuário.",
+        "Geolocation olha ONDE o usuário está (país/continente), não o quão rápido cada região responde — perto nem sempre é mais rápido.",
+        "Correto: latency routing responde com a região de menor latência medida para aquele usuário. É a política feita pra esse cenário.",
+        "Simple devolve sempre a mesma resposta — não diferencia usuários."
+      ]
+    },
+    {
+      "pergunta": "Você quer que, se o site principal (num ALB) cair, o DNS passe a responder com uma página estática de contingência no S3. O que precisa configurar no Route 53?",
+      "opcoes": [
+        "Política weighted 50/50 entre ALB e S3",
+        "Política failover com um health check monitorando o primário",
+        "Dois registros simple com o mesmo nome",
+        "Política geolocation com o S3 para 'resto do mundo'"
+      ],
+      "correta": 1,
+      "explicacao": "Failover = primário enquanto o health check passa; secundário quando falha. É o padrão de DR barato: contingência estática no S3.",
+      "feedbacks": [
+        "Weighted 50/50 mandaria METADE dos usuários pra página de contingência o tempo todo — mesmo com o site saudável.",
+        "Correto: failover routing + health check no primário. Enquanto saudável, todos vão pro ALB; se o check falhar, o Route 53 responde o secundário (S3).",
+        "Dois registros simple com o mesmo nome nem são permitidos assim — e não há lógica de saúde envolvida.",
+        "Geolocation divide por origem geográfica do usuário, não por saúde do endpoint."
+      ]
+    },
+    {
+      "pergunta": "Por que usar OAC em vez de deixar o bucket S3 público atrás do CloudFront?",
+      "opcoes": [
+        "OAC deixa o download mais rápido nas edges",
+        "Com bucket público, qualquer um contorna a CDN (sem cache, WAF ou controles); OAC garante que o único caminho é a distribuição",
+        "OAC é obrigatório por lei para qualquer bucket",
+        "Bucket público não funciona com CloudFront de jeito nenhum"
+      ],
+      "correta": 1,
+      "explicacao": "OAC tranca a origem: a bucket policy só autoriza o CloudFront (condicionado ao ARN da distribuição). Todo o tráfego passa pelos seus controles.",
+      "feedbacks": [
+        "OAC é sobre CONTROLE DE ACESSO à origem, não sobre velocidade — o cache é igual nos dois casos.",
+        "Exato: com o bucket público existe uma 'porta dos fundos' direto no S3. O OAC fecha essa porta: só a sua distribuição lê os objetos.",
+        "Não há obrigação legal genérica; é uma boa prática de segurança (e a recomendação da AWS).",
+        "Funciona, sim — o problema é justamente que funciona 'demais': o conteúdo fica acessível também por fora da CDN."
+      ]
+    },
+    {
+      "pergunta": "Você atualizou o index.html no S3, mas o CloudFront segue servindo a versão antiga. Qual a solução IMEDIATA e qual a boa prática de LONGO PRAZO?",
+      "opcoes": [
+        "Imediata: deletar a distribuição; longo prazo: não usar CDN",
+        "Imediata: criar uma invalidação; longo prazo: versionar os assets (hash no nome) e manter TTL curto só no index",
+        "Imediata: esvaziar o bucket; longo prazo: TTL infinito em tudo",
+        "Imediata: trocar de região; longo prazo: usar TTL 0 em todos os objetos"
+      ],
+      "correta": 1,
+      "explicacao": "Invalidação resolve agora (1.000 caminhos/mês grátis). No longo prazo, assets versionados nunca precisam de invalidação — nome novo = objeto novo.",
+      "feedbacks": [
+        "Deletar a distribuição é destruir a solução por causa de um cache — e abrir mão da CDN piora latência e custo.",
+        "Correto: invalidação força as edges a rebuscar; e com assets de nome versionado (app.abc123.js) o problema quase desaparece — só o index precisa de TTL curto.",
+        "Esvaziar o bucket derruba o site (a edge ainda serviria o cache, e depois 404). TTL infinito em tudo eterniza o problema.",
+        "Trocar de região não afeta o cache das edges (CloudFront é global). TTL 0 em tudo anula o benefício da CDN."
+      ]
+    },
+    {
+      "pergunta": "Sua aplicação está toda em sa-east-1 e você vai criar uma distribuição CloudFront com domínio próprio e HTTPS. Onde solicitar o certificado no ACM?",
+      "opcoes": [
+        "Em sa-east-1, junto com a aplicação",
+        "Em us-east-1, porque o CloudFront só aceita certificados de lá",
+        "Em qualquer região, o ACM é global",
+        "Não precisa de certificado; o CloudFront não suporta HTTPS custom"
+      ],
+      "correta": 1,
+      "explicacao": "Para CloudFront, o certificado ACM deve estar SEMPRE em us-east-1, independente de onde estão origem e usuários.",
+      "feedbacks": [
+        "Intuitivo, mas errado — e é exatamente por isso que essa pegadinha derruba tanta gente. Pro CloudFront, só us-east-1.",
+        "Correto: CloudFront é um serviço global cujo plano de controle vive em us-east-1; certificados pra ele têm que estar lá. (Pra um ALB, seria a região do ALB.)",
+        "O ACM é regional (cada certificado vive numa região). O CloudFront exige especificamente us-east-1.",
+        "O CloudFront suporta HTTPS com domínio custom normalmente — via certificado ACM em us-east-1."
+      ]
+    },
+    {
+      "pergunta": "Você criou 'db.interno.local' numa hosted zone privada associada à sua VPC, mas o dig na sua máquina LOCAL não resolve o nome. Por quê?",
+      "opcoes": [
+        "A zona está quebrada; zonas privadas deveriam responder pra internet",
+        "Comportamento esperado: zonas privadas só resolvem de dentro das VPCs associadas",
+        "Faltou pagar o registro do domínio interno.local",
+        "O TTL ainda não propagou pros root servers"
+      ],
+      "correta": 1,
+      "explicacao": "Zona privada não existe na internet — só o resolver das VPCs associadas a conhece. Testar de fora falhar é o comportamento correto.",
+      "feedbacks": [
+        "Não está quebrada — está funcionando como projetada. 'Privada' significa exatamente não responder pra internet.",
+        "Correto: quem conhece a zona é o resolver da VPC (o IP .2). Da sua máquina, o resolver público nunca ouviu falar de interno.local.",
+        "Zonas privadas não exigem domínio registrado — qualquer nome serve, justamente porque nunca vão pra internet pública.",
+        "Zonas privadas nem chegam aos root servers; elas não participam da hierarquia pública do DNS."
+      ]
+    },
+    {
+      "pergunta": "Qual sequência correta para deletar uma distribuição CloudFront?",
+      "opcoes": [
+        "Clicar em Delete direto; é imediato",
+        "Disable → aguardar a propagação (minutos) → Delete",
+        "Deletar primeiro o bucket de origem, o que apaga a distribuição junto",
+        "Abrir um ticket de suporte pedindo a exclusão"
+      ],
+      "correta": 1,
+      "explicacao": "Distribuição habilitada não pode ser deletada: primeiro Disable, espera o 'desligado' propagar pra todas as edges, e então Delete.",
+      "feedbacks": [
+        "O console recusa: uma distribuição Enabled não pode ser deletada. É preciso desabilitar primeiro.",
+        "Correto: Disable, esperar o status sair de Deploying (a mudança propaga pras centenas de edges — 5–15 min) e então Delete. A espera é normal.",
+        "Deletar a origem NÃO apaga a distribuição — ela continuaria existindo (e servindo erros/cache).",
+        "Não precisa de suporte: é operação self-service, só tem a ordem obrigatória disable → delete."
+      ]
+    },
+    {
+      "pergunta": "Por que a validação por DNS é o método recomendado para certificados ACM?",
+      "opcoes": [
+        "Porque é a única que funciona com CloudFront",
+        "Porque, mantendo o CNAME de validação na zona, a renovação é automática e permanente",
+        "Porque dispensa provar que você controla o domínio",
+        "Porque permite baixar a chave privada do certificado"
+      ],
+      "correta": 1,
+      "explicacao": "Com o CNAME de validação no lugar, o ACM revalida e renova sozinho, pra sempre. Validação por e-mail exige ação manual a cada renovação.",
+      "feedbacks": [
+        "Validação por e-mail também funciona com CloudFront — só que exige renovação manual, por isso não é a recomendada.",
+        "Correto: o CNAME fica na zona provando controle contínuo do domínio; o ACM renova sozinho antes de expirar, sem você fazer nada.",
+        "Ao contrário: o CNAME de validação é justamente a PROVA de que você controla o domínio.",
+        "Certificados públicos do ACM nunca permitem baixar a chave privada — eles só funcionam acoplados a serviços AWS, independente do método de validação."
+      ]
+    },
+    {
+      "pergunta": "Uma API precisa de balanceamento fino de requisições entre 6 instâncias EC2 na mesma região, com failover em segundos quando uma instância morre. Por que resolver isso SÓ com Route 53 weighted/multivalue é má ideia?",
+      "opcoes": [
+        "Porque o Route 53 não suporta apontar para instâncias EC2",
+        "Porque caches de DNS (TTL) tornam a distribuição imprecisa e o failover lento; o certo é um ELB, com DNS apontando pro balanceador",
+        "Porque weighted routing custa mais caro que um ALB",
+        "Porque multivalue answer só funciona com IPv6"
+      ],
+      "correta": 1,
+      "explicacao": "DNS não é load balancer: resolvers e clientes cacheiam respostas, então a distribuição desvia e a reação a falhas depende do TTL expirar. ELB balanceia por requisição e tira instâncias doentes em segundos.",
+      "feedbacks": [
+        "Suporta (registros A pros IPs) — o problema não é esse, é o comportamento do cache DNS.",
+        "Correto: o cache de DNS ignora seus pesos e atrasa o failover. O padrão é DNS → ALB → instâncias: o ALB balanceia cada requisição e usa health checks quase em tempo real.",
+        "Custo não é o problema central (consultas DNS são baratas); o problema é técnico: cache e TTL.",
+        "Multivalue funciona com IPv4 normalmente; a limitação real é ser 'mini balanceamento' sem controle por requisição."
+      ]
+    },
+    {
+      "pergunta": "Depois de criar a distribuição com OAC, o acesso via dXXXX.cloudfront.net funciona, mas você percebe que a URL direta do S3 TAMBÉM entrega os objetos. O que provavelmente está errado?",
+      "opcoes": [
+        "Nada; é assim que OAC funciona",
+        "O bucket ainda está público (Block Public Access desligado ou policy pública remanescente do módulo 06)",
+        "O certificado ACM está na região errada",
+        "A invalidação ainda não terminou"
+      ],
+      "correta": 1,
+      "explicacao": "OAC autoriza o CloudFront, mas não FECHA o bucket sozinho: se sobrou acesso público (BPA off/policy antiga de website), a porta dos fundos continua aberta. Reativar o Block Public Access e remover a policy pública.",
+      "feedbacks": [
+        "Não é o esperado: com OAC bem configurado, o acesso direto ao S3 deve retornar 403. Algo ficou aberto.",
+        "Correto: o OAC adiciona permissão pro CloudFront, mas não remove acessos públicos preexistentes. É preciso religar o Block Public Access e apagar a policy pública que sobrou do módulo 06.",
+        "Certificado é sobre HTTPS/domínio custom — não influencia permissões de leitura do bucket.",
+        "Invalidação afeta o cache das edges, não as permissões do bucket de origem."
+      ]
+    }
+  ]
+}

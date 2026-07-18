@@ -1,0 +1,110 @@
+{
+  "titulo": "Módulo 02 — Conta, IAM & Segurança",
+  "questoes": [
+    {
+      "pergunta": "Por que NÃO se deve criar access keys para o usuário root?",
+      "opcoes": [
+        "Porque o root não consegue usar a CLI",
+        "Porque seriam credenciais com poder irrestrito que nenhuma policy consegue limitar",
+        "Porque a AWS cobra por chaves do root",
+        "Porque as chaves do root expiram em 24 horas"
+      ],
+      "correta": 1,
+      "explicacao": "O root pode tudo e não pode ser restringido por policy. Chave de root vazada = conta inteira comprometida."
+    },
+    {
+      "pergunta": "Qual peça do IAM é uma identidade assumível que fornece credenciais TEMPORÁRIAS?",
+      "opcoes": ["User", "Group", "Role", "Policy"],
+      "correta": 2,
+      "explicacao": "Role é a identidade que se assume via STS, recebendo credenciais com session token e expiração."
+    },
+    {
+      "pergunta": "O que é um IAM Group?",
+      "opcoes": [
+        "Uma identidade que pode fazer login no console",
+        "Um agrupador de users para anexar policies em lote; não tem credenciais próprias",
+        "Um conjunto de roles com trust policy compartilhada",
+        "Um tipo de policy gerenciada pela AWS"
+      ],
+      "correta": 1,
+      "explicacao": "Group não é identidade: não loga nem tem credencial. Ele só carrega policies que valem para seus membros."
+    },
+    {
+      "pergunta": "Numa policy JSON, o que vai no campo 'Action'?",
+      "opcoes": [
+        "O ARN do recurso afetado",
+        "As chamadas de API permitidas/negadas, no formato servico:Operacao (ex.: s3:GetObject)",
+        "O nome do usuário que pode executar",
+        "A região onde a policy vale"
+      ],
+      "correta": 1,
+      "explicacao": "Action lista as operações (ex.: s3:GetObject, ec2:StartInstances), aceitando curingas como s3:*."
+    },
+    {
+      "pergunta": "Um user tem 'Allow s3:*' por um group e 'Deny s3:DeleteObject' por outro. O que acontece ao tentar deletar um objeto?",
+      "opcoes": [
+        "Consegue, porque o Allow veio primeiro",
+        "É negado, porque Deny explícito sempre vence qualquer Allow",
+        "Depende de qual group foi criado primeiro",
+        "A AWS pede confirmação manual"
+      ],
+      "correta": 1,
+      "explicacao": "Regra de ouro da avaliação: Deny explícito > Allow > Deny implícito. O Deny sempre prevalece."
+    },
+    {
+      "pergunta": "O que significa o 'implicit deny' do IAM?",
+      "opcoes": [
+        "Toda ação é negada por padrão, a menos que alguma policy a permita",
+        "O root nega ações automaticamente",
+        "Policies inline negam mais que as gerenciadas",
+        "Ações fora da sua região são negadas"
+      ],
+      "correta": 0,
+      "explicacao": "O ponto de partida é negar tudo. Sem um Allow aplicável, a resposta é AccessDenied."
+    },
+    {
+      "pergunta": "Qual a diferença entre a trust policy e as permission policies de uma role?",
+      "opcoes": [
+        "Trust policy define O QUE a role pode fazer; permission policies definem QUEM assume",
+        "Trust policy define QUEM pode assumir a role; permission policies definem o que quem assumiu pode fazer",
+        "São o mesmo documento com nomes diferentes",
+        "Trust policy só existe em roles cross-account"
+      ],
+      "correta": 1,
+      "explicacao": "Trust policy = a porta de entrada (Principal + sts:AssumeRole). Permission policies = os poderes de quem entrou."
+    },
+    {
+      "pergunta": "Por que dar acesso ao S3 a uma instância EC2 via role é melhor do que colocar access keys dentro dela?",
+      "opcoes": [
+        "Porque roles são mais rápidas que access keys",
+        "Porque a role fornece credenciais temporárias que expiram sozinhas, sem chave eterna pra vazar",
+        "Porque access keys não funcionam dentro de EC2",
+        "Porque roles são pagas e por isso mais seguras"
+      ],
+      "correta": 1,
+      "explicacao": "Credencial temporária via STS expira e não fica gravada. Chave fixa dentro de servidor é o vazamento clássico."
+    },
+    {
+      "pergunta": "Qual comando da CLI você usa para assumir uma role e receber credenciais temporárias?",
+      "opcoes": [
+        "aws iam assume-role",
+        "aws sts assume-role",
+        "aws iam get-role-credentials",
+        "aws configure assume"
+      ],
+      "correta": 1,
+      "explicacao": "É o STS (Security Token Service) que emite credenciais temporárias: aws sts assume-role --role-arn ... --role-session-name ..."
+    },
+    {
+      "pergunta": "Qual a diferença entre uma policy customer managed e uma inline?",
+      "opcoes": [
+        "Customer managed é reutilizável e versionada; inline vive embutida numa única identidade",
+        "Inline é criada pela AWS; customer managed é criada por você",
+        "Customer managed só funciona em roles",
+        "Inline é sempre mais segura por ser exclusiva"
+      ],
+      "correta": 0,
+      "explicacao": "Customer managed: sua, reutilizável, com versões. Inline: colada num único user/group/role, difícil de auditar. Preferimos managed."
+    }
+  ]
+}

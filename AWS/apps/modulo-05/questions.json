@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 05 — Escalabilidade & Balanceamento",
+  "questoes": [
+    {
+      "pergunta": "Qual a diferença entre escalabilidade vertical e horizontal?",
+      "opcoes": [
+        "Vertical adiciona mais máquinas; horizontal troca por uma máquina maior",
+        "Vertical troca por uma máquina maior; horizontal adiciona mais máquinas",
+        "São sinônimos na AWS",
+        "Vertical só existe on-premises"
+      ],
+      "correta": 1,
+      "explicacao": "Scale up (vertical) = máquina maior. Scale out (horizontal) = mais máquinas iguais — o caminho da nuvem."
+    },
+    {
+      "pergunta": "Por que escalar horizontalmente exige que a aplicação seja (quase) stateless?",
+      "opcoes": [
+        "Porque a AWS proíbe gravar em disco",
+        "Porque requisições podem cair em instâncias diferentes; estado local (sessão, uploads) se perde entre elas",
+        "Porque instâncias stateless são mais baratas",
+        "Não exige; qualquer app escala horizontalmente sem mudanças"
+      ],
+      "correta": 1,
+      "explicacao": "Com várias cópias atrás de um LB, cada requisição pode ir pra outra máquina. Estado deve viver fora (banco, cache, S3)."
+    },
+    {
+      "pergunta": "O que é um Launch Template?",
+      "opcoes": [
+        "Um script que roda dentro da instância a cada boot",
+        "Uma receita versionada de como lançar instâncias: AMI, tipo, security groups, user data, etc.",
+        "Um tipo de load balancer",
+        "O nome antigo do Auto Scaling Group"
+      ],
+      "correta": 1,
+      "explicacao": "O Launch Template guarda tudo que você preencheria à mão ao lançar um EC2, com versionamento. É o que o ASG usa pra criar instâncias."
+    },
+    {
+      "pergunta": "Num ASG, o que significam min, max e desired capacity?",
+      "opcoes": [
+        "Min e max são limites de CPU; desired é a RAM",
+        "Piso e teto do tamanho da frota; desired é quantas instâncias o ASG quer agora (dentro de [min, max])",
+        "Min é o número de AZs; max o número de regiões",
+        "São os três nomes das políticas de scaling"
+      ],
+      "correta": 1,
+      "explicacao": "As políticas de scaling mexem no desired, que nunca sai do intervalo [min, max]. O max é também sua trava de custo."
+    },
+    {
+      "pergunta": "Você termina manualmente uma instância de um ASG com desired=2. O que acontece?",
+      "opcoes": [
+        "O ASG lança uma substituta pra voltar ao desired (auto-healing)",
+        "O ASG reduz o desired pra 1 e aceita a perda",
+        "O ASG entra em estado de erro e para de funcionar",
+        "Nada; ASGs não monitoram instâncias"
+      ],
+      "correta": 0,
+      "explicacao": "O ASG mantém a frota no desired: detecta a perda e repõe sozinho. É o auto-healing — vale até sem políticas de scaling."
+    },
+    {
+      "pergunta": "Qual política de scaling funciona como um 'termostato' (ex.: manter CPU média em 50%)?",
+      "opcoes": [
+        "Scheduled scaling",
+        "Simple scaling",
+        "Target tracking",
+        "Manual scaling"
+      ],
+      "correta": 2,
+      "explicacao": "Target tracking mira uma métrica-alvo e calcula sozinho quantas instâncias precisa. É a política recomendada como padrão."
+    },
+    {
+      "pergunta": "Quando usar um NLB em vez de um ALB?",
+      "opcoes": [
+        "Quando você precisa rotear por path da URL (/api/*)",
+        "Quando precisa de TCP/UDP puro, latência mínima ou IP estático (Elastic IP)",
+        "Quando o tráfego é HTTP comum de um site",
+        "Nunca; o NLB foi descontinuado"
+      ],
+      "correta": 1,
+      "explicacao": "NLB opera na camada 4: performance extrema, TCP/UDP e IP fixo por AZ. Pra HTTP com roteamento inteligente, ALB."
+    },
+    {
+      "pergunta": "No ALB, qual o papel do target group?",
+      "opcoes": [
+        "Definir em qual porta o ALB escuta",
+        "Agrupar os destinos (instâncias/IPs/Lambda) e a configuração de health check; só targets healthy recebem tráfego",
+        "Armazenar os logs de acesso",
+        "Definir o certificado TLS"
+      ],
+      "correta": 1,
+      "explicacao": "Listener escuta; regras roteiam; o target group é o conjunto de destinos com seu health check. O ALB só envia pra quem está healthy."
+    },
+    {
+      "pergunta": "Por que um ASG atrás de um ALB deve usar health check do tipo ELB (e não só EC2)?",
+      "opcoes": [
+        "Porque o check EC2 é pago",
+        "Porque o check EC2 só vê se a máquina está ligada; o ELB detecta a aplicação morta e faz o ASG repor",
+        "Porque o check ELB é obrigatório por lei",
+        "Não faz diferença; ambos testam a aplicação"
+      ],
+      "correta": 1,
+      "explicacao": "Máquina running com app travada passa no check EC2. Com check ELB, o ASG termina e repõe instâncias que o ALB marca unhealthy."
+    },
+    {
+      "pergunta": "O que o connection draining (deregistration delay) faz quando um target sai do target group?",
+      "opcoes": [
+        "Apaga os dados do disco da instância",
+        "Para de enviar novas requisições ao target, mas dá um prazo pras requisições em andamento terminarem",
+        "Redireciona o tráfego pra outra região",
+        "Faz backup da instância antes de terminá-la"
+      ],
+      "correta": 1,
+      "explicacao": "O draining evita cortar conexões no meio durante scale in ou deploy: novas requisições param, as em voo têm prazo pra concluir."
+    }
+  ]
+}

@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 08: Serverless",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Uma startup tem um webhook chamado ~200 vezes por dia, em horários imprevisíveis. Hoje roda num EC2 t3.micro ligado 24/7. Qual a melhor mudança e por quê?",
+      "opcoes": [
+        "Manter no EC2, pois webhooks exigem servidor dedicado",
+        "Migrar pra Lambda: tráfego esporádico, paga só por invocação, custo perto de zero",
+        "Migrar pra um cluster EKS com 3 nós",
+        "Aumentar pra t3.large pra garantir performance"
+      ],
+      "correta": 1,
+      "explicacao": "Tráfego irregular e baixo é o caso perfeito de Lambda: sem custo de ocioso, escala sozinho.",
+      "feedbacks": [
+        "Webhook não exige servidor dedicado — é uma requisição HTTP ocasional, o caso clássico de serverless.",
+        "Exato: 200 invocações/dia cabem folgadamente no Free Tier (1M/mês). O EC2 24/7 paga ocioso o dia todo.",
+        "Um cluster EKS com 3 nós é o extremo oposto: infraestrutura pesada e cara pra 200 chamadas/dia.",
+        "Aumentar a instância só aumenta o custo do ocioso — o problema não é performance, é o modelo."
+      ]
+    },
+    {
+      "pergunta": "Sua Lambda processa uploads do S3, mas falha com AccessDenied ao gravar o resultado em outro bucket. Você tem AdministratorAccess no seu usuário. O que corrigir?",
+      "opcoes": [
+        "Dar mais permissões ao seu usuário IAM",
+        "Tornar o bucket de destino público",
+        "Adicionar permissão de s3:PutObject à execution role da função",
+        "Aumentar o timeout da função"
+      ],
+      "correta": 2,
+      "explicacao": "A função age com a identidade da execution role — é lá que a permissão de escrita precisa estar.",
+      "feedbacks": [
+        "Seu usuário não executa a função; quem age em runtime é a execution role. Suas permissões são irrelevantes aqui.",
+        "Bucket público é a receita do vazamento de dados do Módulo 01 — nunca é a solução pra AccessDenied de uma função.",
+        "Correto: a identidade que grava no bucket é a execution role. Adicione s3:PutObject (least privilege) nela.",
+        "Timeout não tem relação com permissão — AccessDenied é IAM, não tempo de execução."
+      ]
+    },
+    {
+      "pergunta": "Uma API serverless apresenta latência alta APENAS na primeira requisição após períodos sem tráfego. Qual a causa e uma mitigação possível?",
+      "opcoes": [
+        "Throttling do API Gateway; aumentar o limite de burst",
+        "Cold start do Lambda; usar Provisioned Concurrency se a latência for crítica",
+        "Falta de memória; o Lambda derruba a primeira requisição sempre",
+        "DNS lento; trocar o Route 53 por outro provedor"
+      ],
+      "correta": 1,
+      "explicacao": "Latência só na primeira invocação após ociosidade é a assinatura do cold start.",
+      "feedbacks": [
+        "Throttling causaria erros 429 sob CARGA, não lentidão na primeira requisição após ociosidade.",
+        "Isso: sem ambiente quente, a AWS cria um novo (cold start). Provisioned Concurrency mantém ambientes prontos — pagando.",
+        "Falta de memória causaria erro/lentidão em todas as invocações, não só na primeira.",
+        "DNS não explica o padrão 'só a primeira após ociosidade' — e a resolução é cacheada."
+      ]
+    },
+    {
+      "pergunta": "Um processamento de vídeo leva ~45 minutos por arquivo. A equipe quer 'fazer tudo serverless' com Lambda. Qual o problema?",
+      "opcoes": [
+        "Nenhum; basta configurar o timeout para 45 minutos",
+        "Lambda tem timeout máximo de 15 minutos; o job precisa de outra ferramenta (ex.: Fargate/Batch)",
+        "Lambda não processa vídeo por restrição de licença",
+        "O problema é só o preço; tecnicamente funciona"
+      ],
+      "correta": 1,
+      "explicacao": "15 minutos é limite rígido. Jobs longos pedem containers (Fargate/ECS, Batch) — que veremos no Módulo 09.",
+      "feedbacks": [
+        "O timeout máximo configurável é 15 minutos — não existe como chegar a 45.",
+        "Correto: é um limite rígido da plataforma. A execução seria morta aos 15 min; Fargate ou Batch resolvem.",
+        "Não há restrição de tipo de carga; o problema é o limite de duração, não licença.",
+        "Não é questão de preço: tecnicamente NÃO funciona — a execução é encerrada aos 15 minutos."
+      ]
+    },
+    {
+      "pergunta": "Uma função com 512 MB roda em média 2 segundos. Recebe 1 milhão de invocações no mês. Quantos GB-segundos ela consome?",
+      "opcoes": [
+        "500.000 GB-s",
+        "1.000.000 GB-s",
+        "2.000.000 GB-s",
+        "250.000 GB-s"
+      ],
+      "correta": 1,
+      "explicacao": "0,5 GB × 2 s = 1 GB-s por invocação; × 1M invocações = 1.000.000 GB-s (os primeiros 400k são Free Tier; o excedente sai por ~US$10).",
+      "feedbacks": [
+        "500k seria 0,5 GB × 1 s — mas a duração é 2 s por invocação.",
+        "Isso: 0,5 GB × 2 s = 1 GB-s por invocação; vezes 1 milhão = 1M GB-s. É assim que a fatura de duração é calculada.",
+        "2M seria se a função tivesse 1 GB de memória (1 GB × 2 s); ela tem 0,5 GB.",
+        "250k seria 0,5 GB × 0,5 s — subestima a duração de 2 s."
+      ]
+    },
+    {
+      "pergunta": "Você vai expor uma API nova e simples (rotas + Lambda + JWT) e quer o menor custo/latência. REST API ou HTTP API?",
+      "opcoes": [
+        "REST API, porque é a única que suporta Lambda",
+        "REST API, porque é mais barata",
+        "HTTP API: mais barata (~US$1/milhão), menor latência e cobre rotas + JWT",
+        "Nenhuma; Lambda não pode ficar atrás de API"
+      ],
+      "correta": 2,
+      "explicacao": "HTTP API é o padrão pra APIs novas; REST API só quando precisar de recursos avançados (API keys, usage plans, caching).",
+      "feedbacks": [
+        "As duas integram com Lambda; a diferença está em preço, latência e recursos.",
+        "É o contrário: REST API custa ~US$3,50/milhão, mais que o triplo da HTTP API.",
+        "Correto: HTTP API cobre o essencial (rotas, JWT authorizer, CORS) com menor custo e latência.",
+        "Colocar API Gateway na frente do Lambda é exatamente o padrão de API serverless."
+      ]
+    },
+    {
+      "pergunta": "No trigger S3 → Lambda que você montou, o que o Console configurou por baixo dos panos além da notificação de evento no bucket?",
+      "opcoes": [
+        "Uma rota no API Gateway",
+        "Uma resource-based policy permitindo ao S3 invocar a função",
+        "Um endpoint público na função",
+        "Uma réplica da função em cada AZ"
+      ],
+      "correta": 1,
+      "explicacao": "O S3 precisa de permissão pra invocar a função — isso vai numa policy baseada em recurso, na própria função.",
+      "feedbacks": [
+        "API Gateway não participa do fluxo S3 → Lambda; a invocação é direta e assíncrona.",
+        "Isso: além da notificação no bucket, é preciso autorizar o serviço S3 a chamar a função (resource-based policy).",
+        "A função não ganha endpoint público com trigger S3 — a invocação vem do serviço S3, por dentro.",
+        "A distribuição da execução entre AZs já é automática no Lambda; não é isso que o trigger configura."
+      ]
+    },
+    {
+      "pergunta": "Uma invocação vinda do API Gateway falha com exceção. Uma vinda do S3 também. Qual a diferença no comportamento de retry?",
+      "opcoes": [
+        "Ambas retentam infinitamente",
+        "API Gateway (síncrona): o erro volta pro cliente, sem retry automático; S3 (assíncrona): o Lambda retenta até 2 vezes",
+        "S3 nunca retenta; API Gateway retenta 2 vezes",
+        "Nenhuma das duas gera log em caso de erro"
+      ],
+      "correta": 1,
+      "explicacao": "Síncrono devolve o erro a quem chamou; assíncrono passa pela fila interna do Lambda, com até 2 retentativas.",
+      "feedbacks": [
+        "Retry infinito não existe em nenhum dos dois modelos — assíncrono para após 2 retentativas.",
+        "Correto: no modelo síncrono o chamador decide o que fazer com o erro; no assíncrono o Lambda retenta 2x e pode mandar a falha pra um destino.",
+        "Está invertido: é o fluxo assíncrono (S3) que tem retentativas automáticas.",
+        "Erros aparecem nos logs do CloudWatch normalmente — é onde você os investiga."
+      ]
+    },
+    {
+      "pergunta": "Um fluxo de negócio tem 6 etapas com condições, retries específicos por etapa e possibilidade de estorno em caso de falha. Qual serviço orquestra isso melhor?",
+      "opcoes": [
+        "Uma única Lambda gigante com try/except encadeados",
+        "Step Functions: state machine com estados, Choice, retry/catch e histórico de execução",
+        "Um cron no EC2 chamando as Lambdas em sequência",
+        "API Gateway com 6 rotas"
+      ],
+      "correta": 1,
+      "explicacao": "Fluxos multi-etapas com ramificação e tratamento de erro por etapa são o caso de uso do Step Functions.",
+      "feedbacks": [
+        "A Lambda gigante vira espaguete, esbarra no timeout de 15 min e perde o histórico de onde falhou.",
+        "Isso: o Step Functions desenha o fluxo como state machine, com retry/catch por estado e execuções persistidas e visualizáveis.",
+        "Cron no EC2 reintroduz servidor pra gerenciar e não dá durabilidade nem visibilidade por etapa.",
+        "Rotas de API expõem endpoints; não orquestram sequência, condições nem compensações."
+      ]
+    },
+    {
+      "pergunta": "Você deletou a função m08-hello no teardown. O que NÃO é apagado automaticamente junto?",
+      "opcoes": [
+        "O código da função",
+        "As versões da função",
+        "O log group /aws/lambda/m08-hello e a IAM role criada com ela",
+        "As variáveis de ambiente"
+      ],
+      "correta": 2,
+      "explicacao": "Log groups e roles sobrevivem à função — por isso o teardown os remove explicitamente.",
+      "feedbacks": [
+        "O código faz parte da função e some com ela.",
+        "Versões são parte do recurso 'função' e são removidas com ele.",
+        "Correto: log group e execution role são recursos independentes — ficam órfãos se você não apagar.",
+        "Variáveis de ambiente são configuração da função; desaparecem com ela."
+      ]
+    },
+    {
+      "pergunta": "Uma API tem tráfego CONSTANTE e pesado: 3.000 req/s, 24/7, com duração média de 100 ms e 512 MB. O que considerar antes de 'ir de Lambda'?",
+      "opcoes": [
+        "Nada; Lambda é sempre a opção mais barata",
+        "Que carga constante e alta pode sair mais barata em containers/instâncias dimensionados; comparar custos",
+        "Que o Lambda não aguenta 3.000 req/s em nenhuma hipótese",
+        "Que o API Gateway não funciona com esse volume"
+      ],
+      "correta": 1,
+      "explicacao": "O ponto forte do Lambda é a irregularidade. Carga alta e constante favorece Fargate/EC2 — faça a conta.",
+      "feedbacks": [
+        "Lambda cobra por invocação + GB-s; em volume constante e alto, a soma pode superar containers bem dimensionados.",
+        "Exato: com utilização constante, capacidade reservada (containers/instâncias) costuma vencer no custo. A decisão é aritmética, não ideologia.",
+        "Aguenta (com limite de concorrência ajustável) — a questão é custo, não capacidade.",
+        "API Gateway lida com esse volume; o ponto da questão é o modelo de custo do compute."
+      ]
+    },
+    {
+      "pergunta": "Onde uma função Lambda deve buscar um segredo sensível (senha de banco), seguindo boas práticas?",
+      "opcoes": [
+        "Hardcoded no código, por simplicidade",
+        "Numa variável de ambiente em texto claro, visível pra quem lê a config",
+        "No Secrets Manager ou SSM Parameter Store, com permissão de leitura na execution role",
+        "Num arquivo no bucket S3 público"
+      ],
+      "correta": 2,
+      "explicacao": "Segredos de verdade vivem em serviço de segredos; env var em texto claro é aceitável só pra config não sensível.",
+      "feedbacks": [
+        "Hardcode vaza no repositório e não rotaciona — a pior opção.",
+        "Env var serve pra config (nome de bucket, flags); segredo em texto claro fica exposto a quem pode ver a configuração da função.",
+        "Correto: Secrets Manager/Parameter Store + permissão de leitura na execution role. É o padrão (Módulo 13 aprofunda).",
+        "Bucket público é vazamento garantido — nunca."
+      ]
+    }
+  ]
+}

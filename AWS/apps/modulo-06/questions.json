@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 06 — Storage: S3 & cia",
+  "questoes": [
+    {
+      "pergunta": "O que é o Amazon S3?",
+      "opcoes": [
+        "Um disco virtual que você monta numa instância EC2",
+        "Armazenamento de objetos acessível via API HTTP, com buckets e durabilidade de 11 noves",
+        "Um sistema de arquivos NFS compartilhado",
+        "Um banco de dados relacional"
+      ],
+      "correta": 1,
+      "explicacao": "S3 é object storage: objetos em buckets, via API, com 99,999999999% de durabilidade. Disco é EBS; NFS é EFS."
+    },
+    {
+      "pergunta": "Por que o nome de um bucket S3 precisa de cuidado extra?",
+      "opcoes": [
+        "Porque é globalmente único entre TODAS as contas AWS do mundo",
+        "Porque precisa ter letras maiúsculas",
+        "Porque só pode ter 8 caracteres",
+        "Porque muda automaticamente a cada região"
+      ],
+      "correta": 0,
+      "explicacao": "O namespace de buckets é global: se alguém no mundo já usou o nome, você não usa. Regras: minúsculas, números, hífens, 3-63 chars."
+    },
+    {
+      "pergunta": "No S3, 'pastas' como docs/relatorio.txt são na verdade:",
+      "opcoes": [
+        "Diretórios reais do sistema de arquivos",
+        "Parte da chave (key) do objeto — as barras criam uma ilusão de pastas",
+        "Buckets aninhados",
+        "Links simbólicos"
+      ],
+      "correta": 1,
+      "explicacao": "O S3 é plano: só existem chaves. 'docs/relatorio.txt' é uma chave única; o Console apenas desenha as barras como pastas."
+    },
+    {
+      "pergunta": "Qual classe de armazenamento é a mais barata pra guardar, mas com recuperação em horas (padrão 12h)?",
+      "opcoes": [
+        "S3 Standard",
+        "S3 Standard-IA",
+        "S3 Glacier Instant Retrieval",
+        "S3 Glacier Deep Archive"
+      ],
+      "correta": 3,
+      "explicacao": "Deep Archive é o extremo frio: centavos por TB, mas recuperação em horas e mínimo de 180 dias. Ideal pra compliance de longo prazo."
+    },
+    {
+      "pergunta": "Qual a diferença entre Standard-IA e One Zone-IA?",
+      "opcoes": [
+        "One Zone-IA guarda os dados numa única AZ — mais barato, mas perde tudo se a AZ for destruída",
+        "Standard-IA é mais barato que One Zone-IA",
+        "One Zone-IA é multi-região",
+        "Não há diferença, são apelidos"
+      ],
+      "correta": 0,
+      "explicacao": "One Zone-IA abre mão da redundância multi-AZ pra custar menos. Só pra dado raro E recriável."
+    },
+    {
+      "pergunta": "Com versionamento habilitado, o que acontece quando você deleta um objeto (aws s3 rm)?",
+      "opcoes": [
+        "Todas as versões são apagadas permanentemente",
+        "Um delete marker é inserido; as versões continuam guardadas e o objeto pode ser 'ressuscitado'",
+        "O objeto vai pra lixeira por 30 dias",
+        "O S3 pede confirmação por e-mail"
+      ],
+      "correta": 1,
+      "explicacao": "O DELETE simples só põe um marker por cima. Remova o marker e o objeto volta — o seguro contra deleção acidental."
+    },
+    {
+      "pergunta": "Pra que servem as lifecycle rules?",
+      "opcoes": [
+        "Pra fazer backup do bucket em outra conta",
+        "Pra automatizar transições de classe (esfriar) e expiração (limpar) por idade do objeto",
+        "Pra renomear objetos automaticamente",
+        "Pra acelerar downloads"
+      ],
+      "correta": 1,
+      "explicacao": "Lifecycle move objetos pra classes mais frias e expira objetos/versões antigas com o tempo — economia no piloto automático."
+    },
+    {
+      "pergunta": "Sobre ACLs e bucket policies em 2025+, qual afirmação está correta?",
+      "opcoes": [
+        "ACLs são o mecanismo recomendado para tudo",
+        "Buckets novos vêm com ACLs desabilitadas; o recomendado é controlar acesso com policies (IAM + bucket policy)",
+        "Bucket policies foram descontinuadas",
+        "ACLs e policies são exatamente a mesma coisa"
+      ],
+      "correta": 1,
+      "explicacao": "ACLs são legado pré-IAM. Desde 2023 buckets nascem com ACLs off (bucket owner enforced) — e é assim que deve ficar."
+    },
+    {
+      "pergunta": "Um bucket tem policy permitindo leitura pública, mas o Block Public Access está ligado. O que acontece?",
+      "opcoes": [
+        "O acesso público funciona, pois a policy tem prioridade",
+        "O BPA bloqueia: o bucket continua inacessível publicamente apesar da policy",
+        "A AWS deleta a policy automaticamente",
+        "O bucket fica público só na região us-east-1"
+      ],
+      "correta": 1,
+      "explicacao": "O BPA é uma trava por cima de tudo: mesmo policy permissiva não abre o bucket enquanto ele estiver ligado."
+    },
+    {
+      "pergunta": "O que é uma presigned URL?",
+      "opcoes": [
+        "Uma URL encurtada do objeto",
+        "Uma URL temporária assinada com suas credenciais, que dá acesso a um objeto específico por tempo limitado",
+        "A URL pública permanente de um bucket",
+        "Um certificado TLS pro bucket"
+      ],
+      "correta": 1,
+      "explicacao": "A presigned URL carrega uma assinatura das suas credenciais + validade. Entrega objeto privado sem abrir o bucket."
+    }
+  ]
+}

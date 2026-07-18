@@ -1,0 +1,230 @@
+{
+  "modulo": "14",
+  "titulo": "DNS & Entrega de Conteúdo",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que vamos fazer neste módulo",
+      "pontos": [
+        "Objetivo: entender DNS de verdade, dominar Route 53 e colocar uma CDN (CloudFront) com HTTPS na frente do seu conteúdo",
+        "As perguntas do módulo: 'como o navegador acha meu servidor?' e 'como entrego rápido pro mundo todo?'",
+        "Prática: CloudFront + OAC na frente do bucket do módulo 06 (bucket privado!), cache Hit/Miss, invalidação, hosted zone privada",
+        "Custo: ~US$ 0 no caminho principal; seção opcional paga pra quem quiser domínio próprio"
+      ],
+      "checkpoint": "Confirme que o aluno ainda tem o bucket S3 do módulo 06 (ou topa recriar) e que está pronto pra começar",
+      "ref": "14-dns-cdn/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "Recap: como o DNS funciona",
+      "pontos": [
+        "DNS = lista telefônica da internet: nome → IP",
+        "Cadeia de resolução: resolver → root → TLD (.com) → name server autoritativo → resposta cacheada",
+        "Tipos de registro: A (IPv4), AAAA (IPv6), CNAME (apelido pra outro nome), TXT (verificações/SPF), MX (e-mail), NS (delegação)",
+        "TTL: quanto tempo o resolver pode cachear; alto = propaga devagar, baixo = muda rápido",
+        "Truque de migração: baixar o TTL dias antes, migrar, subir de novo",
+        "Limitação-chave: o apex do domínio (exemplo.com) NÃO pode ser CNAME — guardar pra daqui a pouco"
+      ],
+      "checkpoint": "Pergunte: o que acontece se você mudar um IP com TTL de 1 dia? E por que o apex não aceita CNAME é importante?",
+      "ref": "14-dns-cdn/teoria.md#1-recap-como-o-dns-funciona"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "Route 53: hosted zones públicas e privadas",
+      "pontos": [
+        "Route 53 = DNS gerenciado da AWS (porta 53); serviço GLOBAL",
+        "Faz 3 coisas independentes: registrar domínio, hospedar DNS (hosted zones), health checks",
+        "Zona pública responde pra internet (precisa de domínio real); privada só dentro das VPCs associadas (qualquer nome serve)",
+        "Custo: US$ 0,50/mês por zona — por isso criamos e apagamos na prática",
+        "Uso clássico de zona privada: nomes internos amigáveis (db.interno.local em vez do endpoint do RDS)"
+      ],
+      "checkpoint": "Pergunte quando o aluno usaria uma zona privada em vez de pública, e confirme antes de seguir",
+      "ref": "14-dns-cdn/teoria.md#2-route-53--o-dns-da-aws"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "Alias records vs. CNAME — a diferença crucial",
+      "pontos": [
+        "Alias = extensão proprietária do Route 53 apontando pra recursos AWS (CloudFront, ALB, S3, API Gateway)",
+        "Diferença 1: alias FUNCIONA no apex (exemplo.com); CNAME não pode",
+        "Diferença 2: consultas a alias apontando pra recurso AWS são GRÁTIS",
+        "Diferença 3: alias devolve direto os IPs do recurso e acompanha mudanças automaticamente",
+        "Regra mental: apontando pra recurso AWS dentro do Route 53 → sempre alias; CNAME pra nomes fora da AWS",
+        "Health checks: monitoram endpoints e alimentam o failover"
+      ],
+      "checkpoint": "Teste: 'quero apontar exemplo.com (sem www) pro CloudFront — CNAME ou alias, e por quê?'",
+      "ref": "14-dns-cdn/teoria.md#2-route-53--o-dns-da-aws"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Políticas de roteamento do Route 53",
+      "pontos": [
+        "Simple: sempre a mesma resposta — o padrão",
+        "Weighted: distribui por pesos (90/10) — canary e testes A/B",
+        "Latency: responde o endpoint mais rápido pro usuário — apps multi-região",
+        "Failover: primário enquanto o health check passa; senão, secundário — DR",
+        "Geolocation: por país/continente do usuário — conteúdo local, conformidade",
+        "⚠️ DNS não é load balancer: cache/TTL tornam a distribuição imprecisa; ELB balanceia dentro, DNS escolhe o destino"
+      ],
+      "checkpoint": "Proponha 3 cenários (canary, multi-região, contingência) e peça a política certa pra cada um",
+      "ref": "14-dns-cdn/teoria.md#3-políticas-de-roteamento-do-route-53"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "CloudFront: a CDN da AWS",
+      "pontos": [
+        "CDN = cache do seu conteúdo em centenas de edge locations, perto do usuário",
+        "Fluxo: usuário → edge mais próxima → Hit (entrega na hora) ou Miss (busca na origem e cacheia)",
+        "Distribuição (a unidade, ganha dXXXX.cloudfront.net), origem (S3 ou custom: ALB/API/qualquer HTTP), behaviors (regras por caminho)",
+        "TTLs e cache policies controlam quanto tempo a edge guarda cada objeto",
+        "Benefícios: latência global menor, menos carga na origem, HTTPS na borda, integra com WAF/Shield",
+        "Free tier generoso: 1 TB/mês + 10 mi de requisições sempre grátis — estudo sai a US$ 0"
+      ],
+      "checkpoint": "Pergunte a diferença entre Hit e Miss e o que acontece na primeira requisição de um objeto",
+      "ref": "14-dns-cdn/teoria.md#4-cloudfront--a-cdn-da-aws"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "OAC: S3 privado atrás do CloudFront + invalidações",
+      "pontos": [
+        "Problema do bucket público: qualquer um contorna a CDN e bate direto no S3",
+        "OAC: bucket 100% privado; bucket policy autoriza SÓ o serviço CloudFront, condicionado ao ARN da SUA distribuição",
+        "OAC é o sucessor do OAI (legado) — material novo e exames: OAC",
+        "Invalidação: forçar as edges a descartar o cache (/index.html ou /*)",
+        "Primeiras 1.000 invalidações de caminho/mês grátis; /* conta como 1",
+        "Boa prática real: versionar assets (hash no nome) e invalidar quase nunca"
+      ],
+      "checkpoint": "Pergunte: por que bucket público atrás do CloudFront é um problema, e o que o OAC muda?",
+      "ref": "14-dns-cdn/teoria.md#4-cloudfront--a-cdn-da-aws"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "ACM: certificados TLS gratuitos (e A pegadinha do us-east-1)",
+      "pontos": [
+        "ACM emite e RENOVA automaticamente certificados públicos gratuitos pra serviços AWS",
+        "Validação por DNS (recomendada): CNAME de validação na zona → renovação automática eterna",
+        "Não dá pra baixar a chave privada — só funciona acoplado a CloudFront/ALB/API Gateway",
+        "⚠️ PEGADINHA Nº 1: certificado pra CloudFront TEM que estar em us-east-1, sempre; pra ALB, na região do ALB",
+        "O combo de produção: S3 privado (OAC) ← CloudFront ← Route 53 alias + ACM us-east-1"
+      ],
+      "checkpoint": "Teste a pegadinha: 'meu site é sa-east-1, onde peço o certificado pro CloudFront?' Depois pergunte se pode ir pra prática",
+      "ref": "14-dns-cdn/teoria.md#5-acm--certificados-tls-gratuitos"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Preparação: bucket privado + criar a distribuição com OAC",
+      "pontos": [
+        "Conferir o bucket do módulo 06: Block Public Access LIGADO, sem policy pública",
+        "Criar distribuição: origem = bucket S3 (não o website endpoint!), OAC novo, redirect HTTP→HTTPS",
+        "Cache policy CachingOptimized, default root object index.html, sem WAF (custo)",
+        "Deploy demora ~5–10 min — normal, é a propagação pras edges"
+      ],
+      "acao": "Guiar a criação da distribuição no console, passo a passo",
+      "checkpoint": "Espere a distribuição sair de 'Deploying' e confirme que o aluno anotou o domínio dXXXX.cloudfront.net",
+      "ref": "14-dns-cdn/pratica.md#parte-a--cloudfront--s3-privado-com-oac-console"
+    },
+    {
+      "id": "p2",
+      "fase": "pratica",
+      "titulo": "Bucket policy do OAC + teste do contraste 403",
+      "pontos": [
+        "Ler a bucket policy gerada: principal cloudfront.amazonaws.com + condition SourceArn da distribuição",
+        "Conectar com least privilege do módulo 02",
+        "Testar: https://dXXXX.cloudfront.net serve o site; URL direta do S3 dá 403",
+        "Esse contraste É a foto do módulo: origem trancada, entrega só pela CDN"
+      ],
+      "acao": "Conferir a policy com o aluno e rodar os dois testes no navegador",
+      "checkpoint": "Confirme que o aluno viu o site pela CDN E o 403 no acesso direto antes de seguir",
+      "ref": "14-dns-cdn/pratica.md#passo-3--conferir-a-bucket-policy-do-oac"
+    },
+    {
+      "id": "p3",
+      "fase": "pratica",
+      "titulo": "Cache Hit/Miss + invalidação (Console e CLI)",
+      "pontos": [
+        "curl -sI ... | grep x-cache: primeira vez Miss, segunda Hit (mostrar headers Age e Via)",
+        "Atualizar o index.html no S3 e ver o cache servindo a versão ANTIGA",
+        "Criar invalidação /* no console; ver a versão nova depois",
+        "Na CLI: create-invalidation com caminho cirúrgico /index.html; lembrar 1.000/mês grátis"
+      ],
+      "acao": "Guiar os curls, o upload da nova versão e a invalidação nas duas interfaces",
+      "checkpoint": "Confirme que o aluno viu Miss→Hit e a invalidação trazendo a versão nova",
+      "ref": "14-dns-cdn/pratica.md#passo-5--ver-o-cache-trabalhando-hitmiss"
+    },
+    {
+      "id": "p4",
+      "fase": "pratica",
+      "titulo": "Hosted zone privada + registros + teste na VPC",
+      "pontos": [
+        "Criar zona privada curso.interno associada à VPC do módulo 03 (US$ 0,50/mês → teardown!)",
+        "Criar registro A (app.curso.interno → IP interno) e CNAME (site.curso.interno → CloudFront)",
+        "Mostrar o change-resource-record-sets na CLI (UPSERT)",
+        "Testar com dig DE DENTRO da VPC (EC2) — e mostrar que de fora falha",
+        "Quem responde é o resolver da VPC (IP .2)"
+      ],
+      "acao": "Guiar a criação da zona, dos registros e o teste com dig numa instância",
+      "checkpoint": "Confirme a resolução funcionando dentro da VPC e falhando fora; pergunte se ficou claro o porquê",
+      "ref": "14-dns-cdn/pratica.md#parte-c--hosted-zone-privada--registros-na-vpc-console--cli"
+    },
+    {
+      "id": "p5",
+      "fase": "pratica",
+      "titulo": "Opcional (domínio próprio) + Teardown obrigatório",
+      "pontos": [
+        "Opcional e PAGO: registrar domínio (~US$ 14/ano), ACM em us-east-1, alternate domain + alias no apex — só se o aluno quiser",
+        "Teardown: Disable na distribuição → esperar propagar (5–15 min) → Delete",
+        "Apagar registros e a hosted zone privada; terminar EC2 de teste se subiu",
+        "Bucket fica (módulo 06), mas remover a policy do OAC e confirmar privado",
+        "Conferir Billing nos próximos dias"
+      ],
+      "acao": "Oferecer a parte opcional; conduzir o teardown na ordem certa, explicando a espera do disable",
+      "checkpoint": "Feche a prática confirmando o checklist de conclusão do módulo",
+      "ref": "14-dns-cdn/pratica.md#-parte-e--teardown-obrigatório"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/apps/modulo-14/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "AWS/apps/modulo-14/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões de cenário, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 15 após passar"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/provas/modulo-14/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 15; se não, revise os pontos errados",
+      "ref": "AWS/provas/modulo-14/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 14",
+      "pontos": [
+        "Recap: DNS, Route 53 (alias!), políticas de roteamento, CloudFront + OAC, ACM em us-east-1",
+        "Você agora sabe montar o combo de produção de site estático: S3 privado ← CloudFront ← DNS + TLS",
+        "Próximo: Módulo 15 — Arquitetura & Well-Architected (amarra TUDO que o curso viu)"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 15 ou parar por aqui",
+      "ref": "AWS/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

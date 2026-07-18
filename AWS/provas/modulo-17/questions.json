@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 17: Otimização de Custos (FinOps)",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "A fatura da empresa dobrou e ninguém sabe por quê. O CTO quer 'cortar 30% já, comprando Savings Plans'. Segundo a cultura FinOps, qual deveria ser o PRIMEIRO passo?",
+      "opcoes": [
+        "Comprar imediatamente um Compute Savings Plan de 3 anos all-upfront",
+        "Estabelecer visibilidade: Cost Explorer, tags de alocação e entender pra onde o dinheiro vai",
+        "Desligar metade das instâncias de produção",
+        "Migrar tudo para outra nuvem mais barata"
+      ],
+      "correta": 1,
+      "explicacao": "O ciclo FinOps começa por Inform (visibilidade). Reservar capacidade sem saber o que é desperdício pode travar o desperdício por anos.",
+      "feedbacks": [
+        "Reservar antes de enxergar é o erro clássico: se metade do gasto é desperdício, você acabou de assinar 3 anos dele com desconto.",
+        "Exato: visibilidade primeiro. Só depois de saber ONDE está o gasto (e o que é desperdício) faz sentido otimizar e reservar.",
+        "Desligar produção às cegas troca um problema de custo por um incidente. Primeiro entender, depois agir cirurgicamente.",
+        "Migrar de nuvem sem entender o próprio gasto leva o problema junto — e o custo de migração costuma superar a 'economia'."
+      ]
+    },
+    {
+      "pergunta": "Você precisa descobrir por que o custo de EC2 subiu 40% no mês passado, dia a dia e por tipo de uso (usage type). Qual ferramenta resolve isso com menos esforço?",
+      "opcoes": [
+        "A página Bills do Billing (fatura consolidada)",
+        "Cost Explorer com granularidade diária, filtro por serviço e group by usage type",
+        "CloudTrail",
+        "AWS Health Dashboard"
+      ],
+      "correta": 1,
+      "explicacao": "É exatamente o caso de uso do Cost Explorer: análise interativa com filtros, agrupamentos e granularidade diária.",
+      "feedbacks": [
+        "A página Bills mostra o extrato consolidado por serviço — não dá pra investigar dia a dia nem por usage type ali.",
+        "Correto: filtrar EC2, granularidade Daily e agrupar por usage type mostra exatamente o quê subiu e quando.",
+        "CloudTrail audita QUEM fez chamadas de API, não quanto custou. Útil pra achar o autor depois, não o custo.",
+        "O Health Dashboard mostra eventos e incidentes da AWS, nada sobre a sua fatura."
+      ]
+    },
+    {
+      "pergunta": "O time marcou todos os recursos com a tag `CentroCusto` há 6 meses, mas ela não aparece como opção de agrupamento no Cost Explorer. Qual a causa mais provável?",
+      "opcoes": [
+        "Tags nunca aparecem no Cost Explorer",
+        "A tag não foi ATIVADA como cost allocation tag no console de Billing",
+        "O Cost Explorer só agrupa por tags em contas com suporte enterprise",
+        "A tag tem letras maiúsculas, o que é proibido"
+      ],
+      "correta": 1,
+      "explicacao": "Tag comum não vira dimensão de custo sozinha: precisa ser ativada em Billing → Cost allocation tags (e dali pra frente, sem retroagir).",
+      "feedbacks": [
+        "Tags aparecem sim — mas só depois de ativadas como cost allocation tags no Billing.",
+        "Exato: o passo que falta é a ativação no Billing. E atenção: ao ativar, ela só marca o custo dali pra frente.",
+        "Não há restrição de plano de suporte para cost allocation tags; qualquer conta pode ativar.",
+        "Maiúsculas são permitidas (mas cuidado: tags são case-sensitive — 'CentroCusto' e 'centrocusto' seriam dimensões diferentes)."
+      ]
+    },
+    {
+      "pergunta": "O Compute Optimizer marcou uma m5.2xlarge como over-provisioned (CPU média 4%). O dev resiste: 'a aplicação usa muita memória'. Qual a atitude correta antes do downsize?",
+      "opcoes": [
+        "Ignorar o dev: o Compute Optimizer nunca erra",
+        "Instalar o CloudWatch agent pra coletar métricas de memória e decidir com dados completos",
+        "Fazer o downsize imediatamente em produção, sem janela",
+        "Comprar uma Reserved Instance da m5.2xlarge pra garantir o preço"
+      ],
+      "correta": 1,
+      "explicacao": "Memória NÃO é coletada pelo CloudWatch por padrão. Antes de encolher uma instância possivelmente limitada por RAM, colete a métrica que falta.",
+      "feedbacks": [
+        "O Optimizer trabalha com as métricas disponíveis — e memória pode não estar entre elas. A ressalva do dev é tecnicamente plausível.",
+        "Correto: memória é invisível ao CloudWatch sem o agent. Coletar 1-2 semanas de dados de RAM evita um downsize que cause OOM em produção.",
+        "Downsize sem dados de memória pode derrubar a aplicação. Right-sizing é decisão por dados, não por pressa.",
+        "Reservar a instância superdimensionada é o pior dos mundos: trava o desperdício por 1-3 anos. Right-sizing vem ANTES de reservar."
+      ]
+    },
+    {
+      "pergunta": "Sua frota é estável, mas o time planeja migrar de EC2 para Fargate (e talvez Lambda) nos próximos 18 meses. Qual modelo de compra protege o desconto durante essa transição?",
+      "opcoes": [
+        "EC2 Instance Savings Plan de 3 anos",
+        "Compute Savings Plan (vale para EC2, Fargate e Lambda, qualquer família/região)",
+        "Standard Reserved Instances da família atual",
+        "Ficar 100% On-Demand para sempre"
+      ],
+      "correta": 1,
+      "explicacao": "O Compute Savings Plan segue o gasto de compute onde ele estiver: EC2 de qualquer família/região, Fargate e Lambda. Ideal quando a plataforma vai mudar.",
+      "feedbacks": [
+        "O EC2 Instance SP amarra família e região — quando a carga migrar pra Fargate, o compromisso fica descoberto.",
+        "Exato: flexibilidade é o superpoder do Compute SP. Desconto um pouco menor (~66%), mas acompanha a migração EC2→Fargate/Lambda.",
+        "RIs Standard são ainda mais rígidas que o EC2 Instance SP — presas à configuração. Péssimo pra quem vai mudar de plataforma.",
+        "On-Demand puro numa carga estável é deixar ~60%+ de desconto na mesa. O cenário pede compromisso flexível, não ausência de compromisso."
+      ]
+    },
+    {
+      "pergunta": "Você quer desconto por compromisso no seu RDS PostgreSQL de produção (uso estável há 2 anos). Qual mecanismo usar?",
+      "opcoes": [
+        "Compute Savings Plan",
+        "Reserved Instances de RDS",
+        "Spot Instances de RDS",
+        "EC2 Instance Savings Plan"
+      ],
+      "correta": 1,
+      "explicacao": "Savings Plans NÃO cobrem RDS. Para bancos gerenciados (RDS, ElastiCache, Redshift, OpenSearch), o mecanismo de reserva continua sendo Reserved Instances/Nodes.",
+      "feedbacks": [
+        "Pegadinha clássica: Compute SP cobre EC2, Fargate e Lambda — RDS fica de fora.",
+        "Correto: para RDS o caminho é RI (reserved DB instances). É por isso que RIs não morreram com a chegada dos Savings Plans.",
+        "Não existe Spot para RDS — e ainda bem: banco de produção interrompível seria um pesadelo.",
+        "EC2 Instance SP é só para EC2 (uma família numa região). RDS não entra em nenhum Savings Plan."
+      ]
+    },
+    {
+      "pergunta": "Um job de renderização roda em Spot e a AWS emite a interruption notice. O que acontece e o que a aplicação DEVE fazer?",
+      "opcoes": [
+        "Nada acontece; o aviso é só informativo e a instância continua",
+        "A instância será retomada em 2 minutos; a aplicação deve fazer checkpoint do trabalho e sair graciosamente",
+        "A AWS transfere a instância automaticamente para On-Demand sem impacto",
+        "A instância ganha 24 horas para terminar o job"
+      ],
+      "correta": 1,
+      "explicacao": "O contrato do Spot: aviso de 2 minutos (metadados/EventBridge) antes da retomada. A aplicação deve salvar estado (checkpoint) e encerrar limpo.",
+      "feedbacks": [
+        "O aviso é sério: 2 minutos depois a instância é terminada/parada. Ignorá-lo significa perder o trabalho em andamento.",
+        "Exato: 2 minutos pra salvar o progresso (ex.: no S3), tirar a instância do serviço e sair. Bem projetado, a interrupção vira um não-evento.",
+        "Não há conversão automática para On-Demand — quem quiser esse comportamento precisa arquitetar (ex.: ASG com pools mistos).",
+        "São 2 minutos, não 24 horas. Jobs longos em Spot precisam de checkpoints frequentes exatamente por isso."
+      ]
+    },
+    {
+      "pergunta": "Auditando a conta, você encontra: 8 volumes gp2 em uso, 5 volumes 'available', 3 EIPs não associados e 40 snapshots de volumes que já não existem. Qual ação NÃO reduz custo?",
+      "opcoes": [
+        "Migrar os volumes gp2 em uso para gp3",
+        "Deletar os volumes 'available' (após confirmar que não são necessários)",
+        "Associar os 3 EIPs a instâncias novas criadas só pra isso",
+        "Deletar os snapshots órfãos (após confirmar que não são backups necessários)"
+      ],
+      "correta": 2,
+      "explicacao": "Criar instâncias só pra 'usar' os EIPs ADICIONA custo (instância + IP). Desde 2024 todo IPv4 público cobra; a ação certa é liberar (release) os EIPs ociosos.",
+      "feedbacks": [
+        "gp2→gp3 reduz ~20% do custo desses volumes com performance igual ou melhor — é ganho puro.",
+        "Volume 'available' não serve a ninguém e cobra por GB-mês. Confirmou que não precisa? Deletar economiza.",
+        "Correto — essa é a pegadinha: subir instâncias pra ocupar EIPs só aumenta a fatura. EIP ocioso se resolve com release-address.",
+        "Snapshot órfão cobra pra sempre até ser deletado. Confirmada a irrelevância, apagar é economia direta."
+      ]
+    },
+    {
+      "pergunta": "Uma credencial vazada começou a minerar cripto na sua conta às 3h da manhã, num serviço que você nunca usou. Qual mecanismo tem a MELHOR chance de te avisar rápido desse gasto imprevisto?",
+      "opcoes": [
+        "O budget mensal de US$ 50 que alerta em 100% do valor real",
+        "Cost Anomaly Detection com assinatura de alertas",
+        "Olhar a página Bills no fim do mês",
+        "As cost allocation tags"
+      ],
+      "correta": 1,
+      "explicacao": "Anomaly Detection usa ML pra detectar desvios do padrão histórico — um serviço novo gastando é anomalia clássica. O budget só alerta ao cruzar o limiar definido.",
+      "feedbacks": [
+        "O budget vai alertar — mas só quando o gasto acumulado cruzar o limiar, o que pode demorar dias. Anomalia detecta o DESVIO do padrão antes disso.",
+        "Exato: gasto num serviço nunca usado é exatamente o tipo de desvio que o ML pega. Por isso as camadas se complementam: budget (teto) + anomalia (imprevisto).",
+        "Fim do mês é tarde demais — mineração de cripto pode custar milhares em dias. Detecção precisa ser contínua.",
+        "Tags ajudam a ALOCAR custo, não a detectar desvios. E o atacante certamente não taggeou as instâncias dele. 😄"
+      ]
+    },
+    {
+      "pergunta": "Sua aplicação em us-east-1 tem instâncias em 3 AZs trocando volumes altos de dados entre si, NAT Gateway em cada AZ e logs com retenção 'Never expire'. Qual afirmação sobre custos está CORRETA?",
+      "opcoes": [
+        "Tráfego entre AZs é gratuito por estar na mesma região",
+        "Tráfego entre AZs cobra por GB em cada direção, NAT cobra por hora + GB, e logs sem retenção crescem (e cobram) pra sempre",
+        "NAT Gateway é gratuito no Free Tier permanentemente",
+        "Logs do CloudWatch nunca geram custo de armazenamento"
+      ],
+      "correta": 1,
+      "explicacao": "Os três vilões juntos: cross-AZ ~US$0,01/GB por direção, NAT ~US$0,045/h + US$0,045/GB por AZ, e log groups sem retenção acumulam GB cobrados indefinidamente.",
+      "feedbacks": [
+        "Mito comum: mesma região NÃO significa grátis. Entre AZs cobra ~US$0,01/GB em cada direção — invisível até a fatura chegar.",
+        "Correto: você identificou a lista negra. Antídotos: medir/localizar tráfego pesado, avaliar endpoints de VPC, e retenção em todo log group.",
+        "NAT Gateway não tem free tier permanente — cobra por hora de existência mais GB processado. É um dos vilões número 1.",
+        "CloudWatch Logs cobra ingestão E armazenamento por GB. Sem retenção definida, o armazenamento só cresce."
+      ]
+    },
+    {
+      "pergunta": "Você quer que o ambiente de DEV pare de gastar sozinho: se o gasto do mês passar de US$ 30, as instâncias EC2 de dev devem ser PARADAS automaticamente. O que usar?",
+      "opcoes": [
+        "Cost Anomaly Detection",
+        "Um budget com Budget Action configurada para parar as instâncias",
+        "Cost Explorer com forecast",
+        "Uma cost allocation tag chamada 'Parar'"
+      ],
+      "correta": 1,
+      "explicacao": "Budget Actions permitem que o budget AJA ao estourar: aplicar política IAM restritiva ou parar instâncias EC2/RDS específicas.",
+      "feedbacks": [
+        "Anomaly Detection só alerta — não executa ações sobre recursos.",
+        "Exato: é o caso de uso das Budget Actions — o budget deixa de ser só um aviso e vira um disjuntor que para as instâncias-alvo.",
+        "Cost Explorer analisa e prevê, mas não age sobre recursos.",
+        "Tags não executam nada por si — precisariam de automação em volta. A funcionalidade pronta pra isso é Budget Action."
+      ]
+    },
+    {
+      "pergunta": "Antes de aprovar a construção de uma arquitetura nova (ALB + ASG + RDS Multi-AZ), a gerência pede uma estimativa mensal comparando On-Demand vs. Savings Plans. Qual ferramenta gera isso de forma compartilhável, sem custo?",
+      "opcoes": [
+        "AWS Pricing Calculator (calculator.aws)",
+        "Cost Explorer",
+        "CUR no Athena",
+        "AWS Budgets"
+      ],
+      "correta": 0,
+      "explicacao": "O Pricing Calculator estima arquiteturas ANTES de existirem: você configura os serviços, compara modelos de compra e exporta/compartilha a estimativa.",
+      "feedbacks": [
+        "Correto: é a ferramenta de estimativa ex-ante — monta a arquitetura hipotética, compara On-Demand vs. SP e gera link/CSV pra gerência.",
+        "Cost Explorer analisa gasto PASSADO (e projeta tendência) — não estima uma arquitetura que ainda não existe.",
+        "O CUR só contém o que já foi cobrado; não serve pra estimar o futuro de algo não construído.",
+        "Budgets define limites e alertas sobre gasto real/previsto da conta — não monta estimativas de arquitetura."
+      ]
+    }
+  ]
+}

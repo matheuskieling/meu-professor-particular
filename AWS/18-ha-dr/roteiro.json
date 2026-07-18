@@ -1,0 +1,232 @@
+{
+  "modulo": "18",
+  "titulo": "Alta Disponibilidade & Disaster Recovery",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — projetar para a falha",
+      "pontos": [
+        "Mantra do módulo: 'Everything fails, all the time' (Werner Vogels)",
+        "A pergunta não é SE vai falhar, é o que acontece QUANDO falhar",
+        "Roteiro: RTO/RPO → SLA composto → HA vs DR → 4 estratégias → AWS Backup → replicação → failover DNS → chaos",
+        "Prática: provar RPO/RTO de verdade (backup+restore, CRR, health check) + tabletop de desastres"
+      ],
+      "checkpoint": "Pergunte se o aluno já viveu um incidente/perda de dados e o que aconteceu; confirme que pode começar",
+      "ref": "18-ha-dr/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "RTO e RPO: as duas métricas que governam tudo",
+      "pontos": [
+        "RTO = quanto tempo posso ficar fora do ar (indisponibilidade)",
+        "RPO = quantos dados posso perder, medido em tempo antes da falha",
+        "Exemplos numéricos: blog (24h/24h), e-commerce (1h/5min), pagamentos (segundos/~0)",
+        "RTO/RPO menores = custo maior, sempre — a decisão é do negócio",
+        "RPO vem da frequência de backup/replicação; RTO da velocidade de restauração/failover",
+        "No papel valem zero: só valem depois de testados"
+      ],
+      "checkpoint": "Aplique o teste: backup diário às 3h, banco corrompeu às 15h — qual o RPO real?",
+      "ref": "18-ha-dr/teoria.md#1-rto-e-rpo-as-duas-perguntas-que-definem-tudo"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "SLA da AWS vs SLA da sua aplicação (composição)",
+      "pontos": [
+        "Cada serviço tem SLA próprio (ALB 99,99%, RDS Multi-AZ 99,95%, Route 53 100%)",
+        "Dependências em SÉRIE multiplicam: ALB × EC2 × RDS ≈ 99,93% (~6h/ano)",
+        "Seu SLA composto é sempre PIOR que o do pior componente",
+        "Redundância em PARALELO melhora: dois de 99% ≈ 99,99%",
+        "SLA descumprido dá créditos, não devolve clientes — é contrato, não garantia física",
+        "Mnemônico: 99,9%≈8,7h/ano; 99,99%≈52min/ano; 99,999%≈5min/ano"
+      ],
+      "checkpoint": "Peça pro aluno calcular (aproximado) o SLA composto de uma cadeia com 3 serviços de 99,9%",
+      "ref": "18-ha-dr/teoria.md#2-sla-da-aws-vs-sla-da-sua-aplicação"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "HA (multi-AZ) vs DR (multi-região): disciplinas diferentes",
+      "pontos": [
+        "HA = falhas comuns, resolução automática, dentro da região: ALB+ASG multi-AZ, RDS Multi-AZ, EFS/S3 por design",
+        "RDS Multi-AZ: standby síncrona, failover ~1-2min via DNS — disponibilidade, NÃO leitura",
+        "DR = desastres raros (região fora, erro humano catastrófico, ransomware), entre regiões, com runbook",
+        "Analogia: HA é o para-choque (automático); DR é o seguro (evento raro, exige acionar processo)",
+        "Multi-AZ NÃO é DR: o DROP TABLE replica pra standby sincronizadinho"
+      ],
+      "checkpoint": "Pergunte: por que RDS Multi-AZ não protege de um DROP TABLE acidental?",
+      "ref": "18-ha-dr/teoria.md#3-ha-dentro-da-região-vs-dr-entre-regiões"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "As 4 estratégias de DR em ordem de custo",
+      "pontos": [
+        "Backup & Restore: só backups no destino; RTO horas-24h+, RPO horas; viável graças a IaC",
+        "Pilot Light: dados replicando + infra mínima apagada (só código/AMIs); RTO dezenas de min, RPO minutos",
+        "Warm Standby: cópia funcional REDUZIDA rodando; virada = DNS + escalar; RTO minutos",
+        "Active/Active: 2+ regiões servindo tráfego; RTO/RPO ~zero; exige dados multi-região (global tables)",
+        "A escolha vem do RTO/RPO do negócio, não da vaidade técnica",
+        "Maioria vive bem com backup & restore + runbook TESTADO"
+      ],
+      "checkpoint": "Peça pro aluno ordenar as 4 de memória com RTO típico de cada",
+      "ref": "18-ha-dr/teoria.md#4-as-4-estratégias-de-dr-em-ordem-de-custo"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "AWS Backup: backup como política central",
+      "pontos": [
+        "Backup plan: frequência, janela, retenção, transição pra cold storage",
+        "Atribuição por TAG: recurso novo taggeado entra sozinho — política, não checklist",
+        "Vault guarda recovery points; Vault Lock (WORM) impede deleção até por admins — anti-ransomware",
+        "Cross-region copy: DR backup & restore num checkbox",
+        "Cobre EBS, EC2, RDS/Aurora, DynamoDB, EFS, S3, FSx...",
+        "Backup não testado é esperança: a métrica é 'restaurei e o RTO/RPO bateram'"
+      ],
+      "checkpoint": "Pergunte por que atribuir recursos por tag é superior a selecionar um a um",
+      "ref": "18-ha-dr/teoria.md#5-aws-backup-backups-centralizados-como-política"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "Replicação contínua: S3 CRR, réplicas cross-region, Global Tables",
+      "pontos": [
+        "Backup dá RPO de horas; replicação contínua dá RPO de segundos/minutos",
+        "S3 CRR: versionamento nos DOIS buckets + role IAM; replica objetos NOVOS; assíncrona",
+        "RDS read replica cross-region: assíncrona, serve leitura, PROMOÇÃO manual em desastre",
+        "Não confundir: Multi-AZ (HA síncrona, automática) vs read replica (assíncrona, leitura, promovível)",
+        "DynamoDB Global Tables: multi-ATIVO, escrita em todas as regiões, ~1s, last-writer-wins",
+        "Aurora Global Database: lag <1s, promoção ~1min"
+      ],
+      "checkpoint": "Teste a distinção Multi-AZ vs read replica com perguntas cruzadas antes de seguir",
+      "ref": "18-ha-dr/teoria.md#6-replicação-contínua-encurtando-o-rpo"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "Route 53 failover + chaos engineering",
+      "pontos": [
+        "Failover routing: primário com health check + secundário (outra região ou página estática de manutenção)",
+        "Health check: frota global testa o endpoint; N falhas → DNS passa a responder o secundário",
+        "TTL baixo (30-60s) é vital: TTL alto = clientes presos no endpoint morto = RTO destruído",
+        "Checar algo significativo (/health que toca o banco), não só 'porta aberta'",
+        "Custo ~US$0,50/mês por health check — no curso, apaga no teardown",
+        "Chaos engineering: hipótese → falha controlada → observar → corrigir; AWS FIS; GameDays",
+        "Sem observabilidade (módulo 12) não há chaos engineering, há vandalismo"
+      ],
+      "checkpoint": "Pergunte por que TTL de 24h sabota o failover; depois: 'podemos ir pra prática?'",
+      "ref": "18-ha-dr/teoria.md#7-route-53-failover-a-chave-geral-da-virada"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "AWS Backup: plano + backup on-demand",
+      "pontos": [
+        "Criar volume EBS 1GiB de laboratório com tag Backup=lab",
+        "Criar backup plan (regra diária, retenção 7 dias) e mostrar onde ficaria o cross-region copy",
+        "Atribuir recursos POR TAG (Backup=lab)",
+        "Rodar backup on-demand e acompanhar o job até Completed; ver o recovery point no vault"
+      ],
+      "acao": "Guiar a criação do volume, do plano e do backup on-demand no console",
+      "checkpoint": "Confirme o recovery point visível no vault antes de seguir",
+      "ref": "18-ha-dr/pratica.md#parte-a--aws-backup-plano-backup-on-demand-e-restauração-console"
+    },
+    {
+      "id": "p2",
+      "fase": "pratica",
+      "titulo": "Restaurar de verdade: provar o RPO/RTO",
+      "pontos": [
+        "Restaurar o recovery point como novo volume",
+        "CRONOMETRAR: do clique ao volume disponível = RTO real medido",
+        "Amarrar: backup não testado é esperança; agora o aluno tem número, não chute"
+      ],
+      "acao": "Guiar a restauração e pedir o tempo cronometrado",
+      "checkpoint": "Pergunte o RTO medido e o que significaria se fosse um banco de 500GB",
+      "ref": "18-ha-dr/pratica.md#passo-4--restaurar-a-parte-que-quase-ninguém-testa"
+    },
+    {
+      "id": "p3",
+      "fase": "pratica",
+      "titulo": "S3 Cross-Region Replication",
+      "pontos": [
+        "Criar bucket primário (us-east-1) e réplica (us-west-2), AMBOS com versionamento",
+        "Criar replication rule com role IAM nova; não replicar objetos existentes (de propósito)",
+        "Subir prova-de-vida.txt e ver o objeto aparecer na outra região com ReplicationStatus=REPLICA",
+        "Amarrar: RPO de segundos sem operar nada; objetos antigos exigiriam Batch Replication"
+      ],
+      "acao": "Guiar os comandos CLI de bucket/versionamento e a regra no console; conferir a réplica",
+      "checkpoint": "Confirme o objeto replicado em us-west-2 antes de seguir",
+      "ref": "18-ha-dr/pratica.md#parte-b--s3-cross-region-replication-console--cli"
+    },
+    {
+      "id": "p4",
+      "fase": "pratica",
+      "titulo": "Failover DNS: health check do Route 53",
+      "pontos": [
+        "⚠️ Avisar: health check custa ~US$0,50/mês — entra no teardown de hoje",
+        "Criar health check HTTPS de um endpoint vivo e vê-lo ficar Healthy",
+        "Quebrar de propósito (porta/caminho inválido) → Unhealthy → consertar → Healthy",
+        "Se o aluno tem hosted zone: registros Failover Primary/Secondary com TTL 60 e teste com dig",
+        "Amarrar: esse gatilho + TTL baixo é a mecânica da virada de região"
+      ],
+      "acao": "Guiar a criação e a simulação de falha do health check (e os registros, se houver zona)",
+      "checkpoint": "Confirme que o aluno viu os dois estados e entendeu o papel do TTL",
+      "ref": "18-ha-dr/pratica.md#parte-c--failover-dns-com-route-53-console"
+    },
+    {
+      "id": "p5",
+      "fase": "pratica",
+      "titulo": "Tabletop exercise + teardown obrigatório",
+      "pontos": [
+        "Aplicar os 4 cenários: DROP TABLE, região fora, RTO 15min/RPO 1min, ransomware com admin comprometido",
+        "Para cada um: estratégia, RTO/RPO resultante, primeiros 3 passos do runbook",
+        "Avaliar e corrigir as respostas; DR é 20% tecnologia, 80% plano",
+        "Teardown COMPLETO: recovery points, plano, volumes (original+restaurado), 2 buckets versionados, health check",
+        "Verificação final nas DUAS regiões"
+      ],
+      "acao": "Conduzir o tabletop cenário a cenário; depois guiar e conferir o teardown",
+      "checkpoint": "Feche confirmando o checklist de conclusão e o teardown 100% (health check apagado!)",
+      "ref": "18-ha-dr/pratica.md#parte-d--tabletop-exercise-o-desastre-é-verbal-com-o-claude"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/apps/modulo-18/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "AWS/apps/modulo-18/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões de cenário, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 19 (projeto final) após passar"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/provas/modulo-18/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 19; se não, revise os pontos errados",
+      "ref": "AWS/provas/modulo-18/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 18",
+      "pontos": [
+        "Recap: RTO/RPO medidos na prática, SLA composto, 4 estratégias, backup restaurado, CRR vista ao vivo",
+        "O aluno agora fecha a tríade: construir (1-16) + pagar direito (17) + sobreviver a falhas (18)",
+        "Próximo e último: Módulo 19 — Projeto Final, onde TUDO se junta numa aplicação real",
+        "Sugestão: revisar as estimativas do módulo 17 — o projeto final vai usá-las"
+      ],
+      "checkpoint": "Pergunte se quer emendar o kickoff do projeto final ou parar por aqui",
+      "ref": "AWS/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

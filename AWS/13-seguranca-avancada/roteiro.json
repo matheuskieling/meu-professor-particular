@@ -1,0 +1,229 @@
+{
+  "modulo": "13",
+  "titulo": "Segurança Avançada",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que vamos fazer neste módulo",
+      "pontos": [
+        "Objetivo: subir o nível do Módulo 02 — criptografia (KMS), segredos, borda, detecção e IAM fino",
+        "Fio condutor: defesa em profundidade — nenhuma camada sozinha basta",
+        "Prática forte: envelope encryption na mão, secrets, GuardDuty, policy com MFA",
+        "⚠️ Este módulo tem custos reais pequenos (KMS US$1/mês, Secret US$0,40/mês) — teardown rigoroso"
+      ],
+      "checkpoint": "Confirme que o aluno completou o Módulo 02 (IAM básico) e 12, e avise dos microcustos",
+      "ref": "13-seguranca-avancada/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "Defesa em profundidade",
+      "pontos": [
+        "Segurança não é um muro alto: são camadas independentes que assumem que a anterior falha",
+        "Camadas: borda (WAF/Shield), rede (VPC/SG), identidade (IAM), dados (KMS/TLS), segredos, detecção",
+        "Analogia do castelo: fosso, muralha, guardas, cofre E sentinelas por dentro",
+        "Detecção é parte da defesa: assuma que algo vai passar e detecte rápido"
+      ],
+      "checkpoint": "Peça pro aluno mapear as camadas aos módulos que já fez no curso",
+      "ref": "13-seguranca-avancada/teoria.md#1-defesa-em-profundidade"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "KMS: tipos de chave, key policies e rotação",
+      "pontos": [
+        "KMS guarda chaves que NUNCA saem do serviço; cada uso passa pelo IAM e fica no CloudTrail",
+        "Tipos: AWS owned (invisível), AWS managed (aws/s3..., grátis), customer managed (US$1/mês, controle total)",
+        "Key policy: a resource policy RAIZ da chave — sem ela permitir, nem admin da conta usa",
+        "Separação de papéis: administrar a chave ≠ usar a chave",
+        "Rotação: automática anual nas AWS managed; opcional nas CMKs (ARN não muda, nada quebra)",
+        "Deleção de chave: só agendada (7-30 dias) — apagar chave = dados irrecuperáveis"
+      ],
+      "checkpoint": "Teste: por que a AWS não deixa apagar uma chave KMS na hora?",
+      "ref": "13-seguranca-avancada/teoria.md#2-kms--o-serviço-de-chaves"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "Envelope encryption — o padrão por trás de tudo",
+      "pontos": [
+        "Problema: kms encrypt só aceita 4 KB — como cifrar 1 GB?",
+        "GenerateDataKey devolve DUAS versões da data key: em claro e cifrada pela CMK",
+        "Cifra-se o dado LOCALMENTE com a data key; apaga a versão clara; guarda a cifrada junto do dado",
+        "Decrypt: KMS abre a data key (se o IAM deixar) → você decifra localmente",
+        "Superpoderes: CMK nunca viaja; performance local; revogação centralizada de milhões de objetos",
+        "É o que S3 (SSE-KMS), EBS e RDS fazem por baixo — vamos fazer NA MÃO na prática"
+      ],
+      "checkpoint": "Peça pro aluno narrar o fluxo completo de cifrar e decifrar com envelope",
+      "ref": "13-seguranca-avancada/teoria.md#23-envelope-encryption--entenda-isso-de-verdade"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Segredos: Secrets Manager vs. Parameter Store",
+      "pontos": [
+        "Regra zero: segredo não vive em código/env commitado — vive em serviço, lido em runtime via IAM",
+        "Secrets Manager: US$0,40/secret/mês, ROTAÇÃO AUTOMÁTICA nativa (Lambda, integração RDS), gera senhas",
+        "Parameter Store: standard grátis, hierarquia de caminhos, SecureString cifra via KMS",
+        "Escolha: senha que gira sozinha → Secrets; config e segredos manuais → SecureString",
+        "Deleção do secret tem janela de recuperação 7-30 dias (bypass: --force-delete-without-recovery)"
+      ],
+      "checkpoint": "Cenário: senha de RDS de produção + 20 configs — onde vai cada coisa e por quê?",
+      "ref": "13-seguranca-avancada/teoria.md#3-segredos-secrets-manager-vs-parameter-store"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Criptografia em repouso e em trânsito nos serviços conhecidos",
+      "pontos": [
+        "Trânsito: TLS/HTTPS — APIs AWS já são; sua parte: ACM no ALB, aws:SecureTransport no S3",
+        "Repouso: quase sempre envelope encryption com KMS por baixo",
+        "S3: SSE-S3 é padrão desde 2023; SSE-KMS quando quer SUA chave + auditoria",
+        "EBS: flag encrypted + encryption by default na conta; snapshots herdam",
+        "RDS: só na CRIAÇÃO — banco existente exige snapshot → copiar cifrando → restaurar",
+        "Armadilha: criptografia em repouso NÃO substitui controle de acesso (SELECT com credencial lê tudo)"
+      ],
+      "checkpoint": "Teste: dá pra ligar criptografia num RDS existente? Qual é o caminho?",
+      "ref": "13-seguranca-avancada/teoria.md#4-criptografia-em-repouso-e-em-trânsito-nos-serviços-que-você-já-usa"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "Borda e detecção: WAF, Shield, GuardDuty, Security Hub, Inspector",
+      "pontos": [
+        "WAF: camada 7 — Web ACL em CloudFront/ALB/API GW; managed rules (OWASP), regras próprias, rate limiting",
+        "Shield Standard: anti-DDoS camada 3/4, GRÁTIS e automático; Advanced: ~US$3 mil/mês, SRT",
+        "Divisão: Shield segura o volume bruto; WAF o tráfego malicioso bem formado (SQLi, bots)",
+        "GuardDuty: detecção de ameaças por ML sobre CloudTrail/VPC Flow/DNS; 1 clique, trial 30 dias",
+        "Inspector: CVEs em EC2/ECR/Lambda (antes do ataque); Security Hub: agrega tudo + score de postura"
+      ],
+      "checkpoint": "Pergunte: GuardDuty vs. Inspector vs. Security Hub — o que cada um responde?",
+      "ref": "13-seguranca-avancada/teoria.md#5-proteção-de-borda-waf-e-shield"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "IAM avançado: boundaries, session policies, conditions, menor privilégio",
+      "pontos": [
+        "Permission boundary: TETO de permissões (interseção) — delegação sem escalada de privilégio",
+        "Session policies: restrição extra passada no AssumeRole, válida só pra sessão",
+        "Regra: identity policies CONCEDEM; boundaries/session apenas LIMITAM; Deny explícito ganha sempre",
+        "Conditions úteis: aws:SourceIp, aws:MultiFactorAuthPresent, aws:SecureTransport, aws:RequestedRegion",
+        "Armadilha do MFA-Deny: usar BoolIfExists (a key pode nem existir em access keys de longo prazo)",
+        "Menor privilégio é processo: começar estreito, alargar sob demanda, Access Analyzer gera policy do uso real"
+      ],
+      "checkpoint": "Teste a pegadinha do BoolIfExists; depois pergunte: podemos ir pra prática?",
+      "ref": "13-seguranca-avancada/teoria.md#7-iam-avançado"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Criar a chave KMS e cifrar/decifrar via CLI",
+      "pontos": [
+        "Avisar do custo: US$1/mês pró-rata; morre no teardown com agendamento de 7 dias",
+        "Criar CMK simétrica alias/lab-seguranca no Console: admins ≠ usuários; LER a key policy",
+        "Habilitar rotação automática anual",
+        "kms encrypt/decrypt de um arquivinho (limite 4 KB); notar que o decrypt nem precisa do key-id",
+        "Conferir os eventos Decrypt no CloudTrail — criptografia auditável"
+      ],
+      "acao": "Guiar a criação da chave no Console e os comandos encrypt/decrypt na CLI",
+      "checkpoint": "Confirme que o decrypt devolveu o texto original antes de seguir",
+      "ref": "13-seguranca-avancada/pratica.md#parte-a--kms-criar-a-chave-console"
+    },
+    {
+      "id": "p2",
+      "fase": "pratica",
+      "titulo": "Envelope encryption na mão (data keys)",
+      "pontos": [
+        "generate-data-key: identificar Plaintext vs. CiphertextBlob (duas versões da mesma chave)",
+        "Cifrar um arquivo de 50 MB LOCALMENTE com openssl + data key",
+        "O ritual: apagar a data key em claro; guardar só a cifrada junto do arquivo",
+        "Reabrir: kms decrypt da data key → decifrar local → sha256 idêntico",
+        "Amarrar: é o que S3/EBS/RDS fazem por baixo; revogação na CMK tranca tudo de uma vez"
+      ],
+      "acao": "Guiar o fluxo completo do envelope passo a passo, explicando cada arquivo gerado",
+      "checkpoint": "Confirme sha256 idêntico e que o aluno sabe explicar por que a CMK nunca viajou",
+      "ref": "13-seguranca-avancada/pratica.md#parte-b--envelope-encryption-com-data-keys-cli"
+    },
+    {
+      "id": "p3",
+      "fase": "pratica",
+      "titulo": "Secrets Manager e Parameter Store",
+      "pontos": [
+        "create-secret (US$0,40/mês — avisado) e get-secret-value como uma app leria",
+        "Espiar a aba Rotation no Console (só olhar — exigiria RDS vivo)",
+        "put-parameter SecureString e a diferença com/sem --with-decryption",
+        "Comparar na prática: rotação nativa paga vs. grátis manual; hierarquia de caminhos"
+      ],
+      "acao": "Guiar a criação/leitura do secret e do SecureString via CLI e a exploração no Console",
+      "checkpoint": "Confirme as duas leituras e que o aluno saberia escolher entre os dois serviços",
+      "ref": "13-seguranca-avancada/pratica.md#parte-c--secrets-manager-e-parameter-store"
+    },
+    {
+      "id": "p4",
+      "fase": "pratica",
+      "titulo": "Ativar o GuardDuty (trial 30 dias)",
+      "pontos": [
+        "Avisar: trial de 30 dias — desativaremos no teardown pra não cobrar depois",
+        "Enable em um clique; entender o que ele passa a analisar (CloudTrail, VPC Flow, DNS)",
+        "Gerar sample findings e ler um: severidade, recurso, explicação",
+        "Conectar com o Módulo 12: finding → EventBridge → resposta automática"
+      ],
+      "acao": "Guiar a ativação no Console e a exploração dos sample findings",
+      "checkpoint": "Confirme que o aluno viu os findings e anotou que o teardown desativa o serviço",
+      "ref": "13-seguranca-avancada/pratica.md#parte-d--guardduty-console"
+    },
+    {
+      "id": "p5",
+      "fase": "pratica",
+      "titulo": "Policy com condition de MFA + teardown rigoroso",
+      "pontos": [
+        "Escrever o Deny-tudo-sem-MFA com BoolIfExists e explicar a pegadinha",
+        "⚠️ NÃO anexar ao próprio usuário (CLI sem MFA = trancar-se pra fora); criar como managed policy",
+        "Teardown com custo real: secret com --force-delete-without-recovery, parâmetro, policy",
+        "KMS: schedule-key-deletion 7 dias + delete-alias; GuardDuty: delete-detector",
+        "Conferir tudo: KeyState=PendingDeletion, lista de secrets vazia, sem detectors"
+      ],
+      "acao": "Guiar a policy, o create-policy e TODOS os passos do teardown, conferindo cada um",
+      "checkpoint": "Feche a prática confirmando o checklist e cada item do teardown executado",
+      "ref": "13-seguranca-avancada/pratica.md#parte-f--🔥-teardown-obrigatório--aqui-tem-custo-real"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/apps/modulo-13/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "AWS/apps/modulo-13/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões de cenário, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 14 após passar"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/provas/modulo-13/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 14; se não, revise os pontos errados",
+      "ref": "AWS/provas/modulo-13/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 13",
+      "pontos": [
+        "Recap: defesa em profundidade, KMS/envelope, segredos, WAF/Shield, GuardDuty/Hub/Inspector, IAM fino",
+        "Checar de novo o teardown: chave PendingDeletion, secret apagado, GuardDuty off",
+        "Próximo: Módulo 14 — DNS & Entrega de conteúdo (Route 53, CloudFront, ACM)"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 14 ou parar por aqui",
+      "ref": "AWS/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

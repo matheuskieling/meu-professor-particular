@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 04: Compute — EC2",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Um serviço de análise roda cálculos pesados de CPU 24/7 numa t3.large e, após algumas horas, o desempenho despenca. Qual a explicação mais provável?",
+      "opcoes": [
+        "A AWS limita instâncias que rodam muito tempo",
+        "A família t é burstable: os créditos de CPU acabaram e a instância caiu pra linha de base — o caso pede família c",
+        "O volume gp3 ficou cheio",
+        "O security group está bloqueando a CPU"
+      ],
+      "correta": 1,
+      "explicacao": "Burstable = créditos pra picos. Carga contínua de 100% esgota os créditos; pra CPU sustentada, use compute optimized (c).",
+      "feedbacks": [
+        "A AWS não penaliza tempo de execução — o comportamento vem do modelo de créditos da própria família t.",
+        "Correto: a família t entrega picos via créditos acumulados no ócio. Carga contínua os drena e o clock cai pra linha de base. Workload de CPU sustentada = família c (compute optimized).",
+        "Disco cheio causa erros de escrita/aplicação, não queda gradual de desempenho de CPU.",
+        "Security group filtra tráfego de REDE — não tem nenhuma relação com desempenho de CPU."
+      ]
+    },
+    {
+      "pergunta": "Você precisa lançar 10 servidores web idênticos, já configurados no boot, sem tocar em nenhum manualmente. Qual combinação resolve?",
+      "opcoes": [
+        "Lançar 10 instâncias e configurar cada uma via SSH",
+        "AMI base + user data com o script de instalação/configuração no launch",
+        "Criar 10 key pairs diferentes",
+        "Usar 10 Elastic IPs"
+      ],
+      "correta": 1,
+      "explicacao": "AMI (o molde) + user data (o bootstrap) = servidores descritos, não montados à mão. Base do Auto Scaling.",
+      "feedbacks": [
+        "Funciona, mas é exatamente o trabalho manual e não-reproduzível que a nuvem elimina — e não escala pra 100 servidores.",
+        "Correto: a AMI dá o ponto de partida idêntico e o user data executa a configuração no primeiro boot de cada uma. É o padrão que alimenta Auto Scaling e IaC.",
+        "Key pairs cuidam do acesso SSH — não configuram nada dentro do servidor.",
+        "Elastic IPs são endereços fixos (pagos) — irrelevantes pra configuração automática."
+      ]
+    },
+    {
+      "pergunta": "O user data da sua instância 'não funcionou': o nginx não subiu. Qual o PRIMEIRO passo de diagnóstico?",
+      "opcoes": [
+        "Terminar a instância e tentar outra região",
+        "Entrar via SSH e ler /var/log/cloud-init-output.log",
+        "Abrir um ticket de suporte na AWS",
+        "Reinstalar o sistema operacional"
+      ],
+      "correta": 1,
+      "explicacao": "O cloud-init grava a saída do user data nesse log — erro de sintaxe, pacote não achado, tudo aparece lá.",
+      "feedbacks": [
+        "Trocar de região não muda nada: o script é o mesmo. Antes de destruir, diagnostique.",
+        "Correto: toda a execução do user data (stdout/stderr) vai pra /var/log/cloud-init-output.log. Shebang faltando, typo no pacote, erro de rede — está tudo lá.",
+        "O suporte não vai depurar seu script — e o Basic plan nem cobre isso. O log local responde em segundos.",
+        "Desnecessário e drástico: o SO está bem; o script é que precisa ser lido e corrigido."
+      ]
+    },
+    {
+      "pergunta": "Um app web numa instância EC2 tem uma vulnerabilidade de SSRF. Com IMDSv2 (token obrigatório), por que o ataque clássico de roubo de credenciais da role falha?",
+      "opcoes": [
+        "Porque o IMDSv2 desativa completamente o metadata",
+        "Porque obter o token exige uma requisição PUT com header específico, que um SSRF típico (GET) não consegue forjar",
+        "Porque o IMDSv2 exige senha do usuário root",
+        "Porque as credenciais da role deixam de existir no metadata"
+      ],
+      "correta": 1,
+      "explicacao": "O fluxo de sessão (PUT + header + token) quebra o padrão do SSRF, que normalmente só induz GETs simples.",
+      "feedbacks": [
+        "O metadata continua ativo e útil — o IMDSv2 só muda o COMO se acessa (sessão com token).",
+        "Correto: SSRF clássico faz o servidor emitir um GET a uma URL controlada. Sem conseguir fazer o PUT com o header do token, o atacante recebe 401 e as credenciais ficam protegidas.",
+        "Não existe senha no IMDS — a proteção é o token de sessão.",
+        "As credenciais da role continuam disponíveis via metadata (é assim que o SDK as usa) — apenas atrás do token."
+      ]
+    },
+    {
+      "pergunta": "Cenário de custo: instância t3.micro STOPPED há 3 meses, com volume gp3 de 100 GB e um Elastic IP associado a ela. O que está sendo cobrado?",
+      "opcoes": [
+        "Nada, pois a instância está parada",
+        "Somente o Elastic IP",
+        "O volume EBS de 100 GB e o Elastic IP (ocioso, já que a instância está parada)",
+        "As horas de compute da t3.micro"
+      ],
+      "correta": 2,
+      "explicacao": "Stopped zera o compute, mas EBS cobra por GB·mês e o EIP numa instância parada é considerado ocioso — cobra também.",
+      "feedbacks": [
+        "O mito clássico: 'parada = grátis'. O disco persiste (e cobra), e o EIP ocioso também.",
+        "O EIP cobra, sim — mas os 100 GB de gp3 são a parte maior da fatura silenciosa aqui.",
+        "Correto: compute zerado, mas ~100 GB de EBS + Elastic IP ocioso cobram todo mês. 3 meses disso já dói — por isso terminate + verificação.",
+        "Compute é exatamente o que NÃO cobra quando o estado é stopped."
+      ]
+    },
+    {
+      "pergunta": "Você deu STOP e depois START numa instância (sem Elastic IP) e o monitoramento externo perdeu o servidor. Por quê?",
+      "opcoes": [
+        "A instância mudou de região no restart",
+        "O IP público mudou no start — IPs dinâmicos são devolvidos no stop",
+        "O security group foi resetado",
+        "O DNS da VPC foi desabilitado"
+      ],
+      "correta": 1,
+      "explicacao": "Stop devolve o IP público dinâmico; o start atribui outro. IP estável exige Elastic IP (com o custo dele).",
+      "feedbacks": [
+        "Instâncias nunca mudam de região (nem de AZ) — no máximo de host físico dentro da mesma AZ.",
+        "Correto: o IPv4 público dinâmico não sobrevive ao stop/start. Quem aponta pro IP antigo perde o alvo — os remédios são Elastic IP ou DNS (Route 53).",
+        "Security groups não se alteram com stop/start — a associação permanece.",
+        "Os atributos de DNS da VPC não mudam sozinhos com o ciclo da instância."
+      ]
+    },
+    {
+      "pergunta": "Um volume EBS com dados importantes está em us-east-1a, e você precisa desses dados numa instância em us-east-1b. Qual o caminho correto?",
+      "opcoes": [
+        "Desanexar o volume e anexar direto na instância da outra AZ",
+        "Criar um snapshot do volume e, a partir dele, criar um volume novo em us-east-1b",
+        "Arrastar o volume pra outra AZ no console",
+        "Impossível mover dados entre AZs"
+      ],
+      "correta": 1,
+      "explicacao": "EBS é zonal: só anexa na mesma AZ. Snapshot (que 'vive' na região) → novo volume na AZ desejada.",
+      "feedbacks": [
+        "Não dá: volume EBS é preso à AZ de criação — o attach em outra AZ falha.",
+        "Correto: o snapshot é regional (armazenado no S3), então ele atravessa a fronteira da AZ. Dele você materializa um volume novo onde quiser — inclusive em outra região, copiando o snapshot.",
+        "Não existe 'mover' volume entre AZs — a migração é sempre via snapshot.",
+        "É possível — e rotineiro — via snapshots."
+      ]
+    },
+    {
+      "pergunta": "Sua aplicação num EC2 precisa chamar a API do S3. Auditoria encontrou um arquivo ~/.aws/credentials dentro da instância com access keys de um IAM user. Qual a correção adequada?",
+      "opcoes": [
+        "Criptografar o arquivo de credenciais dentro da instância",
+        "Anexar uma IAM role à instância (instance profile) com as permissões de S3, remover o arquivo e revogar as chaves",
+        "Mover as chaves para o user data",
+        "Trocar as chaves por chaves do usuário root"
+      ],
+      "correta": 1,
+      "explicacao": "Role na instância = credenciais temporárias via metadata, rotação automática, nada gravado. Chave fixa em servidor é o antipadrão.",
+      "feedbacks": [
+        "Criptografar suaviza mas não resolve: a chave de longa duração continua existindo (e a aplicação precisa lê-la em claro pra usar).",
+        "Correto: com a role anexada, o SDK/CLI busca credenciais temporárias no metadata automaticamente. Sem segredo em disco, com rotação automática e least privilege na role. As chaves antigas: revogadas.",
+        "Piorou: user data é legível por qualquer processo da instância via metadata — segredos jamais vão lá.",
+        "O root nem deve TER access keys — seria trocar um risco grave por um catastrófico."
+      ]
+    },
+    {
+      "pergunta": "Comparando 't3.micro' e 't4g.micro', o que o 'g' do segundo indica, e qual a implicação prática?",
+      "opcoes": [
+        "GPU dedicada — precisa de driver",
+        "Processador Graviton (ARM64) — melhor preço-desempenho, mas a AMI precisa ser arm64",
+        "Geração 'gold', com SLA maior",
+        "Armazenamento local maior"
+      ],
+      "correta": 1,
+      "explicacao": "Sufixo g = Graviton (ARM da AWS). Mais barato por desempenho; exige imagem compilada pra arm64.",
+      "feedbacks": [
+        "GPU é indicada pela FAMÍLIA (g5, p4...), não pelo sufixo 'g' após o número da geração.",
+        "Correto: t4g roda em chips Graviton (ARM). Costuma ser ~20% mais barato com desempenho igual/superior — só lembre de escolher a AMI de arquitetura arm64.",
+        "Não existe classificação 'gold' em tipos de instância.",
+        "Armazenamento local é indicado pelo sufixo/família 'd' (ex.: m5d), não pelo 'g'."
+      ]
+    },
+    {
+      "pergunta": "No launch via CLI, qual parâmetro garante que a instância nasça exigindo IMDSv2 (recusando o metadata sem token)?",
+      "opcoes": [
+        "--imds-version 2",
+        "--metadata-options HttpTokens=required",
+        "--secure-metadata true",
+        "--disable-imds-v1"
+      ],
+      "correta": 1,
+      "explicacao": "run-instances --metadata-options \"HttpTokens=required,HttpEndpoint=enabled\" = IMDSv2 only.",
+      "feedbacks": [
+        "Esse parâmetro não existe na CLI do EC2.",
+        "Correto: HttpTokens=required faz o IMDS recusar chamadas sem token de sessão (o 401 que vimos na prática). É o padrão nas AMIs/instâncias novas, mas explicitar documenta a intenção.",
+        "Parâmetro inexistente — a opção real vive dentro de --metadata-options.",
+        "Também não existe; o controle é HttpTokens (required vs optional)."
+      ]
+    },
+    {
+      "pergunta": "Após o teardown, 'aws ec2 describe-volumes' mostra um volume 'available' de 50 GB que ninguém lembra de ter criado. O que provavelmente aconteceu e o que fazer?",
+      "opcoes": [
+        "É um volume da AWS, pode ignorar",
+        "Era um volume EXTRA (não-raiz) de alguma instância terminada — por padrão ele sobrevive ao terminate e segue cobrando; deletar (após confirmar o conteúdo)",
+        "Volumes 'available' são gratuitos",
+        "Ele se auto-deleta em 30 dias"
+      ],
+      "correta": 1,
+      "explicacao": "DeleteOnTermination é true só no volume raiz; volumes adicionais ficam órfãos ('available') e cobram por GB·mês.",
+      "feedbacks": [
+        "A AWS não cria volumes 'do nada' na sua conta — available significa: seu, sem instância, cobrando.",
+        "Correto: o padrão de DeleteOnTermination difere — raiz morre com a instância, extras sobrevivem. Volume 'available' órfão = custo silencioso; snapshot se precisar do conteúdo e delete.",
+        "'Available' = alocado e cobrando por GB·mês, mesmo sem uso — não é grátis.",
+        "Não existe auto-limpeza: ele cobraria pra sempre até alguém deletar."
+      ]
+    },
+    {
+      "pergunta": "Uma AMI do Marketplace parece perfeita pro seu caso. Além do preço da instância, o que você DEVE verificar antes de usá-la?",
+      "opcoes": [
+        "Se ela funciona em qualquer região sem cópia",
+        "Se há custo adicional de licença por hora embutido no uso da AMI",
+        "Se ela dispensa security group",
+        "Se ela aceita apenas instâncias xlarge"
+      ],
+      "correta": 1,
+      "explicacao": "AMIs do Marketplace frequentemente cobram licença por hora ALÉM do compute — a fatura vem em dobro pra quem não lê.",
+      "feedbacks": [
+        "AMIs são regionais como quaisquer outras — e isso não é custo, apenas logística de cópia.",
+        "Correto: muitos produtos do Marketplace embutem cobrança de software por hora/uso sobre o preço da instância. O custo real aparece na página do produto — leia antes do launch.",
+        "Nenhuma instância dispensa security group — toda ENI tem pelo menos um.",
+        "Restrições de tipo existem em alguns produtos, mas não são a regra — o ponto crítico universal é a licença."
+      ]
+    }
+  ]
+}

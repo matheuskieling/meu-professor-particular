@@ -1,0 +1,222 @@
+{
+  "modulo": "12",
+  "titulo": "Observabilidade",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que vamos fazer neste módulo",
+      "pontos": [
+        "Objetivo: sair do 'acho que está tudo bem' para o SABER — medir, registrar, alertar, auditar",
+        "Vamos dominar CloudWatch (métricas, logs, alarmes, dashboards) e CloudTrail; visão de X-Ray e EventBridge",
+        "Prática de ponta a ponta: métrica custom, alarme com e-mail, logs + Insights, auditoria, dashboard",
+        "Custo ~zero (Free Tier: 10 alarmes, 5 GB de logs, 3 dashboards); teardown no final"
+      ],
+      "checkpoint": "Confirme que o aluno está pronto e pergunte se ele já 'operou no escuro' alguma vez",
+      "ref": "12-observabilidade/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "Os três pilares: métricas, logs e traces",
+      "pontos": [
+        "Métricas = números no tempo → 'quanto? está normal?'",
+        "Logs = registros de eventos → 'o que aconteceu exatamente?'",
+        "Traces = caminho de UMA requisição entre serviços → 'onde gastou tempo/falhou?'",
+        "Analogia médica: sinais vitais, prontuário, exame de contraste",
+        "Fluxo de incidente: a métrica acorda, o trace localiza, o log explica"
+      ],
+      "checkpoint": "Peça pro aluno mapear cada pilar à pergunta que responde",
+      "ref": "12-observabilidade/teoria.md#1-os-três-pilares-métricas-logs-e-traces"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "CloudWatch Metrics: namespaces, dimensões, custom",
+      "pontos": [
+        "Quase todo serviço publica métricas sozinho (EC2 CPU, Lambda invocations...)",
+        "Namespace = pasta; dimensões = identidade da série; estatísticas (Average, Sum, p99)",
+        "Resolução: padrão 1 min; alta resolução até 1 s (custa mais)",
+        "Métrica custom via put-metric-data: número de negócio vira gráfico/alarme",
+        "Armadilhas: memória de EC2 exige CloudWatch Agent; cardinalidade alta explode custo"
+      ],
+      "checkpoint": "Teste: por que a memória RAM do EC2 não aparece por padrão?",
+      "ref": "12-observabilidade/teoria.md#2-cloudwatch-metrics--os-números-da-sua-conta"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "CloudWatch Logs: groups, streams, retenção e Insights",
+      "pontos": [
+        "Log group (agrupador, onde vive a retenção) vs. log stream (uma fonte)",
+        "⚠️ Retenção padrão 'Never expire': logs pra sempre = custo eterno; sempre definir retenção",
+        "Serviços gerenciados mandam logs sozinhos; EC2 precisa do CloudWatch Agent",
+        "Logs Insights: 'SQL de logs' — fields, filter, stats, sort, limit, parse",
+        "Insights cobra por GB ESCANEADO: intervalo de tempo curto = consulta barata"
+      ],
+      "checkpoint": "Pergunte qual é a armadilha de custo nº 1 dos logs e o hábito que a evita",
+      "ref": "12-observabilidade/teoria.md#3-cloudwatch-logs--os-registros"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "CloudWatch Alarms: estados, ações, composite",
+      "pontos": [
+        "Anatomia: métrica + estatística + período + limiar + datapoints to alarm",
+        "Estados: OK, ALARM, INSUFFICIENT_DATA — e o que cada um significa",
+        "INSUFFICIENT_DATA pode ser sinal grave: a fonte parou de publicar (tratar missing data)",
+        "Ações: SNS (e-mail/webhook), Auto Scaling, EC2 actions",
+        "Composite alarms: lógica booleana entre alarmes pra reduzir ruído de madrugada"
+      ],
+      "checkpoint": "Cenário: alarme de heartbeat caiu em INSUFFICIENT_DATA — o que pode ter havido?",
+      "ref": "12-observabilidade/teoria.md#4-cloudwatch-alarms--de-olhar-para-agir"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Dashboards: a TV da sala",
+      "pontos": [
+        "Painéis com gráficos de métricas + queries de logs + status de alarmes",
+        "São globais: um dashboard mostra várias regiões",
+        "Free Tier: 3 dashboards de até 50 métricas",
+        "Bom dashboard responde 'está tudo bem?' em 10 segundos — poucos widgets essenciais",
+        "Sinais clássicos: erros, latência, tráfego, saturação"
+      ],
+      "checkpoint": "Pergunte o que o aluno colocaria num dashboard de um serviço web",
+      "ref": "12-observabilidade/teoria.md#dashboards"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "CloudTrail: quem fez o quê",
+      "pontos": [
+        "CloudWatch = como o sistema está; CloudTrail = quem fez o quê, quando, de onde",
+        "Grava (quase) toda chamada de API: Console, CLI, SDK, serviços",
+        "Management events (gestão de recursos) vs. data events (GetObject etc., pagos, off por padrão)",
+        "Event history: 90 dias de management events GRÁTIS, já ligado em toda conta",
+        "Trail em S3 só para guardar além de 90 dias (auditoria/compliance)"
+      ],
+      "checkpoint": "Teste: 'quem apagou o bucket ontem?' — onde e como você descobre?",
+      "ref": "12-observabilidade/teoria.md#5-cloudtrail--quem-fez-o-quê"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "X-Ray e EventBridge: rastrear e reagir",
+      "pontos": [
+        "X-Ray: trace ID acompanha a requisição entre serviços; segmentos com duração/status",
+        "Service map (grafo com latência/erros) e traces (linha do tempo → achar o gargalo)",
+        "Exige instrumentação (SDK ou suporte nativo em Lambda/API Gateway) — aqui é visão geral",
+        "EventBridge: eventos de infra (instância parou, alarme disparou) → regra → ação (Lambda, SNS)",
+        "É o trilho da resposta automática a incidentes: além de avisar, reagir sozinho"
+      ],
+      "checkpoint": "Amarre os 3 pilares + auditoria + reação; pergunte: podemos ir pra prática?",
+      "ref": "12-observabilidade/teoria.md#6-x-ray--rastreamento-distribuído-visão-geral"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Explorar métricas existentes no Console",
+      "pontos": [
+        "CloudWatch → Metrics → All metrics: passear pelos namespaces da conta",
+        "Ver dimensões (Per-Instance, FunctionName) na prática",
+        "Grafar uma métrica e trocar estatística/período pra ver o efeito"
+      ],
+      "acao": "Guiar a navegação pelas métricas e interpretar um gráfico juntos",
+      "checkpoint": "Confirme que namespace/dimensão/estatística ficaram concretos",
+      "ref": "12-observabilidade/pratica.md#parte-a--explorar-métricas-existentes-console"
+    },
+    {
+      "id": "p2",
+      "fase": "pratica",
+      "titulo": "Métrica custom via CLI",
+      "pontos": [
+        "put-metric-data no namespace LabObservabilidade (PedidosProcessados, Ambiente=lab)",
+        "Publicar alguns pontos com valores diferentes",
+        "Ver a métrica aparecer no Console (1-2 min) e via list-metrics",
+        "Conectar: é isso que a aplicação real faria via SDK a cada evento de negócio"
+      ],
+      "acao": "Guiar os put-metric-data e a verificação no Console/CLI",
+      "checkpoint": "Confirme que a métrica apareceu grafada antes de seguir",
+      "ref": "12-observabilidade/pratica.md#parte-b--métrica-custom-via-cli"
+    },
+    {
+      "id": "p3",
+      "fase": "pratica",
+      "titulo": "Alarme + SNS + teste com set-alarm-state",
+      "pontos": [
+        "Criar tópico SNS e assinatura de e-mail — CONFIRMAR a assinatura no e-mail",
+        "Criar o alarme no Console sobre a métrica custom (Sum > 50, 1 min)",
+        "Observar o estado inicial INSUFFICIENT_DATA e entender por quê",
+        "Disparar com set-alarm-state e receber o e-mail; ver o histórico do alarme"
+      ],
+      "acao": "Guiar SNS via CLI, alarme via Console e o disparo de teste via CLI",
+      "checkpoint": "Confirme que o e-mail de alarme chegou antes de seguir",
+      "ref": "12-observabilidade/pratica.md#parte-c--alarme-com-notificação-por-e-mail-sns"
+    },
+    {
+      "id": "p4",
+      "fase": "pratica",
+      "titulo": "Logs: criar, enviar e consultar no Insights",
+      "pontos": [
+        "create-log-group + put-retention-policy 7 dias (o hábito anti-'never expire')",
+        "create-log-stream e put-log-events com INFO/ERRO simulados",
+        "aws logs tail pra conferir",
+        "Logs Insights: filter por ERRO e stats count() — o feijão-com-arroz"
+      ],
+      "acao": "Guiar a criação do log group, envio dos eventos e as duas queries no Insights",
+      "checkpoint": "Confirme que as queries retornaram e que a retenção foi definida",
+      "ref": "12-observabilidade/pratica.md#parte-d--logs-log-group-envio-via-cli-e-logs-insights"
+    },
+    {
+      "id": "p5",
+      "fase": "pratica",
+      "titulo": "CloudTrail, mini-dashboard e teardown",
+      "pontos": [
+        "Event history: achar o próprio CreateLogGroup — quem, quando, de que IP",
+        "lookup-events pela CLI com filtro por EventName",
+        "Montar o dashboard lab-observabilidade: métrica + status do alarme (+ logs opcional)",
+        "Teardown: delete alarme, dashboard, log group e tópico SNS; conferir que nada sobrou"
+      ],
+      "acao": "Guiar a auditoria no CloudTrail, a montagem do dashboard e o teardown completo",
+      "checkpoint": "Feche a prática confirmando o checklist e o teardown 100% limpo",
+      "ref": "12-observabilidade/pratica.md#parte-e--cloudtrail-quem-fez-o-quê"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/apps/modulo-12/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "AWS/apps/modulo-12/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões de cenário, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 13 após passar"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/provas/modulo-12/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 13; se não, revise os pontos errados",
+      "ref": "AWS/provas/modulo-12/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 12",
+      "pontos": [
+        "Recap: 3 pilares, métricas/dimensões, logs+retenção, alarmes/estados, CloudTrail, X-Ray, EventBridge",
+        "Hábito novo: todo recurso importante nasce com métrica, log com retenção e alarme",
+        "Próximo: Módulo 13 — Segurança avançada (KMS, Secrets, WAF, GuardDuty, IAM avançado)"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 13 ou parar por aqui",
+      "ref": "AWS/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

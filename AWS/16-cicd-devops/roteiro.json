@@ -1,0 +1,223 @@
+{
+  "modulo": "16",
+  "titulo": "CI/CD & DevOps",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — automatizar o caminho até produção",
+      "pontos": [
+        "Objetivo: cultura DevOps, CI/CD, estratégias de deploy, a suíte AWS (CodePipeline/Build/Deploy) e o caminho do mercado: GitHub Actions + OIDC",
+        "Prática: a cada git push, o GitHub Actions publica seu site no bucket do módulo 06 — SEM nenhuma access key armazenada",
+        "Caminho B demonstrativo: pipeline nativo S3 → CodeBuild",
+        "Pré-requisito: conta no GitHub (verificar agora!); custo ~US$ 0 com teardown do pipeline"
+      ],
+      "checkpoint": "Verifique se o aluno tem conta GitHub e o bucket do módulo 06; confirme que está pronto pra começar",
+      "ref": "16-cicd-devops/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "DevOps: a cultura antes das ferramentas",
+      "pontos": [
+        "DevOps = derrubar o muro entre dev e ops; 'you build it, you run it'",
+        "Modelo antigo: deploy raro e traumático, jogo de empurra, 'funciona na minha máquina'",
+        "Modelo DevOps: deploys pequenos, frequentes e CHATOS (chato = bom), automação em tudo, post-mortem sem culpados",
+        "Elo com o M15: mudanças pequenas/reversíveis = excelência operacional; CI/CD é a materialização técnica",
+        "Por que funciona: mudança pequena = raio de explosão pequeno + causa óbvia + rollback fácil"
+      ],
+      "checkpoint": "Pergunte: por que 100 deploys pequenos são mais seguros que 1 gigante?",
+      "ref": "16-cicd-devops/teoria.md#1-devops-a-cultura-antes-das-ferramentas"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "CI vs. CD vs. CD (delivery ≠ deployment)",
+      "pontos": [
+        "CI: todo push integra com build + testes automáticos; quebrou, o time sabe em minutos",
+        "Continuous Delivery: artefato SEMPRE pronto pra produção, mas deploy final tem aprovação humana",
+        "Continuous Deployment: passou nos testes, entra em produção sozinho",
+        "⚠️ Pegadinha de prova/entrevista: a diferença é a aprovação manual antes de produção",
+        "Pipeline = a esteira de estágios (source → build → test → deploy), cada um só roda se o anterior passou"
+      ],
+      "checkpoint": "Teste: 'minha empresa deploya tudo que passa nos testes, sem botão — é delivery ou deployment?'",
+      "ref": "16-cicd-devops/teoria.md#2-ci-vs-cd-e-o-outro-cd"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "Estratégias de deploy",
+      "pontos": [
+        "In-place/recreate: simples, mas COM downtime e rollback lento",
+        "Rolling: troca as instâncias aos poucos; sem downtime nem custo extra, mas duas versões convivem",
+        "Blue/green: ambiente novo completo ao lado + virada de tráfego; rollback INSTANTÂNEO, custo dobrado na transição",
+        "Canary: fração do tráfego (5%) na versão nova, métricas ok → 100%; menor raio de explosão, exige boas métricas",
+        "Conexões: Route 53 weighted (M14) e ALB ponderado fazem canary; CodeDeploy automatiza blue/green e canary",
+        "⚠️ Rolling/canary = duas versões juntas: migrações de banco precisam ser retrocompatíveis"
+      ],
+      "checkpoint": "Proponha: 'zero downtime + rollback instantâneo + orçamento pra dobrar por 1h — qual estratégia?' e explore o porquê",
+      "ref": "16-cicd-devops/teoria.md#3-estratégias-de-deploy"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "A suíte AWS: CodePipeline, CodeBuild, CodeDeploy",
+      "pontos": [
+        "Mnemônico: Pipeline ORQUESTRA, Build CONSTRÓI/TESTA, Deploy IMPLANTA",
+        "CodePipeline: estágios, artefatos via S3, gatilho no push, aprovações manuais; ⚠️ V1 custa US$ 1/pipeline/mês após o 1º grátis",
+        "CodeBuild: builds em containers efêmeros guiados pelo buildspec.yml (fases install/pre_build/build/post_build + artifacts); 100 min/mês grátis",
+        "CodeDeploy: implanta em EC2 (agente), ECS (blue/green) e Lambda (shift canary/linear), guiado pelo appspec.yml com hooks; rollback automático por alarme",
+        "CodeCommit foi descontinuado pra novos clientes (2024): a fonte hoje é GitHub/GitLab"
+      ],
+      "checkpoint": "Pergunte quem faz o quê na suíte e onde vivem as 'receitas' (buildspec/appspec)",
+      "ref": "16-cicd-devops/teoria.md#4-a-suíte-aws-codepipeline-codebuild-codedeploy"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "GitHub Actions + o problema das access keys",
+      "pontos": [
+        "GitHub Actions: o CI/CD do mercado; workflows YAML em .github/workflows, rodam em runners a cada push/PR",
+        "Grátis pra repo público (privado: 2.000 min/mês no free)",
+        "O jeito ERRADO (e comum): access keys de um IAM user coladas nos secrets do repo",
+        "Por que é ruim: chave eterna que ninguém rotaciona; vazou = acesso à conta de qualquer lugar; viola 'temporárias > permanentes' do M02"
+      ],
+      "checkpoint": "Pergunte quais os riscos concretos de uma access key eterna num secret antes de apresentar a solução",
+      "ref": "16-cicd-devops/teoria.md#5-a-alternativa-mainstream-github-actions--oidc"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "OIDC: federação GitHub→AWS sem segredos",
+      "pontos": [
+        "As 3 peças: (1) GitHub como Identity Provider OIDC no IAM; (2) role com trust condicionada ao claim sub (repo/branch); (3) action configure-aws-credentials troca o token por credenciais temporárias (~1h) via AssumeRoleWithWebIdentity",
+        "Comparação ponto a ponto: nenhum segredo armazenado, validade ~1h por job, escopo restrito ao repo/branch, rotação automática por natureza",
+        "⚠️ Armadilha: sub frouxo (repo:*) deixaria QUALQUER repo do GitHub assumir sua role — least privilege também na federação",
+        "O mesmo padrão serve pra ECR+ECS (build da imagem, push, update da task definition)",
+        "Aprovações: GitHub Environments com required reviewers = a aprovação manual do CodePipeline"
+      ],
+      "checkpoint": "Peça pro aluno explicar o fluxo do token com as próprias palavras; teste a armadilha do sub frouxo",
+      "ref": "16-cicd-devops/teoria.md#5-a-alternativa-mainstream-github-actions--oidc"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "Recap da teoria + checagem de entendimento",
+      "pontos": [
+        "Recapitular: cultura DevOps, CI/delivery/deployment, 4 estratégias de deploy, suíte AWS, OIDC",
+        "Rodar as 5 perguntas de checagem da teoria",
+        "O que vem na prática: OIDC + workflow real (caminho A) e pipeline nativo (caminho B)"
+      ],
+      "checkpoint": "Antes de seguir, pergunte: 'podemos partir pra prática?'",
+      "ref": "16-cicd-devops/teoria.md#checagem-de-entendimento"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Repo GitHub + site de exemplo",
+      "pontos": [
+        "Confirmar conta GitHub; criar repo PÚBLICO meu-site-cicd (Actions 100% grátis)",
+        "Criar index.html v1, git init/commit/push",
+        "Anotar Account ID (aws sts get-caller-identity) e nome do bucket do módulo 06",
+        "Reforçar: NENHUMA access key será criada neste módulo"
+      ],
+      "acao": "Guiar a criação do repo e o push inicial",
+      "checkpoint": "Confirme repo no ar com o index.html antes de seguir",
+      "ref": "16-cicd-devops/pratica.md#parte-a--preparar-o-repositório-no-github"
+    },
+    {
+      "id": "p2",
+      "fase": "pratica",
+      "titulo": "IAM: Identity Provider OIDC + role com trust restrita",
+      "pontos": [
+        "IAM → Identity providers → OpenID Connect: token.actions.githubusercontent.com, audience sts.amazonaws.com",
+        "Criar role gha-deploy-site via 'Web identity' apontando pro SEU usuário/repo",
+        "Inline policy mínima: PutObject/DeleteObject/ListBucket SÓ no bucket do site",
+        "Ler a trust policy juntos: o claim sub restrito ao repo é O ponto de segurança",
+        "Discutir o estrago máximo se algo vazar: mexer nos arquivos do site, nada além"
+      ],
+      "acao": "Guiar a criação do IdP e da role no console, conferindo a trust policy com o aluno",
+      "checkpoint": "Só avance quando o aluno souber explicar o que o sub restringe e por que a policy é mínima",
+      "ref": "16-cicd-devops/pratica.md#parte-b--confiança-oidc-iam-provider--role-console"
+    },
+    {
+      "id": "p3",
+      "fase": "pratica",
+      "titulo": "O workflow deploy.yml + primeira execução",
+      "pontos": [
+        "Criar .github/workflows/deploy.yml: gatilho push na main, permissions id-token: write (erro nº 1 é esquecer!), configure-aws-credentials com role-to-assume, aws s3 sync",
+        "Ler o YAML linha a linha com o aluno — nenhum secret em lugar nenhum",
+        "Push → aba Actions → acompanhar os logs de cada step",
+        "Verificar o bucket atualizado (aws s3 ls)"
+      ],
+      "acao": "Guiar a escrita do workflow, o push e a leitura dos logs da execução",
+      "checkpoint": "Confirme a execução verde e o objeto atualizado no S3 antes de seguir",
+      "ref": "16-cicd-devops/pratica.md#parte-c--o-workflow-de-deploy-yaml"
+    },
+    {
+      "id": "p4",
+      "fase": "pratica",
+      "titulo": "O teste de verdade: push → publica sozinho",
+      "pontos": [
+        "Editar o index.html (v2), commit, push",
+        "Ver o Actions rodar sozinho e o S3 refletir a mudança — ISSO é CI/CD",
+        "Observar: cada execução recebe credenciais novas e temporárias; nada pra rotacionar, nada pra vazar",
+        "Discutir extensões: build de verdade (npm), environments com aprovação, ECR+ECS"
+      ],
+      "acao": "Conduzir o ciclo completo commit→push→deploy e comentar os logs",
+      "checkpoint": "Pergunte: 'o que você faria pra exigir aprovação humana antes desse deploy?' (environments)",
+      "ref": "16-cicd-devops/pratica.md#passo-6--o-teste-de-verdade-mudar-e-ver-publicar-sozinho"
+    },
+    {
+      "id": "p5",
+      "fase": "pratica",
+      "titulo": "Caminho B: CodePipeline + CodeBuild + Teardown",
+      "pontos": [
+        "Criar bucket de source versionado + app.zip com buildspec.yml dentro",
+        "Console: pipeline S3 (source) → CodeBuild (buildspec do repo) → skip deploy",
+        "Ver a primeira execução, ler os logs do build, re-upload do zip → pipeline dispara sozinho",
+        "⚠️ Teardown: deletar pipeline (é ele que pode custar US$ 1/mês), projeto de build, bucket de source (com versões!) e roles de serviço",
+        "Decisão consciente: IdP OIDC, role gha e repo ficam — são grátis e úteis"
+      ],
+      "acao": "Guiar o caminho B de ponta a ponta e conduzir o teardown na sequência",
+      "checkpoint": "Feche a prática confirmando o checklist de conclusão do módulo (teardown incluso)",
+      "ref": "16-cicd-devops/pratica.md#parte-d--caminho-b-demonstrativo-codepipeline--codebuild"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/apps/modulo-16/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "AWS/apps/modulo-16/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões de cenário, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 17 após passar"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/provas/modulo-16/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 17; se não, revise os pontos errados",
+      "ref": "AWS/provas/modulo-16/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 16",
+      "pontos": [
+        "Recap: cultura DevOps, delivery vs. deployment, estratégias de deploy, suíte AWS, OIDC sem segredos",
+        "Você agora tem um pipeline pessoal real: push → produção, com segurança de gente grande",
+        "Próximo: Módulo 17 — Otimização de Custos (FinOps)"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 17 ou parar por aqui",
+      "ref": "AWS/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

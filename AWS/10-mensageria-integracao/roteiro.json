@@ -1,0 +1,222 @@
+{
+  "modulo": "10",
+  "titulo": "Mensageria & Integração",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que vamos fazer neste módulo",
+      "pontos": [
+        "Objetivo: desacoplar sistemas com SQS, SNS e EventBridge + os padrões que os amarram",
+        "Este módulo fecha o tripé do event-driven começado no Módulo 08",
+        "Ao fim: prática intensa de CLI (visibility timeout, DLQ, fan-out, agendamento), quiz e prova",
+        "Custo: US$ 0 — SQS tem 1M requests/mês sempre grátis; SNS e EventBridge idem pro nosso volume"
+      ],
+      "checkpoint": "Confirme que o aluno fez os módulos 01 e 08 e tem um e-mail acessível pra prática",
+      "ref": "10-mensageria-integracao/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "Por que desacoplar — síncrono vs. assíncrono",
+      "pontos": [
+        "Os 3 problemas do síncrono em cadeia: falha em cascata, picos simultâneos, acoplamento",
+        "Fila como amortecedor: absorve picos, tolera queda do consumidor, desacopla",
+        "O preço do assíncrono: consistência eventual, duplicatas, ordenação",
+        "Regra de bolso: precisa da resposta agora → síncrono; trabalho que pode esperar → assíncrono"
+      ],
+      "checkpoint": "Peça um exemplo real do dia a dia do aluno pra cada modelo (síncrono e assíncrono)",
+      "ref": "10-mensageria-integracao/teoria.md#1-por-que-desacoplar--síncrono-vs-assíncrono"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "SQS — ciclo de vida e visibility timeout",
+      "pontos": [
+        "Ciclo: SendMessage → ReceiveMessage (fica INVISÍVEL) → processa → DeleteMessage",
+        "Receber ≠ consumir: sem delete no prazo, a mensagem REAPARECE (retry de graça)",
+        "Visibility timeout (padrão 30s): a armadilha do timeout menor que o processamento",
+        "Retenção: 4 dias padrão, 14 máx; long polling (WaitTimeSeconds até 20s) — use sempre"
+      ],
+      "checkpoint": "Teste: o que acontece se o consumidor crashar depois do receive e antes do delete?",
+      "ref": "10-mensageria-integracao/teoria.md#2-sqs--simple-queue-service"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "SQS: Standard vs. FIFO + DLQ",
+      "pontos": [
+        "Standard: at-least-once (duplica!), ordem best-effort, throughput quase ilimitado",
+        "FIFO (.fifo): exactly-once (janela 5 min), ordem estrita por message group, menor throughput",
+        "Quando FIFO: ordem/unicidade obrigatórias (financeiro); senão, Standard",
+        "DLQ + redrive policy (maxReceiveCount): mata o loop da mensagem venenosa e preserva pra análise",
+        "Alarme na DLQ: mensagem lá = algo quebrou"
+      ],
+      "checkpoint": "Pergunte quando escolher FIFO e o que se perde na troca",
+      "ref": "10-mensageria-integracao/teoria.md#standard-vs-fifo"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "SNS — pub/sub e o padrão fan-out SNS→SQS",
+      "pontos": [
+        "SNS = push pub/sub: publica num tópico, TODAS as subscriptions recebem cópia",
+        "Subscriptions: SQS, Lambda, HTTP/S, e-mail, SMS; filter policies por atributo",
+        "SNS não retém pra consumo posterior — quem não estava inscrito, perdeu",
+        "Padrão de ouro: SNS → uma fila SQS POR consumidor (durabilidade + retry + DLQ próprios)",
+        "Detalhes práticos: queue policy autorizando o tópico + raw message delivery (envelope)"
+      ],
+      "checkpoint": "Pergunte por que não entregar do SNS direto nos consumidores",
+      "ref": "10-mensageria-integracao/teoria.md#3-sns--simple-notification-service"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "EventBridge — barramento, regras e scheduler",
+      "pontos": [
+        "Event bus: eventos JSON entram, REGRAS decidem pra onde vão",
+        "Barramentos: default (eventos da própria AWS), custom (seu negócio), partner (SaaS)",
+        "Event patterns: filtro pelo CONTEÚDO do evento; 20+ tipos de target",
+        "Scheduler: rate()/cron() — o crontab da nuvem, sem servidor",
+        "É o coração de arquiteturas event-driven 'de verdade' na AWS"
+      ],
+      "checkpoint": "Pergunte o que uma regra faz e dê um exemplo de event pattern",
+      "ref": "10-mensageria-integracao/teoria.md#4-eventbridge--o-barramento-de-eventos"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "SQS vs. SNS vs. EventBridge — quando cada um",
+      "pontos": [
+        "SQS: fila pull, 1 grupo de workers DIVIDE as mensagens, buffer até 14 dias",
+        "SNS: push, todos os subscribers recebem CÓPIA, sem retenção",
+        "EventBridge: roteamento rico por conteúdo, eventos AWS/SaaS, agendamento",
+        "Regra de bolso: buffer/trabalho → SQS; 1 evento N interessados → SNS(→SQS); roteamento/integração → EventBridge",
+        "Eles se combinam: EventBridge→SQS, SNS→SQS, EventBridge→Lambda..."
+      ],
+      "checkpoint": "Dê 3 cenários e peça pro aluno escolher o serviço com justificativa",
+      "ref": "10-mensageria-integracao/teoria.md#sqs-vs-sns-vs-eventbridge--o-comparativo-que-cai-em-toda-prova"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "Padrões: fila de trabalho, fan-out, retry/DLQ e idempotência",
+      "pontos": [
+        "Work queue: N workers competindo, cada mensagem processada por UM; escala = mais workers",
+        "Fan-out: adicionar consumidor sem tocar no produtor",
+        "Retry (visibility timeout) + DLQ (maxReceiveCount) = resiliência sem loop infinito",
+        "Idempotência: processar 2x = mesmo efeito de 1x (chave de negócio, SET vs ADD, constraint única)",
+        "Armadilha: FIFO NÃO dispensa idempotência — dedup é só na publicação (5 min)"
+      ],
+      "checkpoint": "Teste a armadilha do FIFO; depois pergunte se pode ir pra prática",
+      "ref": "10-mensageria-integracao/teoria.md#5-padrões-essenciais-de-mensageria"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "SQS pela CLI: enviar, receber, visibility timeout, deletar",
+      "pontos": [
+        "create-queue m10-fila e guardar a URL em variável",
+        "send-message com JSONs de pedido; receive-message traz o ReceiptHandle",
+        "O experimento-chave: receive de novo = VAZIO (invisível); após ~30s REAPARECE",
+        "delete-message com o ReceiptHandle mais recente; conferir com get-queue-attributes",
+        "Long polling: --wait-time-seconds 20 e ReceiveMessageWaitTimeSeconds na fila"
+      ],
+      "acao": "Guiar o ciclo completo no terminal, com pausa no experimento do visibility timeout",
+      "checkpoint": "Confirme que o aluno VIU a mensagem sumir e reaparecer antes de seguir",
+      "ref": "10-mensageria-integracao/pratica.md#parte-a--sqs-o-ciclo-de-vida-de-uma-mensagem-cli"
+    },
+    {
+      "id": "p2",
+      "fase": "pratica",
+      "titulo": "DLQ: redrive policy e mensagem venenosa",
+      "pontos": [
+        "Criar m10-dlq e configurar RedrivePolicy na principal (maxReceiveCount=2)",
+        "Simular consumidor bugado: receber 2x sem deletar (visibility-timeout 5 pra acelerar)",
+        "Ver a fila principal vazia e a mensagem preservada na DLQ",
+        "Comentar o redrive do Console (devolver após o fix) e o alarme na DLQ"
+      ],
+      "acao": "Guiar a configuração e o experimento de forçar a mensagem pra DLQ",
+      "checkpoint": "Confirme que a mensagem 666 apareceu na DLQ antes de seguir",
+      "ref": "10-mensageria-integracao/pratica.md#parte-b--dlq-aparando-as-mensagens-venenosas"
+    },
+    {
+      "id": "p3",
+      "fase": "pratica",
+      "titulo": "SNS: tópico, e-mail e fan-out pra fila",
+      "pontos": [
+        "Criar tópico m10-avisos + subscription de e-mail (CONFIRMAR no inbox!)",
+        "CLI: queue policy autorizando o SNS a mandar pra fila + subscribe da SQS",
+        "sns publish e conferir os DOIS destinos: e-mail e fila",
+        "Observar o envelope JSON do SNS na mensagem da fila (raw message delivery tira)"
+      ],
+      "acao": "Guiar tópico, subscriptions e o publish do fan-out",
+      "checkpoint": "Confirme que a MESMA publicação chegou no e-mail e na fila",
+      "ref": "10-mensageria-integracao/pratica.md#parte-c--sns-fan-out-pra-e-mail--fila"
+    },
+    {
+      "id": "p4",
+      "fase": "pratica",
+      "titulo": "EventBridge: regra agendada disparando Lambda",
+      "pontos": [
+        "Garantir a Lambda alvo (recriar m10-ping mínima se a m08-hello foi destruída)",
+        "put-rule com rate(1 minute); lambda add-permission pro principal events.amazonaws.com",
+        "put-targets apontando a regra pra função",
+        "aws logs tail --follow e ver o ping por minuto — o cron da nuvem",
+        "Aviso: não deixar a regra ativa sem necessidade (1.440 invocações/dia)"
+      ],
+      "acao": "Guiar regra, permissão, target e a observação dos logs",
+      "checkpoint": "Confirme que o aluno viu os pings no logs tail antes de seguir",
+      "ref": "10-mensageria-integracao/pratica.md#parte-d--eventbridge-agendamento-disparando-lambda"
+    },
+    {
+      "id": "p5",
+      "fase": "pratica",
+      "titulo": "Teardown + checklist",
+      "pontos": [
+        "Ordem: remove-targets + delete-rule → Lambda + log group → unsubscribe + delete-topic → delete-queue (x2)",
+        "Conferir no Console: SQS, SNS, EventBridge e Lambda vazios",
+        "Fechar o checklist de conclusão do módulo"
+      ],
+      "acao": "Guiar o teardown comando a comando e conferir o checklist",
+      "checkpoint": "Confirme teardown completo antes de liberar o quiz",
+      "ref": "10-mensageria-integracao/pratica.md#parte-e--🔥-teardown-obrigatório"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/apps/modulo-10/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "AWS/apps/modulo-10/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões de cenário, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 11 após passar"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/provas/modulo-10/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 11; se não, revise os pontos errados",
+      "ref": "AWS/provas/modulo-10/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 10",
+      "pontos": [
+        "Recap: desacoplamento, SQS (visibility/DLQ), SNS (fan-out), EventBridge (regras/cron), idempotência",
+        "Com os módulos 08-10 você tem o kit completo de arquitetura event-driven na AWS",
+        "Próximo: Módulo 11 — Infra como Código (IaC): recriar tudo isso de forma reproduzível"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 11 ou parar por aqui",
+      "ref": "AWS/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

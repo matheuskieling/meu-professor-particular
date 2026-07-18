@@ -1,0 +1,105 @@
+{
+  "titulo": "Módulo 12 — Observabilidade",
+  "questoes": [
+    {
+      "pergunta": "Qual pilar da observabilidade responde à pergunta 'ONDE, entre vários serviços, esta requisição gastou tempo?'",
+      "opcoes": ["Métricas", "Logs", "Traces", "Alarmes"],
+      "correta": 2,
+      "explicacao": "Traces (X-Ray) seguem UMA requisição de serviço em serviço, mostrando a duração de cada trecho. Métricas dizem 'quanto'; logs dizem 'o que aconteceu'."
+    },
+    {
+      "pergunta": "No CloudWatch Metrics, qual o papel das dimensões?",
+      "opcoes": [
+        "Definir a cor do gráfico no dashboard",
+        "Identificar a série da métrica com pares chave/valor (ex.: InstanceId=i-0abc)",
+        "Agrupar métricas em pastas por serviço",
+        "Definir a granularidade de tempo dos pontos"
+      ],
+      "correta": 1,
+      "explicacao": "Dimensões identificam de quem é a métrica. A mesma métrica com dimensões diferentes são séries separadas. Pastas = namespace; granularidade = resolução."
+    },
+    {
+      "pergunta": "Por que a utilização de memória RAM de uma instância EC2 NÃO aparece no CloudWatch por padrão?",
+      "opcoes": [
+        "Porque memória é de graça e não precisa monitorar",
+        "Porque o hypervisor não enxerga dentro do SO; é preciso instalar o CloudWatch Agent",
+        "Porque essa métrica só existe em instâncias GPU",
+        "Porque a AWS só monitora memória em RDS"
+      ],
+      "correta": 1,
+      "explicacao": "As métricas padrão do EC2 vêm do hypervisor (CPU, rede, disco I/O). Memória e disco usado são visíveis só de dentro do SO — daí o CloudWatch Agent."
+    },
+    {
+      "pergunta": "Qual comando publica uma métrica custom no CloudWatch?",
+      "opcoes": [
+        "aws cloudwatch put-metric-data",
+        "aws cloudwatch set-alarm-state",
+        "aws logs put-log-events",
+        "aws cloudwatch create-metric"
+      ],
+      "correta": 0,
+      "explicacao": "put-metric-data publica datapoints em um namespace seu. set-alarm-state força estado de alarme; put-log-events manda logs. 'create-metric' não existe: a métrica nasce no primeiro datapoint."
+    },
+    {
+      "pergunta": "Qual é a retenção padrão de um log group recém-criado no CloudWatch Logs, e por que isso importa?",
+      "opcoes": [
+        "7 dias — os logs somem rápido demais",
+        "30 dias — um padrão razoável",
+        "'Never expire' — os logs ficam pra sempre e o armazenamento custa por GB/mês",
+        "24 horas — só serve pra debug do dia"
+      ],
+      "correta": 2,
+      "explicacao": "O padrão é nunca expirar. Anos de logs esquecidos viram custo crescente. Hábito: definir retenção (put-retention-policy) em todo log group ao criar."
+    },
+    {
+      "pergunta": "No Logs Insights, qual consulta conta os eventos que contêm 'ERRO'?",
+      "opcoes": [
+        "SELECT COUNT(*) FROM logs WHERE message = 'ERRO'",
+        "filter @message like /ERRO/ | stats count()",
+        "grep ERRO | wc -l",
+        "fields @timestamp | sort @timestamp desc"
+      ],
+      "correta": 1,
+      "explicacao": "A linguagem do Insights usa comandos encadeados por pipe: filter seleciona, stats agrega. Não é SQL nem shell."
+    },
+    {
+      "pergunta": "Quais são os três estados possíveis de um CloudWatch Alarm?",
+      "opcoes": [
+        "GREEN, YELLOW, RED",
+        "OK, ALARM, INSUFFICIENT_DATA",
+        "UP, DOWN, UNKNOWN",
+        "ACTIVE, PAUSED, DELETED"
+      ],
+      "correta": 1,
+      "explicacao": "OK (dentro do limiar), ALARM (violou pelo período configurado) e INSUFFICIENT_DATA (sem dados suficientes — que pode indicar que a fonte parou de publicar)."
+    },
+    {
+      "pergunta": "Qual é o jeito padrão de testar se a notificação de um alarme (e-mail via SNS) está funcionando, sem gerar carga real?",
+      "opcoes": [
+        "Esperar um incidente de verdade acontecer",
+        "Usar aws cloudwatch set-alarm-state para forçar o estado ALARM temporariamente",
+        "Apagar e recriar o alarme",
+        "Enviar o e-mail manualmente pelo SNS"
+      ],
+      "correta": 1,
+      "explicacao": "set-alarm-state força o estado e dispara as ações (o e-mail). Na próxima avaliação real da métrica, o alarme volta ao estado verdadeiro."
+    },
+    {
+      "pergunta": "Sobre o Event history do CloudTrail, qual afirmação está CORRETA?",
+      "opcoes": [
+        "Precisa ser ativado manualmente e custa por evento",
+        "Guarda 90 dias de management events, de graça, já ligado em toda conta",
+        "Guarda apenas eventos de dados (GetObject, PutObject)",
+        "Guarda os eventos para sempre, sem custo"
+      ],
+      "correta": 1,
+      "explicacao": "O event history vem ligado e gratuito: 90 dias de management events. Data events são pagos e desligados por padrão; guardar além de 90 dias exige um trail em S3."
+    },
+    {
+      "pergunta": "Qual serviço permite REAGIR automaticamente a um evento de infraestrutura (ex.: instância EC2 mudou para 'stopped') disparando uma Lambda ou SNS?",
+      "opcoes": ["AWS X-Ray", "Amazon EventBridge", "AWS CloudFormation", "Amazon S3"],
+      "correta": 1,
+      "explicacao": "EventBridge recebe eventos dos serviços, casa com regras (padrões JSON) e dispara alvos (Lambda, SNS, SQS...). X-Ray é tracing; CFN é IaC."
+    }
+  ]
+}

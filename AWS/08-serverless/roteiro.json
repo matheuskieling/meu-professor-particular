@@ -1,0 +1,222 @@
+{
+  "modulo": "08",
+  "titulo": "Serverless",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que vamos fazer neste módulo",
+      "pontos": [
+        "Objetivo: dominar Lambda, colocar uma API HTTP na frente e pensar em eventos",
+        "Contraste com o que já vimos: EC2 (você gerencia tudo) vs. serverless (quase nada)",
+        "Ao fim: prática real (Lambda + API Gateway + trigger S3), quiz e prova",
+        "Custo da prática: US$ 0 — Lambda tem 1M invocações/mês sempre grátis"
+      ],
+      "checkpoint": "Confirme que o aluno concluiu os módulos anteriores (conta/CLI, S3) e está pronto",
+      "ref": "08-serverless/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "O que é serverless, de verdade",
+      "pontos": [
+        "Não é 'sem servidor' — é 'sem GERENCIAR servidor': a AWS cuida da infra",
+        "Três propriedades: zero gerenciamento, escala automática (até zero), pague pelo uso real",
+        "Comparar com EC2: provisionar, SO/patches, escalar, custo de ocioso",
+        "Serverless é categoria, não serviço: S3, DynamoDB, SQS, SNS também são"
+      ],
+      "checkpoint": "Pergunte: o que exatamente deixa de ser problema do aluno em relação ao EC2?",
+      "ref": "08-serverless/teoria.md#1-o-que-é-serverless-de-verdade"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "Anatomia de uma função Lambda",
+      "pontos": [
+        "Handler: a função chamada a cada invocação — event (varia por fonte!) e context",
+        "Retorno só importa em invocação síncrona; runtimes (Python no curso)",
+        "Memória 128MB–10GB com CPU proporcional; timeout máximo de 15 minutos",
+        "Execution role: a identidade IAM da função — AccessDenied se conserta NELA",
+        "Variáveis de ambiente pra config; segredos de verdade vão pro Secrets Manager"
+      ],
+      "checkpoint": "Teste com o cenário: função dá AccessDenied no S3 — onde se conserta?",
+      "ref": "08-serverless/teoria.md#2-aws-lambda--anatomia-de-uma-função"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "Cold start, ciclo de vida e concorrência",
+      "pontos": [
+        "Cold start: latência ao criar ambiente novo (baixar código, iniciar runtime)",
+        "Warm start: ambiente reutilizado — código fora do handler roda 1x por ambiente",
+        "Tráfego constante = quase tudo warm; esporádico = cold starts frequentes",
+        "Provisioned Concurrency mantém ambientes quentes (pagando por isso)",
+        "Cada ambiente atende 1 invocação por vez; limite de concorrência por conta/região"
+      ],
+      "checkpoint": "Pergunte por que colocar imports e clientes boto3 fora do handler ajuda",
+      "ref": "08-serverless/teoria.md#3-cold-start-e-o-ciclo-de-vida"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Limites e preço (invocações + GB-s)",
+      "pontos": [
+        "Limites de cabeça: 15 min de timeout, 10 GB de memória, 6 MB de payload síncrono",
+        "Preço em duas dimensões: ~US$0,20/milhão de invocações + GB-segundo de duração",
+        "Aumentar memória aumenta CPU — função mais rápida pode sair MAIS BARATA",
+        "Free Tier sempre grátis: 1M invocações + 400k GB-s por mês",
+        "Pra tráfego irregular é imbatível; carga constante alta pode favorecer containers"
+      ],
+      "checkpoint": "Peça pro aluno explicar o que é um GB-segundo com um exemplo",
+      "ref": "08-serverless/teoria.md#4-limites-e-preço"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Event sources — quem dispara a função",
+      "pontos": [
+        "Lambda sozinho não faz nada: alguém invoca",
+        "Síncrono (API Gateway, invoke direto): quem chama espera a resposta",
+        "Assíncrono (S3, EventBridge): fila interna, retenta 2x, destino de falha",
+        "Poll-based (SQS, streams): o serviço Lambda puxa lotes e invoca com eles",
+        "O formato do event muda por fonte — sempre logue e inspecione"
+      ],
+      "checkpoint": "Pergunte a diferença entre invocação síncrona, assíncrona e poll",
+      "ref": "08-serverless/teoria.md#5-event-sources--quem-dispara-a-função"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "API Gateway — REST vs. HTTP API, rotas e stages",
+      "pontos": [
+        "API Gateway = porta HTTP gerenciada na frente da Lambda (TLS, rotas, autorização)",
+        "HTTP API: moderno, ~US$1/milhão, menor latência, o essencial — padrão pra APIs novas",
+        "REST API: ~US$3,50/milhão, recursos avançados (API keys, usage plans, caching)",
+        "Rota = método + path → integração; stages = ambientes publicados (dev/prod/$default)",
+        "Function URL existe pra casos simples, sem os recursos do API Gateway"
+      ],
+      "checkpoint": "Pergunte qual sabor escolher pra uma API nova simples e por quê",
+      "ref": "08-serverless/teoria.md#6-api-gateway--sua-porta-http"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "Event-driven, Step Functions e quando serverless NÃO é a resposta",
+      "pontos": [
+        "Event-driven: componentes emitem eventos e outros reagem — desacoplamento e resiliência",
+        "Step Functions: state machines pra fluxos multi-etapas com retry/catch por estado",
+        "Standard (durável, por transição) vs. Express (alto volume, por duração)",
+        "Quando NÃO usar Lambda: jobs >15min, carga alta constante, latência crítica esporádica",
+        "Modelo mental: tráfego irregular → serverless; constante/pesado ou longo → containers"
+      ],
+      "checkpoint": "Peça dois cenários onde Lambda é escolha errada; depois pergunte se pode ir pra prática",
+      "ref": "08-serverless/teoria.md#8-quando-serverless-não-é-a-resposta"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Primeira Lambda pelo Console (m08-hello)",
+      "pontos": [
+        "Criar m08-hello (Python 3.13) com role básica nova — é a execution role",
+        "Editar o código do handler, Deploy (sem deploy não vale!), testar com evento de teste",
+        "Ler o REPORT: duração, billed duration, memória — o GB-s na prática",
+        "Adicionar variável de ambiente SAUDACAO e ver a resposta mudar sem tocar no código"
+      ],
+      "acao": "Guiar a criação e teste da função no Console, passo a passo",
+      "checkpoint": "Confirme que o teste retornou 200 e o aluno viu o REPORT antes de seguir",
+      "ref": "08-serverless/pratica.md#parte-a--primeira-lambda-pelo-console"
+    },
+    {
+      "id": "p2",
+      "fase": "pratica",
+      "titulo": "Invocar e observar pela CLI",
+      "pontos": [
+        "aws lambda invoke com --payload e --cli-binary-format raw-in-base64-out",
+        "Ler a resposta em /tmp/resposta.json — invocação síncrona",
+        "aws logs tail /aws/lambda/m08-hello --since 10m — o melhor amigo do debug",
+        "Todo print vira log no grupo /aws/lambda/<função>"
+      ],
+      "acao": "Guiar o invoke e o logs tail no terminal do aluno",
+      "checkpoint": "Confirme que o aluno viu a resposta e os logs pela CLI",
+      "ref": "08-serverless/pratica.md#parte-b--invocar-e-observar-pela-cli"
+    },
+    {
+      "id": "p3",
+      "fase": "pratica",
+      "titulo": "HTTP API na frente da Lambda + curl",
+      "pontos": [
+        "Criar HTTP API m08-api com integração Lambda e rota GET /ola",
+        "Stage $default com auto-deploy — publica na hora",
+        "Testar com curl na Invoke URL — primeira API serverless no ar",
+        "Ver no log que o event do API Gateway tem formato diferente (headers, requestContext)"
+      ],
+      "acao": "Guiar a criação da API no Console e o teste com curl",
+      "checkpoint": "Confirme que o curl retornou o JSON da função antes de seguir",
+      "ref": "08-serverless/pratica.md#parte-c--http-api-na-frente-da-lambda-api-gateway"
+    },
+    {
+      "id": "p4",
+      "fase": "pratica",
+      "titulo": "Trigger S3 → Lambda (event-driven de verdade)",
+      "pontos": [
+        "Criar m08-processa-s3 que loga bucket/chave/tamanho de cada Record",
+        "Criar bucket m08-eventos-<sufixo> e adicionar o trigger S3 (all object create)",
+        "O Console configura a notificação E a permissão do S3 invocar (resource-based policy)",
+        "aws s3 cp de um arquivo e ver o evento chegar no aws logs tail — invocação assíncrona"
+      ],
+      "acao": "Guiar a segunda função, o bucket, o trigger e o teste com upload",
+      "checkpoint": "Confirme que o log mostrou o objeto enviado — o átomo do event-driven",
+      "ref": "08-serverless/pratica.md#parte-d--trigger-s3--lambda-event-driven-de-verdade"
+    },
+    {
+      "id": "p5",
+      "fase": "pratica",
+      "titulo": "Teardown + checklist",
+      "pontos": [
+        "Ordem: API → funções → bucket (rb --force) → log groups",
+        "Armadilha: deletar a função NÃO apaga log group nem IAM role",
+        "Conferir no Console que Lambda, API Gateway e S3 estão limpos",
+        "Fechar o checklist de conclusão do módulo"
+      ],
+      "acao": "Guiar o teardown comando a comando e conferir o checklist",
+      "checkpoint": "Confirme teardown completo antes de liberar o quiz",
+      "ref": "08-serverless/pratica.md#parte-e--🔥-teardown-obrigatório"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/apps/modulo-08/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "AWS/apps/modulo-08/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões de cenário, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 09 após passar"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/provas/modulo-08/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 09; se não, revise os pontos errados",
+      "ref": "AWS/provas/modulo-08/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 08",
+      "pontos": [
+        "Recap: serverless de verdade, Lambda, API Gateway, event-driven, Step Functions",
+        "Você subiu uma API serverless real e um pipeline S3→Lambda — e destruiu tudo",
+        "Próximo: Módulo 09 — Containers (ECR, ECS/Fargate) — o outro lado do espectro"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 09 ou parar por aqui",
+      "ref": "AWS/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

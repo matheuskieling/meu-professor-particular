@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 13: Segurança Avançada",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Sua aplicação precisa criptografar arquivos de 2 GB usando uma chave KMS. Qual é o fluxo correto?",
+      "opcoes": [
+        "Chamar aws kms encrypt passando o arquivo de 2 GB direto",
+        "GenerateDataKey → cifrar o arquivo localmente com a data key em claro → apagar a versão clara → guardar a data key cifrada junto do arquivo",
+        "Exportar a CMK do KMS e cifrar localmente com ela",
+        "Dividir o arquivo em pedaços de 4 KB e chamar encrypt pra cada um"
+      ],
+      "correta": 1,
+      "explicacao": "É o envelope encryption: a API Encrypt limita a 4 KB de propósito. Dados grandes se cifram localmente com uma data key; a CMK só cifra a data key e nunca sai do KMS.",
+      "feedbacks": [
+        "A API Encrypt aceita no máximo 4 KB — 2 GB nem passam. Esse limite existe justamente pra te empurrar pro envelope encryption.",
+        "Correto: é o padrão envelope, o mesmo que S3/EBS/RDS usam por baixo. Local e rápido pro dado; o KMS só processa a chavinha.",
+        "A CMK NUNCA sai do KMS — não existe exportá-la (esse é o modelo de segurança do serviço).",
+        "Tecnicamente possível, mas absurdo: 500 mil chamadas de API por arquivo, lento e caro. O envelope resolve com UMA chamada."
+      ]
+    },
+    {
+      "pergunta": "Um atacante roubou um disco de backup com milhões de arquivos protegidos por envelope encryption (cada um com sua data key cifrada por uma CMK do KMS). Ele tem os blobs e as data keys cifradas. O que ele consegue ler?",
+      "opcoes": [
+        "Tudo: as data keys estão junto dos arquivos",
+        "Nada: sem permissão de kms:Decrypt na CMK, as data keys não abrem — e a CMK está no KMS, não no disco",
+        "Metade dos arquivos, os cifrados com chaves mais antigas",
+        "Só os arquivos menores que 4 KB"
+      ],
+      "correta": 1,
+      "explicacao": "As data keys guardadas estão CIFRADAS pela CMK. Abri-las exige chamar o KMS com permissão IAM — que o atacante não tem. O envelope só abre pra quem o mestre (KMS) autoriza.",
+      "feedbacks": [
+        "As data keys junto dos arquivos estão CIFRADAS. Sem o KMS abri-las (o que exige credencial e permissão), são bytes inúteis.",
+        "Exato: é o superpoder do modelo. O disco roubado é um monte de cofres lacrados cujas chaves só o KMS abre — e o KMS exige identidade e permissão, tudo auditado no CloudTrail.",
+        "A idade da chave não muda nada: todas as data keys exigem o Decrypt na CMK correspondente.",
+        "O limite de 4 KB é da API Encrypt, não uma fraqueza dos dados cifrados — tamanho não ajuda o atacante."
+      ]
+    },
+    {
+      "pergunta": "Um administrador com AdministratorAccess (Allow *:*) tenta usar uma CMK e recebe AccessDenied. Como isso é possível?",
+      "opcoes": [
+        "É um bug do IAM — AdministratorAccess sempre pode tudo",
+        "A key policy da chave é a raiz do acesso: se ela não permite (nem delega ao IAM), nem o admin da conta usa a chave",
+        "Chaves KMS só podem ser usadas pelo root",
+        "Faltou MFA na sessão do administrador"
+      ],
+      "correta": 1,
+      "explicacao": "Peculiaridade do KMS: a key policy manda. Sem um statement permitindo o principal (ou delegando à conta/IAM), a identity policy sozinha não basta — proteção extra pro recurso mais sensível.",
+      "feedbacks": [
+        "Não é bug: KMS é a exceção famosa. A key policy é avaliada como raiz do acesso à chave, e pode simplesmente não incluir o admin.",
+        "Correto: no KMS, o acesso nasce na key policy. É por isso que a criação da chave pede explicitamente administradores e usuários — e por que se recomenda nunca remover a delegação à conta sem plano.",
+        "Root não é requisito pra usar chaves; o que decide é a key policy (e o IAM quando delegado).",
+        "MFA só bloquearia se houvesse uma condition exigindo — o cenário clássico desse AccessDenied é a key policy restritiva."
+      ]
+    },
+    {
+      "pergunta": "Você precisa guardar: (a) a senha do RDS de produção, que deve girar sozinha todo mês; (b) 30 parâmetros de configuração não sensíveis. A opção mais adequada e econômica é:",
+      "opcoes": [
+        "Tudo no Secrets Manager: 31 secrets",
+        "(a) no Secrets Manager com rotação automática; (b) no Parameter Store standard, grátis",
+        "Tudo no Parameter Store, incluindo a senha com rotação automática nativa",
+        "Tudo em variáveis de ambiente commitadas no repositório"
+      ],
+      "correta": 1,
+      "explicacao": "Rotação automática nativa é exclusiva do Secrets Manager (justifica os US$ 0,40/mês da senha). Config não sensível vai no Parameter Store standard de graça.",
+      "feedbacks": [
+        "Funciona, mas paga US$ 0,40/mês por CADA config trivial (~US$ 12/mês à toa). Só a senha precisa dos recursos do Secrets Manager.",
+        "Correto: cada coisa no seu lugar — o recurso pago onde a rotação automática importa, e o gratuito pra configuração. É o arranjo padrão em times maduros.",
+        "O Parameter Store NÃO tem rotação automática nativa — você teria que construir a rotação na mão, reinventando o Secrets Manager.",
+        "Nunca: segredo em repositório é a causa clássica de vazamento. Regra zero do módulo: segredo vive em serviço, lido em runtime via IAM."
+      ]
+    },
+    {
+      "pergunta": "Você quer apagar um secret de laboratório do Secrets Manager HOJE, sem pagar pelos dias de janela de recuperação. Qual comando?",
+      "opcoes": [
+        "aws secretsmanager delete-secret --secret-id lab/x",
+        "aws secretsmanager delete-secret --secret-id lab/x --force-delete-without-recovery",
+        "aws ssm delete-parameter --name lab/x",
+        "aws kms schedule-key-deletion --key-id lab/x"
+      ],
+      "correta": 1,
+      "explicacao": "O delete padrão agenda com janela de recuperação de 30 dias (mínimo 7). A flag --force-delete-without-recovery pula a janela — perfeita pra teardown de lab (e perigosa em produção).",
+      "feedbacks": [
+        "Quase: sem a flag, o secret entra na janela de recuperação (padrão 30 dias) — e a cobrança continua durante a espera.",
+        "Correto: força a deleção imediata, sem recuperação possível. Em teardown de laboratório é exatamente o que se quer; em produção, a janela existe pra te salvar.",
+        "Esse comando é do Parameter Store (SSM), não do Secrets Manager — serviços diferentes.",
+        "Esse é o agendamento de deleção de CHAVES KMS — outro serviço, outro recurso."
+      ]
+    },
+    {
+      "pergunta": "Você tem um RDS de produção SEM criptografia em repouso e a auditoria exige criptografá-lo. Qual é o caminho real?",
+      "opcoes": [
+        "Marcar a opção 'encrypt' nas configurações do banco existente",
+        "Tirar snapshot → copiar o snapshot habilitando criptografia (KMS) → restaurar um novo banco a partir da cópia → apontar a aplicação",
+        "Habilitar SSE-S3 no bucket do RDS",
+        "Instalar um agente de criptografia dentro do banco via SSH"
+      ],
+      "correta": 1,
+      "explicacao": "RDS não permite ligar criptografia em repouso num banco existente. O caminho é snapshot → cópia criptografada → restore — com janela de manutenção planejada.",
+      "feedbacks": [
+        "Essa opção não existe pra banco já criado: a criptografia do RDS se decide NA CRIAÇÃO. É a armadilha clássica do serviço.",
+        "Correto: snapshot → copy com criptografia → restore. Planeja-se a troca de endpoint e o downtime/replicação — por isso o certo é já nascer criptografado.",
+        "RDS não armazena em bucket S3 seu — SSE-S3 é criptografia de objetos do S3, outro serviço.",
+        "Não há SSH em RDS (é gerenciado) e criptografia em repouso é da camada de storage do serviço, não um agente no SO."
+      ]
+    },
+    {
+      "pergunta": "Sua API pública sofre com tentativas de brute force no login: milhares de requisições POST por minuto de poucos IPs. Qual recurso mitiga isso na borda?",
+      "opcoes": [
+        "Shield Standard, que já bloqueia brute force automaticamente",
+        "Uma rate-based rule no AWS WAF: bloquear IPs que excedam N requisições em 5 minutos",
+        "Aumentar o número de instâncias pra aguentar as tentativas",
+        "Um alarme do CloudWatch sobre a métrica de requisições"
+      ],
+      "correta": 1,
+      "explicacao": "Brute force é tráfego HTTP bem formado — camada 7, território do WAF. A rate-based rule bloqueia automaticamente os IPs que passarem do limiar.",
+      "feedbacks": [
+        "Shield Standard mitiga DDoS volumétrico de camada 3/4 (SYN floods etc.). Requisições HTTP válidas em volume moderado passam por ele — quem filtra camada 7 é o WAF.",
+        "Correto: rate limiting no WAF é a defesa básica contra brute force e scraping — o IP abusivo é bloqueado enquanto mantiver o ritmo.",
+        "Escalar pra absorver ataque é pagar pra ser atacado — resolve o sintoma, não o problema, e o atacante continua tentando senhas.",
+        "O alarme te AVISA do ataque, mas não bloqueia nada. Observabilidade complementa, não substitui, o controle na borda."
+      ]
+    },
+    {
+      "pergunta": "O GuardDuty emitiu um finding: 'UnauthorizedAccess:IAMUser — API chamada de IP anômalo com as credenciais do usuário deploy-bot'. Qual é a resposta INICIAL correta?",
+      "opcoes": [
+        "Ignorar: findings do GuardDuty são sempre simulações",
+        "Tratar como credencial possivelmente comprometida: revogar/rotacionar as chaves do deploy-bot e investigar no CloudTrail o que foi feito",
+        "Desativar o GuardDuty pra parar os alertas",
+        "Apagar o usuário do CloudTrail pra limpar o histórico"
+      ],
+      "correta": 1,
+      "explicacao": "Uso de credencial de origem anômala = suspeita de vazamento. Contém-se primeiro (revogar/rotacionar), investiga-se depois (CloudTrail: o que aquela credencial fez?).",
+      "feedbacks": [
+        "Sample findings existem, mas são marcados como tal. Um finding real desse tipo é dos mais sérios: credencial possivelmente vazada em uso.",
+        "Correto: conter (revogar a chave), investigar (CloudTrail conta o que foi feito, de onde, quando) e remediar (nova credencial, de preferência role temporária). GuardDuty detecta; a resposta é sua — ou automatizada via EventBridge.",
+        "Desligar o detector é apagar o alarme de incêndio durante o incêndio.",
+        "Além de antiético, o CloudTrail é justamente sua prova e linha de investigação — e adulterar auditoria agrava qualquer incidente."
+      ]
+    },
+    {
+      "pergunta": "Qual tripla associa corretamente cada serviço de detecção à sua função?",
+      "opcoes": [
+        "GuardDuty = CVEs no software; Inspector = ameaças em andamento; Security Hub = firewall",
+        "GuardDuty = ameaças em andamento (ML sobre logs); Inspector = vulnerabilidades conhecidas (CVEs em EC2/ECR/Lambda); Security Hub = agregador de achados + score de postura",
+        "GuardDuty = agregador; Inspector = anti-DDoS; Security Hub = rotação de segredos",
+        "Os três fazem exatamente a mesma coisa"
+      ],
+      "correta": 1,
+      "explicacao": "Mapa mental: GuardDuty vê comportamento suspeito acontecendo; Inspector acha a fraqueza antes do ataque; Security Hub junta tudo e mede quão bem configurada está a conta.",
+      "feedbacks": [
+        "Trocado: CVEs são do Inspector e ameaças em andamento do GuardDuty. E Security Hub não filtra tráfego — agrega achados.",
+        "Correto: detecção de ameaça (GuardDuty) + scanner de vulnerabilidade (Inspector) + painel agregador com conformidade (Security Hub). Juntos cobrem antes, durante e a visão geral.",
+        "Nenhuma das três associações está certa: agregador é o Hub, anti-DDoS é o Shield, rotação é o Secrets Manager.",
+        "São complementares, não redundantes — cada um responde uma pergunta diferente da defesa em profundidade."
+      ]
+    },
+    {
+      "pergunta": "A empresa quer deixar os devs criarem as próprias roles pra seus projetos, MAS garantindo que nenhuma role criada possa exceder um teto de permissões (ex.: nunca tocar em IAM ou billing). Qual mecanismo faz isso?",
+      "opcoes": [
+        "Dar AdministratorAccess aos devs e confiar",
+        "Permission boundary obrigatório nas roles criadas: a permissão efetiva é a interseção entre as policies da role e o boundary",
+        "Uma session policy no login de cada dev",
+        "Um SCP... aliás, qualquer policy com Allow bem grande"
+      ],
+      "correta": 1,
+      "explicacao": "É o caso de uso clássico de permission boundaries: delegar a criação de roles com um teto inescapável — mesmo uma policy Action:* anexada não passa do boundary.",
+      "feedbacks": [
+        "Confiança não é controle: uma role criada com poder demais (por erro ou má-fé) escala privilégio na conta inteira.",
+        "Correto: exige-se (via condition na permissão de iam:CreateRole) que toda role nasça com o boundary anexado. O teto vale mesmo que a identity policy conceda tudo.",
+        "Session policies restringem UMA sessão de AssumeRole no momento do assume — não impõem teto permanente às roles que os devs criam.",
+        "SCPs atuam no nível de contas da Organization (e a alternativa se desvia pra um Allow amplo, que é o oposto de um teto). O mecanismo pontual pra delegação segura é o boundary."
+      ]
+    },
+    {
+      "pergunta": "Você aplicou um Deny de todas as ações com Condition {\"Bool\": {\"aws:MultiFactorAuthPresent\": \"false\"}} e descobriu que chamadas feitas com access keys de longo prazo (sem MFA) CONTINUAM passando. Por quê?",
+      "opcoes": [
+        "Porque Deny nunca se aplica a access keys",
+        "Porque nessas sessões a key aws:MultiFactorAuthPresent NEM EXISTE; com Bool a condição não casa e o Deny não dispara — o correto é BoolIfExists",
+        "Porque MFA só funciona no Console, nunca na CLI",
+        "Porque o IAM demora 30 dias pra aplicar policies novas"
+      ],
+      "correta": 1,
+      "explicacao": "A pegadinha clássica: Bool exige a key presente com valor false. Em access keys de longo prazo a key está ausente → condição não casa → Deny não pega. BoolIfExists trata ausência como violação.",
+      "feedbacks": [
+        "Deny se aplica a qualquer principal/sessão — o problema aqui é a semântica da condition, não o tipo de credencial.",
+        "Correto: é o bug sutil que deixa passar justamente o caso mais perigoso. BoolIfExists cobre 'false' E 'ausente'. Detalhe de sênior que cai em prova e em auditoria.",
+        "MFA funciona na CLI também (via sts get-session-token/assume-role com MFA). A falha era da condition, não do canal.",
+        "Policies do IAM propagam em segundos — não há carência de 30 dias."
+      ]
+    },
+    {
+      "pergunta": "No teardown do laboratório, sobre a chave KMS criada (US$ 1/mês), qual é o procedimento correto?",
+      "opcoes": [
+        "Nada: chaves não usadas são gratuitas",
+        "schedule-key-deletion com 7 dias (mínimo) + delete-alias; a chave fica PendingDeletion, inutilizável, e some sozinha",
+        "delete-key --now para remoção imediata",
+        "Baixar a chave como backup antes de apagar"
+      ],
+      "correta": 1,
+      "explicacao": "Chave KMS não morre na hora: agenda-se a deleção (7–30 dias) — proteção contra tornar dados irrecuperáveis por engano. Com 7 dias, o custo do lab fica em centavos.",
+      "feedbacks": [
+        "Customer managed keys custam US$ 1/mês SÓ POR EXISTIR (pró-rata), usadas ou não. Esquecê-la é assinatura eterna.",
+        "Correto: mínimo de 7 dias de espera (dá pra cancelar com cancel-key-deletion se se arrepender), alias removido, e a cobrança para. Exatamente o teardown da prática.",
+        "Não existe deleção imediata de chave KMS — a espera é obrigatória por design, porque chave apagada = dados irrecuperáveis pra sempre.",
+        "Impossível por design: o material da chave nunca sai do KMS. Não há download/backup de CMK padrão — e é isso que sustenta o modelo de segurança."
+      ]
+    }
+  ]
+}

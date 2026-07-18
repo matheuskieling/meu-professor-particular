@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 16: CI/CD & DevOps",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Uma empresa faz um deploy gigante por trimestre, sempre traumático. A liderança quer 'reduzir o risco dos deploys'. Qual a mudança de MAIOR impacto, segundo a cultura DevOps?",
+      "opcoes": [
+        "Fazer os deploys trimestrais de madrugada, com mais gente de plantão",
+        "Deploys menores e mais frequentes, automatizados por pipeline com testes — mudança pequena = raio de explosão pequeno e rollback fácil",
+        "Congelar deploys por 6 meses até o sistema estabilizar",
+        "Terceirizar os deploys para a AWS"
+      ],
+      "correta": 1,
+      "explicacao": "O risco cresce com o TAMANHO da mudança, não com a frequência. 100 deploys pequenos e reversíveis são mais seguros que 1 gigante — é o princípio de excelência operacional em ação.",
+      "feedbacks": [
+        "Madrugada e plantão tratam o sintoma: o deploy continua gigante, arriscado e difícil de reverter. O trauma só muda de horário.",
+        "Correto: quebrar em mudanças pequenas, frequentes e automatizadas reduz o raio de explosão, torna a causa de falhas óbvia e o rollback trivial.",
+        "Congelar acumula AINDA mais mudanças pro próximo deploy — aumenta exatamente o risco que se quer reduzir.",
+        "A AWS fornece ferramentas, não faz seus deploys. A mudança necessária é de processo e automação do próprio time."
+      ]
+    },
+    {
+      "pergunta": "Um time tem pipeline com build e testes automáticos; todo artefato aprovado fica pronto pra produção, mas o deploy final exige o clique de um gerente. Como se chama essa prática?",
+      "opcoes": [
+        "Continuous Deployment",
+        "Continuous Delivery",
+        "Continuous Integration apenas",
+        "Deploy manual clássico, sem CI/CD"
+      ],
+      "correta": 1,
+      "explicacao": "Artefato sempre pronto + aprovação humana antes de produção = Continuous DELIVERY. Sem o clique (tudo automático) seria Continuous DEPLOYMENT.",
+      "feedbacks": [
+        "Quase: Deployment é quando NÃO há clique — passou nos testes, entrou em produção sozinho.",
+        "Correto: a marca registrada do delivery é o artefato sempre deployável com um humano decidindo o QUANDO.",
+        "Há CI, sim (build+testes a cada push), mas a prática descrita vai além: o artefato fica pronto pra produção — isso é delivery.",
+        "Há pipeline, testes automáticos e artefato versionado — está longe do deploy manual clássico; só a última milha é humana."
+      ]
+    },
+    {
+      "pergunta": "Uma API crítica não tolera downtime e o negócio exige rollback em segundos se algo der errado. Há orçamento pra infra extra temporária. Qual estratégia de deploy?",
+      "opcoes": [
+        "In-place (parar e subir a nova versão nas mesmas máquinas)",
+        "Blue/green: ambiente novo completo, testar, virar o tráfego — e voltar pro blue instantaneamente se precisar",
+        "Rolling lento ao longo de 6 horas",
+        "Deploy só nos fins de semana"
+      ],
+      "correta": 1,
+      "explicacao": "Blue/green dá zero downtime e rollback = virar o tráfego de volta (segundos). O custo é dobrar a infra durante a transição — que o cenário diz caber no orçamento.",
+      "feedbacks": [
+        "In-place tem downtime na troca e rollback = re-deploy da versão antiga (minutos ou mais) — viola os dois requisitos.",
+        "Correto: com dois ambientes completos, a virada é instantânea nos dois sentidos. O requisito de orçamento extra temporário é exatamente o preço do blue/green.",
+        "Rolling evita downtime, mas o rollback é 'rolar de volta' instância a instância — lento demais pro requisito de segundos.",
+        "Restringir o calendário não muda risco nem rollback — e contradiz a cultura de deploys frequentes."
+      ]
+    },
+    {
+      "pergunta": "Durante um deploy rolling, metade das instâncias roda a v2 e metade ainda roda a v1. A v2 renomeou uma coluna do banco e a v1 começou a dar erro. Qual a lição?",
+      "opcoes": [
+        "Rolling deploy não funciona com bancos de dados",
+        "Em rolling/canary as duas versões convivem: mudanças de schema devem ser retrocompatíveis (expand → migrate → contract)",
+        "O banco deveria ter sido desligado durante o deploy",
+        "A v1 deveria ter sido deletada antes do deploy"
+      ],
+      "correta": 1,
+      "explicacao": "Enquanto a janela de convivência durar, o schema precisa servir às duas versões: adicionar a coluna nova (expand), migrar, e só remover a antiga (contract) quando a v1 morrer.",
+      "feedbacks": [
+        "Funciona — desde que as migrações respeitem a convivência de versões. O problema foi a migração destrutiva, não o rolling.",
+        "Correto: renomear/dropar de uma vez quebra a versão antiga ainda no ar. O padrão expand→migrate→contract mantém compatibilidade durante a transição.",
+        "Desligar o banco = downtime total — pior que o problema. A solução é compatibilidade, não parada.",
+        "Deletar a v1 antes de validar a v2 elimina o rollback — o oposto de um deploy seguro."
+      ]
+    },
+    {
+      "pergunta": "No CodePipeline, você quer que o deploy pra produção só aconteça depois que o líder técnico revisar. O que adicionar?",
+      "opcoes": [
+        "Um segundo estágio de build",
+        "Uma ação de aprovação manual (manual approval) antes do estágio de deploy",
+        "Um health check do Route 53",
+        "Não é possível; CodePipeline é sempre 100% automático"
+      ],
+      "correta": 1,
+      "explicacao": "CodePipeline suporta ações de aprovação manual entre estágios: a esteira pausa e espera o aprovador — é o 'botão' do continuous delivery.",
+      "feedbacks": [
+        "Outro build não introduz decisão humana — só repete a construção.",
+        "Correto: a manual approval action pausa o pipeline (com notificação via SNS, se quiser) até alguém aprovar ou rejeitar. No GitHub Actions, o equivalente é Environment com required reviewers.",
+        "Health check monitora endpoints — não é mecanismo de aprovação de pipeline.",
+        "É possível, sim — aprovação manual é recurso nativo do CodePipeline."
+      ]
+    },
+    {
+      "pergunta": "Seu build no CodeBuild precisa instalar dependências, rodar testes e empacotar a pasta dist/. Onde e como isso é descrito?",
+      "opcoes": [
+        "No appspec.yml, na seção hooks",
+        "No buildspec.yml, nas phases (install/build) e na seção artifacts",
+        "Na trust policy da role do CodeBuild",
+        "No console, digitando os comandos a cada build"
+      ],
+      "correta": 1,
+      "explicacao": "buildspec.yml é a receita do CodeBuild: phases com os comandos e artifacts com o que sai do build (a dist/). Versionado junto do código.",
+      "feedbacks": [
+        "appspec.yml é do CodeDeploy — descreve implantação (arquivos + hooks tipo BeforeInstall), não build.",
+        "Correto: phases.install/pre_build/build/post_build com os comandos e artifacts.files com o resultado — tudo versionado no repositório.",
+        "A trust policy diz QUEM pode assumir a role — nada a ver com os passos de build.",
+        "Digitar comandos à mão a cada build é justamente o que o CI elimina; a receita vive em código (buildspec)."
+      ]
+    },
+    {
+      "pergunta": "Um repositório precisa fazer deploy na AWS via GitHub Actions. O estagiário sugere criar um IAM user, gerar access keys e colar nos secrets. Qual a resposta correta de quem fez este módulo?",
+      "opcoes": [
+        "Aprovar; é o único jeito que funciona",
+        "Recusar: configurar OIDC — GitHub como identity provider no IAM + role com trust restrita ao repo; credenciais temporárias por job, zero segredos armazenados",
+        "Aprovar, mas usar as chaves do usuário root que são mais poderosas",
+        "Recusar e fazer os deploys manualmente pra sempre"
+      ],
+      "correta": 1,
+      "explicacao": "OIDC elimina o segredo de longa duração: cada job troca um token federado por credenciais de ~1h, restritas à role e ao repo/branch da trust policy.",
+      "feedbacks": [
+        "Funciona, mas não é o único jeito — e é o mais arriscado: chave eterna armazenada fora da AWS, esperando vazar.",
+        "Correto: sem nada pra rotacionar ou vazar do repo, com escopo restrito por trust policy e permissões mínimas na role. É a recomendação atual de AWS e GitHub.",
+        "Chaves do root são o pior cenário possível: poder irrestrito + credencial eterna num sistema externo. Nunca.",
+        "Voltar ao deploy manual joga fora os benefícios do CI/CD; o problema tem solução técnica limpa (OIDC)."
+      ]
+    },
+    {
+      "pergunta": "Sua role OIDC tem trust com sub = 'repo:sua-org/*:*'. Um pentest apontou risco. Qual?",
+      "opcoes": [
+        "Nenhum; wildcards são sempre seguros",
+        "Qualquer repositório DA SUA ORG pode assumir a role — incluindo repos de teste/fork internos com workflows não revisados; o sub deve mirar repo (e idealmente branch/environment) específicos",
+        "O sub não aceita wildcards, então a trust está quebrada",
+        "O risco é só de custo, não de segurança"
+      ],
+      "correta": 1,
+      "explicacao": "Trust frouxa amplia quem vira 'você' na AWS. Escopo correto: repo específico e, para produção, branch/environment específicos.",
+      "feedbacks": [
+        "Wildcard em trust policy é exatamente onde mora o perigo: você está definindo QUEM pode entrar na sua conta.",
+        "Correto: qualquer workflow em qualquer repo da org (até um criado ontem por alguém comprometido) poderia assumir a role e usar suas permissões. Restrinja o sub ao máximo.",
+        "Aceita wildcards (StringLike) — funciona, e é justamente por funcionar 'demais' que é arriscado.",
+        "É risco de segurança direto: assumir a role = agir na sua conta AWS com as permissões dela."
+      ]
+    },
+    {
+      "pergunta": "No workflow, o step 'configure-aws-credentials' falha com 'Credentials could not be loaded... not authorized to perform sts:AssumeRoleWithWebIdentity'. O que verificar PRIMEIRO?",
+      "opcoes": [
+        "Se a fatura da AWS está paga",
+        "O trio clássico: permissions id-token: write no workflow, o ARN da role, e se a trust policy (provider + sub do repo/branch) bate com quem está chamando",
+        "Se o repositório é privado",
+        "Se o runner é ubuntu-latest ou windows-latest"
+      ],
+      "correta": 1,
+      "explicacao": "Esse erro é quase sempre: faltou id-token: write, ARN errado, ou trust policy não casando com o sub real (repo/branch/environment) do job.",
+      "feedbacks": [
+        "Problema de billing geraria outros erros; esse é o erro clássico de federação OIDC mal configurada.",
+        "Correto: (1) sem id-token: write o token nem é emitido; (2) ARN errado aponta pra role inexistente; (3) trust policy com sub diferente do contexto real (ex.: push numa branch fora da condição) nega o assume. 90% dos casos estão aí.",
+        "Repos privados usam OIDC normalmente (dentro da cota de minutos) — visibilidade não causa esse erro.",
+        "O SO do runner não influencia a autenticação OIDC."
+      ]
+    },
+    {
+      "pergunta": "Você quer automatizar o deploy de um container: build da imagem, push pro registry e atualização do serviço no ECS. Qual sequência de serviços/actions faz sentido?",
+      "opcoes": [
+        "Build da imagem → push pro S3 → CloudFront serve o container",
+        "Login no ECR via OIDC → docker build/push pro ECR → atualizar a task definition e fazer o deploy no serviço ECS",
+        "Colar o Dockerfile num secret do GitHub e rodar na Lambda",
+        "Enviar a imagem por e-mail pra AWS aprovar"
+      ],
+      "correta": 1,
+      "explicacao": "O padrão do módulo 09 + 16: ECR guarda a imagem, ECS roda; o workflow (ecr-login, ecs-deploy-task-definition) automatiza o caminho — tudo autenticado via OIDC.",
+      "feedbacks": [
+        "S3/CloudFront servem ARQUIVOS, não executam containers. Registry de imagem é o ECR; execução é ECS.",
+        "Correto: é o fluxo canônico — build, push pro ECR e nova task definition apontando pra imagem, com o ECS fazendo o rolling (ou blue/green via CodeDeploy).",
+        "Secret não é lugar de Dockerfile (nem é segredo), e Lambda não é o destino de um serviço ECS.",
+        "Não existe aprovação da AWS por e-mail — deploy é operação sua, automatizada no pipeline."
+      ]
+    },
+    {
+      "pergunta": "Sobre custos de CI/CD para estudo, qual afirmação está CORRETA?",
+      "opcoes": [
+        "GitHub Actions cobra por push em qualquer repositório",
+        "Actions é grátis em repo público; CodeBuild tem 100 min/mês grátis; CodePipeline pode custar (US$ 1/mês por pipeline V1 após o primeiro) — por isso o teardown do pipeline de teste",
+        "Todos os serviços de CI/CD são 100% gratuitos pra sempre",
+        "CodeBuild cobra por linha de código compilada"
+      ],
+      "correta": 1,
+      "explicacao": "É o mapa de custos do módulo: o caminho Actions+OIDC+S3 sai a US$ 0; o pipeline demonstrativo é o único que pode gerar cobrança se esquecido — teardown!",
+      "feedbacks": [
+        "Em repositório público, os runners padrão do Actions são gratuitos e ilimitados; privados têm cota mensal (2.000 min no free).",
+        "Correto: e é por isso que no teardown deletamos o pipeline — é o único recurso da prática que cobraria só por existir.",
+        "Nem todos: CodePipeline e minutos excedentes de CodeBuild/Actions são pagos. Free tier tem limites.",
+        "CodeBuild cobra por MINUTO de build (conforme o tamanho da instância), não por linha."
+      ]
+    },
+    {
+      "pergunta": "Depois do módulo, seu setup é: push na main → Actions builda → sync pro S3, sem aprovação. O time quer que produção exija revisão de um sênior, mantendo staging automático. Qual o caminho no GitHub?",
+      "opcoes": [
+        "Impossível; GitHub Actions não suporta aprovações",
+        "Usar Environments: job de staging sem restrição e job de production vinculado a um environment com required reviewers (e, se quiser, trust OIDC restrita a esse environment)",
+        "Dar a senha da AWS só pro sênior",
+        "Migrar tudo pro CodePipeline, único que tem aprovação"
+      ],
+      "correta": 1,
+      "explicacao": "GitHub Environments dão aprovação manual (required reviewers), secrets próprios e podem ser referenciados na trust policy OIDC — continuous delivery no Actions.",
+      "feedbacks": [
+        "Suporta: é o recurso de Environments com required reviewers — o job pausa até a aprovação.",
+        "Correto: staging flui automático (deployment) e production espera o reviewer (delivery). Bônus: restringir o sub OIDC ao environment production endurece ainda mais.",
+        "Compartilhar credenciais pessoais é anti-padrão de segurança — e não cria nenhum gate no pipeline.",
+        "CodePipeline tem aprovação manual, mas não é o único — migrar tudo por isso seria desnecessário."
+      ]
+    }
+  ]
+}

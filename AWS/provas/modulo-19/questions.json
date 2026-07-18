@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 19: Prova Final Integradora do Curso",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Usuários reportam erro intermitente. Seu ALB mostra picos de 502, o ASG diz que as instâncias estão 'healthy' (tipo EC2), e o dashboard mostra CPU normal. Qual a causa mais provável e o próximo passo?",
+      "opcoes": [
+        "Falha regional da AWS; acionar o plano de DR",
+        "O processo da aplicação está caindo/travando em algumas instâncias: mudar o health check do ASG para ELB e investigar os logs da app no CloudWatch",
+        "O Route 53 está com TTL baixo demais",
+        "Falta de backup na tabela"
+      ],
+      "correta": 1,
+      "explicacao": "502 com VM 'saudável' = app morto com instância viva. Health check tipo EC2 não enxerga a aplicação; tipo ELB faz o ASG repor instâncias cujo APP falha. Logs contam o porquê.",
+      "feedbacks": [
+        "Erro intermitente num componente seu não é desastre regional — acionar DR aqui seria atirar no próprio pé. Cheque o básico antes do apocalipse.",
+        "Exato: o gap clássico entre 'instância viva' e 'aplicação respondendo'. Health check ELB no ASG fecha o gap; os logs explicam a queda do processo.",
+        "TTL baixo no DNS não gera 502 — 502 nasce entre o ALB e o backend, não na resolução de nome.",
+        "Backup protege dados, não disponibilidade de aplicação. Não há relação com 502."
+      ]
+    },
+    {
+      "pergunta": "Seu app em subnet PRIVADA precisa chamar APIs externas na internet e também o DynamoDB. Qual combinação minimiza custo mantendo a subnet privada?",
+      "opcoes": [
+        "NAT Gateway para tudo, inclusive DynamoDB",
+        "Internet Gateway direto na subnet privada",
+        "Gateway Endpoint (grátis) para o DynamoDB + NAT só para o tráfego de internet restante",
+        "Dois NAT Gateways, um por serviço"
+      ],
+      "correta": 2,
+      "explicacao": "Gateway endpoints de S3/DynamoDB são gratuitos e tiram esse tráfego do NAT (que cobra por GB). O NAT fica só pro que realmente precisa de internet.",
+      "feedbacks": [
+        "Funciona, mas você pagaria US$0,045/GB pra falar com o DynamoDB — tráfego que o endpoint gratuito carregaria de graça.",
+        "IGW em subnet 'privada' com rota 0.0.0.0/0 a tornaria pública — quebra o requisito de rede do design.",
+        "Correto: é a arquitetura FinOps-aware — endpoint gratuito pro serviço AWS, NAT enxuto só pro inevitável. Módulos 03 e 17 juntos.",
+        "Dois NATs por SERVIÇO não é um padrão — NAT por AZ é padrão de HA, mas duplicar por destino só dobra o custo fixo."
+      ]
+    },
+    {
+      "pergunta": "No design review, o Claude aponta: seu RDS está numa única AZ, mas o ASG está em 2 AZs. O aluno responde 'o ASG me dá HA'. Qual a falha do raciocínio?",
+      "opcoes": [
+        "Nenhuma; ASG multi-AZ cobre o banco também",
+        "O banco é um SPOF: se a AZ dele cair, a aplicação inteira cai, mesmo com o ASG saudável nas outras — HA vale para TODAS as camadas (RDS Multi-AZ)",
+        "ASGs não podem coexistir com RDS",
+        "O problema é o contrário: o ASG deveria estar em 1 AZ só"
+      ],
+      "correta": 1,
+      "explicacao": "Disponibilidade é limitada pelo elo mais fraco em série. App redundante + banco single-AZ = SPOF no banco. RDS Multi-AZ resolve com standby síncrona e failover automático.",
+      "feedbacks": [
+        "O ASG só gerencia as INSTÂNCIAS dele. O banco é outra camada — cada camada precisa da própria redundância.",
+        "Exato: SLA composto em série (Módulo 18) — a camada sem redundância define o teto. Multi-AZ no RDS fecha o buraco.",
+        "Coexistem perfeitamente — é a arquitetura de referência do curso inteiro (ALB+ASG+RDS).",
+        "Reduzir o ASG a 1 AZ pioraria tudo — criaria um segundo SPOF em vez de eliminar o primeiro."
+      ]
+    },
+    {
+      "pergunta": "Você encontra no repositório do projeto um arquivo terraform.tfvars com a senha do banco, commitado há 3 dias num repo privado. Qual a resposta COMPLETA correta?",
+      "opcoes": [
+        "Apagar o arquivo no próximo commit; repo privado é seguro",
+        "Rotacionar a senha imediatamente, movê-la para Secrets Manager/SSM referenciado pelo IaC, adicionar tfvars ao .gitignore e considerar o histórico do Git comprometido",
+        "Trocar o nome do arquivo para senhas.txt",
+        "Criptografar o repo com KMS"
+      ],
+      "correta": 1,
+      "explicacao": "Segredo commitado = segredo comprometido (o histórico preserva tudo). Rotacionar primeiro, depois corrigir o processo: secrets gerenciados + .gitignore + (idealmente) varredura no pipeline.",
+      "feedbacks": [
+        "Apagar no próximo commit não remove do HISTÓRICO — quem clonar vê a senha. E 'privado' não anula vazamento de acesso/fork/backup.",
+        "Correto e na ordem certa: primeiro invalidar o segredo (rotação), depois consertar o fluxo (Secrets Manager + .gitignore). Módulos 02, 11 e 13 juntos.",
+        "Renomear não muda nada — o conteúdo continua no repo e no histórico.",
+        "KMS criptografa dados na AWS, não commits no Git. O problema é o segredo exposto, e ele já vazou."
+      ]
+    },
+    {
+      "pergunta": "O pipeline do projeto autentica na AWS. Entre as opções, qual é a MELHOR prática (Módulos 02/16)?",
+      "opcoes": [
+        "Access keys do usuário admin salvas como secrets do CI",
+        "Federação OIDC: o pipeline assume uma ROLE com permissões mínimas, recebendo credenciais temporárias a cada execução",
+        "A senha do root numa variável de ambiente",
+        "Uma access key compartilhada no grupo do time"
+      ],
+      "correta": 1,
+      "explicacao": "OIDC elimina credenciais de longa duração: o provedor de CI troca um token pela role, com escopo mínimo e expiração automática. Nada pra vazar, nada pra rotacionar.",
+      "feedbacks": [
+        "Chaves estáticas de ADMIN no CI são o vetor clássico de comprometimento: longa duração + poder total. Se vazar o secret do CI, vaza a conta.",
+        "Exato: credencial temporária + least privilege + zero segredo estático. É o padrão moderno de CI/CD na AWS.",
+        "O root nem deveria ter access keys, e a senha dele jamais sai do cofre (com MFA) — isso é o anti-padrão máximo do curso.",
+        "Chave compartilhada destrói a auditoria (quem fez o quê?) e multiplica os pontos de vazamento."
+      ]
+    },
+    {
+      "pergunta": "Após o deploy da fase 4, a latência p95 dobrou, mas a p50 continua igual. O que isso indica e onde investigar?",
+      "opcoes": [
+        "Todos os usuários estão lentos igualmente; problema no DNS",
+        "Uma FRAÇÃO das requisições ficou lenta (cauda): investigar por dimensão — uma instância/AZ degradada, cold starts, ou queries lentas em casos específicos",
+        "p95 dobrada com p50 igual é estatisticamente impossível",
+        "É esperado após qualquer deploy; ignorar"
+      ],
+      "correta": 1,
+      "explicacao": "p50 estável + p95 alta = a maioria ok, a cauda sofrendo. Típico de um subconjunto problemático: um target ruim, uma dependência intermitente, um caminho de código novo. Percentis existem pra isso (Módulo 12).",
+      "feedbacks": [
+        "Se TODOS estivessem lentos, a p50 subiria junto. A assinatura 'p50 ok, p95 ruim' aponta pra um subconjunto, não pro todo.",
+        "Correto: é leitura de percentis aplicada. Quebre a métrica por target/AZ/rota e compare com o diff do deploy — a cauda sempre tem endereço.",
+        "É perfeitamente possível (e comum): percentis medem pontos diferentes da distribuição.",
+        "Regressão de performance introduzida por deploy é exatamente o que a observabilidade existe pra pegar — ignorar é desperdiçar o alarme."
+      ]
+    },
+    {
+      "pergunta": "O capstone tolera RTO de 4h e RPO de 1h com orçamento mínimo. Para DR além da região, o que faz sentido?",
+      "opcoes": [
+        "Active/active em duas regiões com DynamoDB global tables",
+        "Warm standby completo em us-west-2",
+        "Backups automáticos a cada hora com cópia cross-region + IaC no Git pra reconstruir a infra no destino",
+        "Nada: multi-AZ já cobre desastre regional"
+      ],
+      "correta": 2,
+      "explicacao": "RTO de horas + RPO de 1h = backup & restore com backups horários copiados pra outra região. O IaC é o que torna o RTO de 4h realista (reconstruir na mão levaria dias).",
+      "feedbacks": [
+        "Active/active entrega RTO/RPO ~zero a custo de dobrar a produção — o requisito não pede nem de longe isso.",
+        "Warm standby roda infraestrutura 24/7 no destino pra um RTO de minutos que ninguém exigiu. Dinheiro queimado.",
+        "Correto: a estratégia mais barata que ATENDE os números. Backup com cross-region copy (Módulo 18) + apply no destino (Módulo 11) = DR de gente grande com orçamento de estudante.",
+        "Multi-AZ morre junto com a região — todas as AZs são da mesma região. DR regional exige cópia FORA dela."
+      ]
+    },
+    {
+      "pergunta": "No teste de falha, você deletou um registro crítico e restaurou o backup em 22 minutos, recuperando dados até 40 minutos antes da deleção. Como reportar RTO e RPO REAIS desse exercício?",
+      "opcoes": [
+        "RTO 40 min; RPO 22 min",
+        "RTO 22 min (tempo pra voltar a operar); RPO 40 min (janela de dados perdidos)",
+        "RTO e RPO de 62 min",
+        "Não dá pra medir RTO/RPO em exercícios"
+      ],
+      "correta": 1,
+      "explicacao": "Tempo de recuperação medido = RTO real (22 min). Dados entre o último ponto restaurável e o incidente = RPO real (40 min). Agora os números do runbook são medidos, não prometidos.",
+      "feedbacks": [
+        "Invertido: o TEMPO da recuperação é RTO; a JANELA de dados perdidos é RPO. Releia as definições — elas caem em toda entrevista também. 😄",
+        "Exato: e esse é o ponto do exercício — RTO/RPO declarados viram RTO/RPO MEDIDOS. Se os medidos estouram o alvo do negócio, o plano muda (backups mais frequentes/PITR).",
+        "Somá-los não representa nada: são métricas de eixos diferentes (tempo de volta vs. perda de dados).",
+        "Dá — e DEVE: exercícios (GameDays) existem exatamente pra medir os números reais antes do desastre de verdade."
+      ]
+    },
+    {
+      "pergunta": "Uma semana após o início do projeto, o budget de US$5 alertou em 80%. No Cost Explorer, o vilão é 'EC2-Other: NatGateway'. Seu app só fala com DynamoDB e recebe tráfego via ALB. Qual a correção?",
+      "opcoes": [
+        "Aumentar o budget para US$50",
+        "Remover o NAT Gateway: adicionar um gateway endpoint pra DynamoDB e, se as instâncias precisarem de bootstrap da internet, resolver com AMI pronta ou endpoints/subnet pública com SG mínimo",
+        "Trocar o NAT Gateway por outro maior",
+        "Desligar o Cost Explorer para não ver o custo"
+      ],
+      "correta": 1,
+      "explicacao": "Se o único destino AWS é DynamoDB, o endpoint gratuito elimina a razão do NAT (~US$1,10/dia). O curso inteiro em uma decisão: rede (03) + FinOps (17) + arquitetura (15).",
+      "feedbacks": [
+        "Aumentar o budget não conserta desperdício — só o esconde. Budget existe pra provocar exatamente esta investigação.",
+        "Correto: eliminar a necessidade é a melhor otimização. NAT parado cobra por existir; endpoint de DynamoDB é grátis e mais seguro (tráfego nem sai da rede da AWS).",
+        "NAT Gateway não tem 'tamanhos' a escolher — e o problema é ele existir sem necessidade, não a capacidade.",
+        "Cegar-se para o custo é o anti-FinOps definitivo. O alerta funcionou; a resposta é agir, não desligar o alarme."
+      ]
+    },
+    {
+      "pergunta": "Auditoria de segurança no projeto: qual achado é o MAIS crítico pra corrigir primeiro?",
+      "opcoes": [
+        "O bucket de assets públicos servindo imagens via CloudFront",
+        "O security group do banco aceitando 0.0.0.0/0 na porta do banco 'porque facilitou os testes'",
+        "Logs com retenção de 30 dias em vez de 90",
+        "Tags de custo faltando em um alarme"
+      ],
+      "correta": 1,
+      "explicacao": "Banco exposto à internet inteira é a porta de vazamento clássica. SG do banco deve aceitar apenas o SG da camada de aplicação. O resto é ajuste fino; isso é incidente esperando data.",
+      "feedbacks": [
+        "Assets públicos atrás de CDN é um padrão legítimo (conteúdo público, origem controlada) — não é o incêndio.",
+        "Exato: 0.0.0.0/0 na porta do dado é o achado que aparece em post-mortem de vazamento. Correção: referência de SG→SG (só a app fala com o banco), princípio do Módulo 03/13.",
+        "Retenção menor que a ideal é questão de conformidade/investigação, não exposição ativa. Corrige depois do crítico.",
+        "Tag faltando afeta alocação de custo, não segurança. Último da fila."
+      ]
+    },
+    {
+      "pergunta": "Terminado o projeto, o Cost Explorer do dia seguinte ao teardown mostra ~US$0,40 residuais na tag Projeto=capstone. Quais suspeitos verificar? (pense no que o destroy NÃO apaga)",
+      "opcoes": [
+        "Requisições antigas ao ALB, cobradas retroativamente",
+        "Artefatos fora do IaC: snapshots/AMIs, o snapshot final do RDS, a tabela restaurada no teste de DR, recovery points no vault, EIP solto, log groups da aplicação",
+        "A tag de custo em si, que cobra por dia",
+        "O budget capstone, que custa US$0,40/dia"
+      ],
+      "correta": 1,
+      "explicacao": "A lista dos 'sobreviventes' clássicos do teardown: tudo que foi criado fora do IaC ou como artefato lateral (backups, restores, snapshots finais, logs). A caça via describe-* fecha a conta em zero.",
+      "feedbacks": [
+        "Não existe cobrança retroativa de requisições — custo de ALB morre com o ALB.",
+        "Correto: o destroy só apaga o que o IaC criou. Esses artefatos laterais são exatamente o porquê do checklist de caça da fase 7 — e do Cost Explorer como juiz final.",
+        "Tags são gratuitas, sempre — elas são a ferramenta da investigação, não o custo.",
+        "Budgets com alerta são gratuitos (e o seu deve ficar de sentinela). Não é ele."
+      ]
+    },
+    {
+      "pergunta": "Retrospectiva final: qual conjunto de hábitos resume a autonomia que o curso quis construir?",
+      "opcoes": [
+        "Criar tudo pelo console, rápido, e documentar depois se der tempo",
+        "Design antes de recurso; infra como código reproduzível; least privilege por padrão; observabilidade com alarmes testados; backup restaurado (não só feito); budget+tags sempre ligados; teardown religioso",
+        "Usar sempre os serviços mais novos do keynote da re:Invent",
+        "Delegar a infraestrutura pra outra pessoa e focar só no código"
+      ],
+      "correta": 1,
+      "explicacao": "É o curso em uma frase: decisões conscientes, código como fonte de verdade, segurança e custo por padrão, e confiança construída por teste — não por esperança. Parabéns pela formatura. 🎓",
+      "feedbacks": [
+        "Console-first sem código nem registro foi útil pra APRENDER a ver — mas como prática de operação, gera drift, irreprodutibilidade e recursos esquecidos.",
+        "Exato. Se esses hábitos viraram reflexo, o objetivo do curso — autonomia plena pra gerenciar ambientes cloud — foi cumprido. Próxima parada: certificações. 🎓",
+        "Novidade é ferramenta, não estratégia: cada peça entra por requisito justificado (lembra dos ADRs?), não por hype.",
+        "O curso inteiro provou o contrário: dev que domina a infraestrutura projeta sistemas melhores — e não fica refém de ninguém."
+      ]
+    }
+  ]
+}

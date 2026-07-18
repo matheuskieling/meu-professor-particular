@@ -1,0 +1,110 @@
+{
+  "titulo": "Módulo 11 — Infraestrutura como Código (IaC)",
+  "questoes": [
+    {
+      "pergunta": "Qual problema a Infraestrutura como Código NÃO resolve por si só?",
+      "opcoes": [
+        "Falta de histórico de quem mudou o quê na infraestrutura",
+        "Dificuldade de reproduzir o mesmo ambiente em outra conta/região",
+        "Bugs de lógica dentro da sua aplicação",
+        "Mudanças de infra entrando em produção sem revisão"
+      ],
+      "correta": 2,
+      "explicacao": "IaC resolve reprodutibilidade, histórico (git log) e revisão (PR). Bugs da aplicação são outro problema — IaC cuida da infraestrutura, não do código do app."
+    },
+    {
+      "pergunta": "Qual a diferença entre a abordagem declarativa e a imperativa?",
+      "opcoes": [
+        "Declarativa descreve o estado final desejado; imperativa descreve os passos para chegar lá",
+        "Declarativa é sempre mais lenta que imperativa",
+        "Imperativa descreve o estado final; declarativa descreve os passos",
+        "São sinônimos: ambas descrevem passos em ordem"
+      ],
+      "correta": 0,
+      "explicacao": "Declarativo = 'o que deve existir' (a ferramenta calcula os passos); imperativo = 'faça isso, depois aquilo'. CFN e Terraform são declarativos."
+    },
+    {
+      "pergunta": "No CloudFormation, o que é uma stack?",
+      "opcoes": [
+        "Um arquivo YAML antes de ser enviado à AWS",
+        "O conjunto de recursos criados a partir de um template, gerenciados como uma unidade",
+        "Uma fila de comandos da CLI aguardando execução",
+        "Um tipo de instância EC2 otimizada para IaC"
+      ],
+      "correta": 1,
+      "explicacao": "O template é o arquivo; a stack é a materialização dele: os recursos criados juntos, atualizados juntos e destruídos juntos."
+    },
+    {
+      "pergunta": "Num template CloudFormation, qual é a única seção obrigatória?",
+      "opcoes": ["Parameters", "Outputs", "Resources", "Description"],
+      "correta": 2,
+      "explicacao": "Resources é o coração do template e a única seção obrigatória. Parameters e Outputs são opcionais (embora muito úteis)."
+    },
+    {
+      "pergunta": "Para que serve um changeset no CloudFormation?",
+      "opcoes": [
+        "Acelerar a criação da stack pulando validações",
+        "Ver uma prévia do que um update vai adicionar, modificar ou substituir, antes de aplicar",
+        "Fazer backup automático dos recursos da stack",
+        "Converter templates JSON em YAML"
+      ],
+      "correta": 1,
+      "explicacao": "Changeset = prévia do update. Essencial para pegar um 'Replacement: True' (destruir e recriar) antes que ele cause perda de dados."
+    },
+    {
+      "pergunta": "O que acontece por padrão se a criação de um recurso falha no meio de um create stack do CloudFormation?",
+      "opcoes": [
+        "A stack fica pela metade e você limpa manualmente",
+        "O CloudFormation faz rollback automático, desfazendo o que já criou",
+        "O CloudFormation tenta de novo infinitamente",
+        "A AWS abre um ticket de suporte automaticamente"
+      ],
+      "correta": 1,
+      "explicacao": "Por padrão o CFN faz rollback automático em falha: você não fica com meia infraestrutura órfã."
+    },
+    {
+      "pergunta": "Qual é a ordem correta do fluxo de trabalho básico do Terraform?",
+      "opcoes": [
+        "apply → init → plan → destroy",
+        "plan → init → apply → destroy",
+        "init → plan → apply → (destroy quando não precisar mais)",
+        "init → apply → plan → destroy"
+      ],
+      "correta": 2,
+      "explicacao": "init prepara o diretório (baixa providers), plan mostra a prévia, apply executa, destroy desfaz. Nunca apply sem ler o plan."
+    },
+    {
+      "pergunta": "O que o Terraform guarda no arquivo de state (terraform.tfstate)?",
+      "opcoes": [
+        "Uma cópia de backup do seu código HCL",
+        "O mapeamento entre os recursos do código e os IDs reais criados na nuvem",
+        "As suas credenciais da AWS criptografadas",
+        "O log de todos os comandos que você já rodou"
+      ],
+      "correta": 1,
+      "explicacao": "O state mapeia código → recursos reais. É como o Terraform sabe o que já existe e o que precisa mudar. Sem ele, os recursos ficam órfãos."
+    },
+    {
+      "pergunta": "Por que, em equipe, o state do Terraform deve ficar remoto (ex.: S3) com lock?",
+      "opcoes": [
+        "Porque o state local deixa o plan mais lento",
+        "Para todos compartilharem o mesmo estado e o lock impedir dois apply simultâneos corromperem-no",
+        "Porque a HashiCorp cobra pelo state local",
+        "Porque o S3 executa o Terraform automaticamente"
+      ],
+      "correta": 1,
+      "explicacao": "State remoto = fonte única de verdade pra equipe; o lock (nativo do backend S3 nas versões atuais) evita corrupção por applies concorrentes."
+    },
+    {
+      "pergunta": "O que o comando `cdk synth` do AWS CDK faz?",
+      "opcoes": [
+        "Aplica a infraestrutura diretamente na AWS sem intermediários",
+        "Sintetiza o código (TypeScript, Python...) em um template CloudFormation",
+        "Converte um template CloudFormation em código Terraform",
+        "Sincroniza o state local com o remoto"
+      ],
+      "correta": 1,
+      "explicacao": "O CDK é um gerador de CloudFormation: synth transforma seu código em template CFN; o deploy cria uma stack CFN normal por baixo."
+    }
+  ]
+}

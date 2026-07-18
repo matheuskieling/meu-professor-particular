@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 09: Containers",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Sua aplicação roda perfeitamente na sua máquina, mas quebra no servidor por diferença de versão de dependências. Qual propriedade dos containers resolve esse problema na raiz?",
+      "opcoes": [
+        "Containers rodam mais rápido que processos normais",
+        "A imagem empacota app + dependências + runtime: o que rodou local é byte a byte o que roda em produção",
+        "Containers têm mais memória disponível",
+        "O Docker corrige automaticamente incompatibilidades de versão"
+      ],
+      "correta": 1,
+      "explicacao": "A imagem imutável carrega tudo junto — é o fim do 'na minha máquina funciona'.",
+      "feedbacks": [
+        "Velocidade não é o ponto — o problema do cenário é divergência de ambiente, não performance.",
+        "Exato: a imagem viaja com dependências e runtime dentro. O ambiente é idêntico onde quer que rode.",
+        "Memória não tem relação com o problema de dependências divergentes.",
+        "O Docker não corrige versões; ele evita a divergência empacotando tudo na imagem."
+      ]
+    },
+    {
+      "pergunta": "Um 'docker push' pro ECR falha com 'no basic auth credentials'. Qual a causa mais provável?",
+      "opcoes": [
+        "O repositório ECR está cheio",
+        "Você não executou (ou expirou) o login: aws ecr get-login-password | docker login ...",
+        "A imagem é grande demais pro ECR",
+        "O Docker não suporta registries privados"
+      ],
+      "correta": 1,
+      "explicacao": "O Docker precisa do token de login do ECR (válido por 12h). Sem ele, o push é rejeitado.",
+      "feedbacks": [
+        "ECR não tem limite que gere esse erro; 'no basic auth credentials' é sempre autenticação.",
+        "Isso: o Docker não fala IAM — você troca credenciais por um token de 12h com o get-login-password. Refaça o login.",
+        "Tamanho de imagem geraria outro tipo de erro (e o limite é generoso).",
+        "Docker suporta registries privados normalmente — só exige login."
+      ]
+    },
+    {
+      "pergunta": "Você atualizou a imagem da sua app e precisa mudar a task definition pra apontar pra tag nova. O que acontece no ECS?",
+      "opcoes": [
+        "A task definition é editada in-place e as tasks atualizam sozinhas na hora",
+        "É criada uma NOVA REVISÃO da task definition; o service precisa ser atualizado pra usá-la",
+        "É preciso deletar o cluster e recriar tudo",
+        "Task definitions não podem ser alteradas nunca"
+      ],
+      "correta": 1,
+      "explicacao": "Task definitions são versionadas por revisões imutáveis (m09-task:1, :2...). O service aponta pra revisão.",
+      "feedbacks": [
+        "Revisões são imutáveis — não existe edição in-place; nada muda até o service ser atualizado.",
+        "Correto: cada mudança gera uma revisão nova; ao atualizar o service pra ela, ocorre o rolling update.",
+        "O cluster não tem relação com versões de task definition — nada de recriar.",
+        "Podem 'mudar' sim — via novas revisões. O que não existe é editar uma revisão existente."
+      ]
+    },
+    {
+      "pergunta": "Seu container precisa LER objetos de um bucket S3. Em qual role entra a permissão s3:GetObject?",
+      "opcoes": [
+        "Na task execution role",
+        "Na task role — é ela que o seu código usa pra falar com a AWS",
+        "No seu usuário IAM que criou o service",
+        "Na role do ALB"
+      ],
+      "correta": 1,
+      "explicacao": "Task role = identidade do app em runtime. Execution role é só da infra (pull de imagem, logs).",
+      "feedbacks": [
+        "A execution role serve à infraestrutura ECS (puxar imagem do ECR, mandar logs) — não ao seu código.",
+        "Isso: quem chama o S3 é o app dentro do container, e ele assume a task role. Least privilege nela.",
+        "Seu usuário criou os recursos, mas não executa o container — as permissões dele não valem em runtime.",
+        "ALB não assume role pra acessar S3; ele só roteia tráfego."
+      ]
+    },
+    {
+      "pergunta": "Uma task Fargate falha ao iniciar com erro de 'unable to pull image' do ECR. Onde investigar primeiro?",
+      "opcoes": [
+        "Na task role, que precisa de permissão de EC2",
+        "Na task EXECUTION role (permissões de ECR) e na conectividade da subnet (rota pra internet/endpoints)",
+        "No Dockerfile, que deve estar sem CMD",
+        "No ALB, que bloqueia o pull"
+      ],
+      "correta": 1,
+      "explicacao": "Quem puxa a imagem é a infra, com a execution role — e a rede precisa alcançar o ECR.",
+      "feedbacks": [
+        "A task role só entra depois que o container está rodando; o pull acontece antes, com a execution role.",
+        "Correto: pull de imagem = execution role com permissões de ECR + subnet com saída pra internet (ou VPC endpoints).",
+        "Um Dockerfile sem CMD daria erro de execução, não de pull.",
+        "ALB não participa do pull de imagens."
+      ]
+    },
+    {
+      "pergunta": "Um job batch de 45 minutos por execução, disparado poucas vezes ao dia, não coube no Lambda (limite de 15 min). Qual alternativa mantém o espírito 'sem gerenciar servidor'?",
+      "opcoes": [
+        "Uma instância EC2 ligada 24/7 esperando os jobs",
+        "Rodar como task Fargate avulsa quando necessário: paga só pelos minutos de execução",
+        "Dividir o job em 4 Lambdas de 15 minutos na marra",
+        "Recusar o requisito: sem servidor não dá"
+      ],
+      "correta": 1,
+      "explicacao": "Task Fargate standalone: sem limite de 15 min, sem host pra gerenciar, cobrança só enquanto roda.",
+      "feedbacks": [
+        "EC2 24/7 paga ocioso o dia inteiro e devolve pra você o SO/patches — o oposto do objetivo.",
+        "Exato: Fargate roda a task pelo tempo necessário e cobra por vCPU/GB-hora só durante a execução.",
+        "Fatiar na marra cria complexidade artificial e pontos de falha — o limite do Lambda é sinal de ferramenta errada.",
+        "Dá sim: Fargate é exatamente compute de longa duração sem gerenciar servidor."
+      ]
+    },
+    {
+      "pergunta": "Seu service tem desired count 2. Você percebe que uma task travou e a mata manualmente. O que o ECS faz?",
+      "opcoes": [
+        "Nada; o service passa a rodar com 1 task pra sempre",
+        "O service detecta a diferença e sobe uma task substituta pra voltar ao desired count",
+        "O service inteiro é deletado por segurança",
+        "O cluster entra em modo de manutenção"
+      ],
+      "correta": 1,
+      "explicacao": "Manter o desired count é a função central do service — você viu isso na prática.",
+      "feedbacks": [
+        "O service reconcilia continuamente o estado real com o desejado — ele não aceita ficar com 1.",
+        "Correto: é o 'gerente' repondo o prato. Estado desejado (2) vs. real (1) → sobe substituta.",
+        "Matar uma task não afeta a existência do service.",
+        "Não existe 'modo de manutenção' de cluster por queda de task."
+      ]
+    },
+    {
+      "pergunta": "Por que, no modo de rede awsvpc do Fargate, o target group do ALB registra IPs em vez de instâncias?",
+      "opcoes": [
+        "Porque o ALB não sabe falar com instâncias",
+        "Porque cada task recebe sua própria ENI com IP próprio — não há instância 'sua' pra registrar",
+        "Porque IPs são mais baratos que instâncias",
+        "Isso está errado: registra-se por instância no Fargate"
+      ],
+      "correta": 1,
+      "explicacao": "No Fargate os hosts são invisíveis; a unidade endereçável é a ENI/IP de cada task.",
+      "feedbacks": [
+        "ALB registra instâncias normalmente no launch type EC2 — a questão é que no Fargate não há instância visível.",
+        "Isso: awsvpc dá uma ENI por task. O alvo natural do target group é o IP da task.",
+        "Não é questão de preço — é de arquitetura: não existe instância sua pra apontar.",
+        "No Fargate não há instâncias gerenciáveis por você; o registro por IP é obrigatório."
+      ]
+    },
+    {
+      "pergunta": "Um time quer apenas 'apontar a imagem e ter uma URL HTTPS com auto scaling', sem aprender orquestrador. Outro time já opera Kubernetes há anos e quer manter seus manifests e ferramentas. Quais serviços atendem cada um, respectivamente?",
+      "opcoes": [
+        "EKS para o primeiro; App Runner para o segundo",
+        "App Runner para o primeiro; EKS para o segundo",
+        "ECS EC2 para ambos",
+        "Lambda para ambos"
+      ],
+      "correta": 1,
+      "explicacao": "App Runner = PaaS de containers (mínima complexidade); EKS = Kubernetes gerenciado (ecossistema K8s).",
+      "feedbacks": [
+        "Está invertido: EKS é o caminho de MAIOR complexidade — péssimo pra quem não quer orquestrador.",
+        "Correto: App Runner entrega URL+TLS+scaling a partir da imagem; EKS preserva o investimento em K8s do segundo time.",
+        "ECS com launch type EC2 obriga os dois a gerenciar instâncias — não atende nenhum dos pedidos.",
+        "Lambda é pra funções orientadas a evento, não pra portar apps containerizadas com manifests K8s."
+      ]
+    },
+    {
+      "pergunta": "O que você paga num cluster EKS mesmo sem NENHUM workload rodando?",
+      "opcoes": [
+        "Nada; EKS é gratuito até o primeiro pod",
+        "O control plane gerenciado (~US$0,10/hora ≈ US$73/mês)",
+        "Apenas o tráfego de rede",
+        "Uma taxa única de criação"
+      ],
+      "correta": 1,
+      "explicacao": "O control plane do EKS cobra por hora de existência — diferente do ECS, cujo cluster lógico é grátis.",
+      "feedbacks": [
+        "EKS cobra o control plane desde a criação, com ou sem pods.",
+        "Isso: ~US$0,10/h só pra existir — um dos motivos de ECS ser o padrão pra quem não precisa de K8s.",
+        "Tráfego é cobrado à parte, mas o custo fixo do control plane existe sempre.",
+        "Não é taxa única: é cobrança por hora, contínua."
+      ]
+    },
+    {
+      "pergunta": "Terminando a prática, você deletou o service e o cluster, mas dias depois aparece uma cobrança pequena e contínua de Fargate. Qual a causa mais provável?",
+      "opcoes": [
+        "O ECR cobra como se fosse Fargate",
+        "Ficou task Rodando em outro cluster/região (ex.: task avulsa não parada) — conferir list-tasks em todas as regiões usadas",
+        "A AWS cobra Fargate por 30 dias após o uso",
+        "O log group gera cobrança de Fargate"
+      ],
+      "correta": 1,
+      "explicacao": "Task esquecida rodando (ou em outra região) é a fonte clássica. Fargate cobra por task em execução, e só.",
+      "feedbacks": [
+        "ECR cobra armazenamento (US$0,10/GB-mês), faturado como ECR — não como Fargate.",
+        "Correto: cobrança contínua de Fargate = task rodando em algum lugar. Cheque clusters e regiões (armadilha do Módulo 01!).",
+        "Não existe cobrança retroativa/residual: parou a task, parou o custo.",
+        "Logs cobram como CloudWatch (centavos), nunca como Fargate."
+      ]
+    },
+    {
+      "pergunta": "No teardown, qual a ordem correta pra garantir que nada continue cobrando?",
+      "opcoes": [
+        "Deletar o ECR primeiro; o resto para sozinho",
+        "Service (desired 0 + delete) → conferir zero tasks → cluster → task definition → repo ECR → log group",
+        "Deletar só o cluster; services e tasks somem juntos automaticamente sem conferência",
+        "Apagar o log group primeiro pra parar as tasks"
+      ],
+      "correta": 1,
+      "explicacao": "Primeiro parar o que roda (service/tasks) e CONFERIR; depois a limpeza dos recursos estáticos.",
+      "feedbacks": [
+        "Apagar o ECR não para tasks — a imagem já foi puxada; elas continuam rodando (e cobrando).",
+        "Isso: o que cobra é task rodando, então ela morre primeiro e você confere (list-tasks vazio); depois limpa o resto.",
+        "Depender de cascata sem conferir é como o custo escapa — a checagem de zero tasks é o passo que protege seu bolso.",
+        "Log group não controla execução; apagá-lo não para nada."
+      ]
+    }
+  ]
+}

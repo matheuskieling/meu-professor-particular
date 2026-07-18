@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 10 — Mensageria & Integração",
+  "questoes": [
+    {
+      "pergunta": "Qual o principal benefício de colocar uma fila entre dois serviços?",
+      "opcoes": [
+        "Deixar a comunicação mais rápida que uma chamada HTTP direta",
+        "Desacoplar: absorver picos e tolerar a queda do consumidor sem perder mensagens",
+        "Eliminar a necessidade de tratamento de erros",
+        "Garantir resposta imediata ao chamador"
+      ],
+      "correta": 1,
+      "explicacao": "A fila é o amortecedor durável: picos ficam guardados e o consumidor pode cair e voltar sem perda."
+    },
+    {
+      "pergunta": "No SQS, o que acontece quando um consumidor faz ReceiveMessage?",
+      "opcoes": [
+        "A mensagem é removida da fila imediatamente",
+        "A mensagem fica invisível pelo visibility timeout; só o DeleteMessage a remove",
+        "A mensagem é copiada pra todos os outros consumidores",
+        "A fila é bloqueada até o consumidor terminar"
+      ],
+      "correta": 1,
+      "explicacao": "Receber ≠ consumir: sem delete dentro do visibility timeout, a mensagem reaparece pra nova tentativa."
+    },
+    {
+      "pergunta": "O consumidor crasha DEPOIS de receber uma mensagem e ANTES de deletá-la. O que acontece?",
+      "opcoes": [
+        "A mensagem é perdida pra sempre",
+        "A mensagem vai automaticamente pra DLQ na primeira falha",
+        "Ao expirar o visibility timeout, a mensagem reaparece na fila pra outro consumidor",
+        "A fila inteira trava até o consumidor voltar"
+      ],
+      "correta": 2,
+      "explicacao": "É o retry embutido do SQS: sem delete, o timeout expira e a mensagem volta a ficar visível."
+    },
+    {
+      "pergunta": "Qual a diferença entre filas Standard e FIFO no SQS?",
+      "opcoes": [
+        "Standard: at-least-once e ordem best-effort; FIFO: exactly-once e ordem estrita (com menor throughput)",
+        "FIFO é mais rápida que Standard",
+        "Standard garante ordem; FIFO não",
+        "FIFO não suporta DLQ"
+      ],
+      "correta": 0,
+      "explicacao": "Standard pode duplicar e embaralhar (throughput quase ilimitado); FIFO garante ordem e deduplicação, com limite de vazão."
+    },
+    {
+      "pergunta": "O que é long polling no SQS e por que usá-lo?",
+      "opcoes": [
+        "Aumentar o visibility timeout pra 20 minutos",
+        "ReceiveMessage com WaitTimeSeconds (até 20s): espera mensagem chegar — menos requisições vazias, menos custo",
+        "Um mecanismo de backup das mensagens",
+        "Um jeito de receber mais de 10 mensagens por chamada"
+      ],
+      "correta": 1,
+      "explicacao": "Short polling responde vazio na hora; long polling espera até 20s — economiza requests e entrega mais rápido."
+    },
+    {
+      "pergunta": "O que a redrive policy com maxReceiveCount=3 faz?",
+      "opcoes": [
+        "Limita a fila a 3 mensagens",
+        "Após 3 recebimentos sem delete, move a mensagem pra DLQ configurada",
+        "Deleta a mensagem após 3 dias",
+        "Cria 3 réplicas de cada mensagem"
+      ],
+      "correta": 1,
+      "explicacao": "É a proteção contra mensagem venenosa: 3 tentativas falhas → DLQ, preservada pra análise (e redrive após o fix)."
+    },
+    {
+      "pergunta": "Qual a diferença fundamental entre SQS e SNS?",
+      "opcoes": [
+        "SQS é pago e SNS é gratuito",
+        "SQS: fila (pull), workers dividem as mensagens; SNS: pub/sub (push), cada subscription recebe uma cópia",
+        "SNS armazena mensagens por 14 dias; SQS não armazena",
+        "São idênticos; SNS é o nome antigo do SQS"
+      ],
+      "correta": 1,
+      "explicacao": "Fila = 1 mensagem pra 1 worker (buffer durável); tópico = 1 publicação empurrada pra todos os inscritos."
+    },
+    {
+      "pergunta": "Por que o padrão fan-out usa SNS → filas SQS em vez de SNS direto nos consumidores?",
+      "opcoes": [
+        "Porque o SNS não aceita mais de uma subscription",
+        "Cada consumidor ganha buffer, retry e DLQ próprios — se cair, as mensagens esperam na sua fila",
+        "Porque SQS entrega mais rápido que push",
+        "Por exigência de compliance da AWS"
+      ],
+      "correta": 1,
+      "explicacao": "Push direto em consumidor caído = perda. A fila por consumidor dá durabilidade e resiliência individuais."
+    },
+    {
+      "pergunta": "O que faz uma REGRA (rule) no EventBridge?",
+      "opcoes": [
+        "Cria filas automaticamente",
+        "Casa eventos por padrão de conteúdo (ou agenda com rate/cron) e os envia aos targets configurados",
+        "Criptografa as mensagens do barramento",
+        "Limita quantos eventos entram no barramento"
+      ],
+      "correta": 1,
+      "explicacao": "Regras filtram por event pattern (conteúdo do JSON) ou disparam por agenda, roteando para Lambda, SQS, Step Functions etc."
+    },
+    {
+      "pergunta": "Por que consumidores devem ser idempotentes mesmo com fila FIFO?",
+      "opcoes": [
+        "Porque FIFO embaralha a ordem das mensagens",
+        "A dedup do FIFO age na publicação (janela de 5 min); se o consumidor falhar após processar e antes de deletar, a mensagem volta e é reprocessada",
+        "Não precisam: FIFO elimina qualquer reprocessamento",
+        "Porque FIFO não suporta DeleteMessage"
+      ],
+      "correta": 1,
+      "explicacao": "A deduplicação cobre o lado do produtor. Reentrega pós-falha do consumidor sempre pode ocorrer — idempotência é obrigatória."
+    }
+  ]
+}

@@ -1,0 +1,223 @@
+{
+  "modulo": "11",
+  "titulo": "Infraestrutura como Código (IaC)",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que vamos fazer neste módulo",
+      "pontos": [
+        "Objetivo: sair do clique e descrever infraestrutura como código versionável e reproduzível",
+        "Vamos dominar CloudFormation e Terraform na prática, e conhecer o CDK",
+        "Prática dupla: a MESMA infra (bucket + SG) nas duas ferramentas, com custo zero",
+        "Ao fim: quiz e prova; este módulo amarra tudo que você criou manualmente até aqui"
+      ],
+      "checkpoint": "Confirme que o aluno completou os módulos anteriores e está pronto pra começar",
+      "ref": "11-iac/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "Por que Infraestrutura como Código",
+      "pontos": [
+        "Problemas do clique: irreproduzível, sem histórico, sem revisão, drift entre ambientes",
+        "IaC: infra descrita em arquivos de texto, versionada no Git, aplicada por ferramenta",
+        "Analogia da receita: qualquer pessoa (ou pipeline) reproduz o prato idêntico",
+        "Benefícios: reprodutibilidade, git log da infra, PR review, automação, doc viva",
+        "Drift: quando a nuvem diverge do código — IaC permite detectar e reconciliar"
+      ],
+      "checkpoint": "Peça pro aluno citar 2-3 dores do clique que ele mesmo já sentiu no curso",
+      "ref": "11-iac/teoria.md#1-por-que-infraestrutura-como-código"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "Declarativo vs. Imperativo",
+      "pontos": [
+        "Imperativo: descrever os PASSOS (script com aws cli em sequência)",
+        "Declarativo: descrever o ESTADO FINAL; a ferramenta calcula criar/alterar/destruir",
+        "Analogia do GPS: destino vs. ditar cada curva",
+        "Idempotência: aplicar 2x não duplica nada — propriedade-chave do declarativo",
+        "CFN e Terraform são declarativos; CDK é híbrido (código imperativo que GERA template declarativo)"
+      ],
+      "checkpoint": "Pergunte: se eu rodar o mesmo template 2 vezes, o que acontece e por quê?",
+      "ref": "11-iac/teoria.md#2-declarativo-vs-imperativo"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "CloudFormation — template YAML por dentro",
+      "pontos": [
+        "CFN = IaC nativa da AWS: template (YAML/JSON) vira uma STACK de recursos",
+        "Seções: Parameters (entradas), Resources (obrigatória), Outputs (saídas)",
+        "Cada recurso: ID lógico + Type (AWS::Serviço::Recurso) + Properties",
+        "Funções intrínsecas: !Ref, !GetAtt, !Sub — a cola do template",
+        "CFN resolve a ordem/dependências sozinho; o serviço em si é gratuito"
+      ],
+      "checkpoint": "Confirme que o aluno sabe o papel de Parameters, Resources e Outputs",
+      "ref": "11-iac/teoria.md#3-cloudformation--a-iac-nativa-da-aws"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "CloudFormation — ciclo de vida da stack",
+      "pontos": [
+        "Create stack: eventos passo a passo; falhou → ROLLBACK automático (nada fica pela metade)",
+        "Update via CHANGESET: prévia do que muda antes de aplicar",
+        "Armadilha Replacement: algumas mudanças destroem e recriam o recurso (risco de perda de dados)",
+        "Drift detection: comparar template vs. realidade, achar mexidas por fora",
+        "Delete stack: teardown de todos os recursos em um comando"
+      ],
+      "checkpoint": "Teste: por que revisar um changeset com Replacement: True antes de executar?",
+      "ref": "11-iac/teoria.md#32-o-ciclo-de-vida-de-uma-stack"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Terraform — HCL, providers e o fluxo de trabalho",
+      "pontos": [
+        "Terraform: open source, MULTI-provider (AWS, Azure, GCP...), linguagem HCL",
+        "Provider = plugin que fala com a API; baixado no terraform init",
+        "resource, variable, output, data source — e referências criam o grafo de dependências",
+        "Fluxo: init → plan (prévia: + ~ -/+ -) → apply → destroy",
+        "Regra de ouro: NUNCA apply sem ler o plan (um -/+ é destruir-e-recriar)"
+      ],
+      "checkpoint": "Pergunte o que cada comando do fluxo faz e o que significa -/+ no plan",
+      "ref": "11-iac/teoria.md#4-terraform--o-padrão-multi-cloud"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "Terraform — state e módulos",
+      "pontos": [
+        "State = mapa código → IDs reais na nuvem; é como o TF sabe o que já existe",
+        "Local (estudo solo) vs. remoto em equipe: bucket S3 + LOCK contra applies simultâneos",
+        "Nunca commitar tfstate: pode conter segredos; perdê-lo = recursos órfãos",
+        "Mexer por fora gera drift: o próximo plan propõe reverter",
+        "Módulos: blocos reutilizáveis com variables/outputs — a 'função' da IaC"
+      ],
+      "checkpoint": "Teste: o que acontece se dois devs rodam apply ao mesmo tempo sem lock?",
+      "ref": "11-iac/teoria.md#43-state--o-conceito-mais-importante-do-terraform"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "CDK, comparativo das três e como escolher",
+      "pontos": [
+        "CDK: infra em TypeScript/Python/etc; cdk synth GERA CloudFormation por baixo",
+        "Constructs de alto nível: poucas linhas → dezenas de recursos bem configurados",
+        "Comparativo: escopo (só AWS vs. multi), estado (AWS gerencia vs. você), prévia, rollback",
+        "Escolha: só AWS e nativo → CFN; multi-cloud/mercado → Terraform; time dev → CDK",
+        "Fluxo GitOps: infra no Git, mudança via PR com plan/changeset, CI aplica, Console read-only"
+      ],
+      "checkpoint": "Cenário: empresa AWS+Azure, qual ferramenta e por quê? Depois: podemos ir pra prática?",
+      "ref": "11-iac/teoria.md#6-comparativo-cloudformation-vs-terraform-vs-cdk"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Escrever o template CloudFormation",
+      "pontos": [
+        "Criar pasta de trabalho FORA do repo (~/lab-iac) — state e artefatos não são commitados",
+        "Escrever lab.yaml: Parameter, bucket S3 + security group, Outputs",
+        "Ler o template juntos: identificar !Ref, !Sub, !GetAtt e os IDs lógicos",
+        "Lembrar: nome de bucket é global/único — personalizar o SEUNOME"
+      ],
+      "acao": "Guiar a criação do lab.yaml e revisar o template com o aluno antes do deploy",
+      "checkpoint": "Confirme que o aluno entendeu cada seção do YAML antes de criar a stack",
+      "ref": "11-iac/pratica.md#parte-a--cloudformation-escrever-o-template"
+    },
+    {
+      "id": "p2",
+      "fase": "pratica",
+      "titulo": "Criar a stack pelo Console: eventos e outputs",
+      "pontos": [
+        "Create stack no Console com upload do lab.yaml",
+        "Acompanhar a aba Events: CREATE_IN_PROGRESS → CREATE_COMPLETE recurso a recurso",
+        "Aba Resources: ID lógico → ID físico; aba Outputs: nome/ARN do bucket e ID do SG",
+        "Se falhar (bucket duplicado), ver o rollback automático em ação"
+      ],
+      "acao": "Guiar o create stack no Console e interpretar Events/Resources/Outputs juntos",
+      "checkpoint": "Confirme stack em CREATE_COMPLETE e que o aluno achou os outputs",
+      "ref": "11-iac/pratica.md#parte-b--cloudformation-criar-a-stack-console"
+    },
+    {
+      "id": "p3",
+      "fase": "pratica",
+      "titulo": "Changeset, drift e a stack via CLI",
+      "pontos": [
+        "Editar o YAML (porta 80 no SG) e criar um CHANGESET: revisar Modify/Replacement antes",
+        "Executar o changeset e acompanhar o UPDATE nos Events",
+        "Opcional: provocar drift mexendo no SG à mão e rodar Detect drift",
+        "Recriar tudo pela CLI: create-stack, wait, describe-stack-events, describe-stacks"
+      ],
+      "acao": "Guiar changeset no Console, depois delete e recriação pela CLI",
+      "checkpoint": "Confirme que o aluno leu a prévia do changeset e entendeu Replacement: False",
+      "ref": "11-iac/pratica.md#passo-4--update-com-changeset"
+    },
+    {
+      "id": "p4",
+      "fase": "pratica",
+      "titulo": "Terraform: instalar, main.tf, init/plan/apply e o state",
+      "pontos": [
+        "Verificar terraform -version; instalar se preciso",
+        "Escrever o main.tf equivalente: provider, variable, data, resources, outputs",
+        "terraform init (baixa o provider) e plan (ler a prévia: 2 to add)",
+        "apply e conferir na AWS (aws s3 ls); abrir o terraform.tfstate e entender o que ele guarda"
+      ],
+      "acao": "Guiar instalação, escrita do main.tf, init/plan/apply e inspeção do state",
+      "checkpoint": "Confirme apply ok e que o aluno viu o mapeamento código → IDs reais no state",
+      "ref": "11-iac/pratica.md#parte-d--terraform-instalar-e-escrever-o-maintf"
+    },
+    {
+      "id": "p5",
+      "fase": "pratica",
+      "titulo": "Alterar, ver o diff, destroy e teardown completo",
+      "pontos": [
+        "Adicionar ingress porta 80 no main.tf e ler o diff do plan (~ = update in-place)",
+        "apply da mudança; comparar a experiência com o changeset do CFN",
+        "terraform destroy: um comando desfaz tudo",
+        "Teardown: delete-stack das stacks CFN + conferir que nada sobrou (list-stacks, s3 ls)"
+      ],
+      "acao": "Guiar a alteração/apply, o destroy e o teardown completo das duas ferramentas",
+      "checkpoint": "Feche a prática confirmando o checklist e o teardown 100% limpo",
+      "ref": "11-iac/pratica.md#parte-f--🔥-teardown-obrigatório"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/apps/modulo-11/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "AWS/apps/modulo-11/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões de cenário, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 12 após passar"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/provas/modulo-11/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 12; se não, revise os pontos errados",
+      "ref": "AWS/provas/modulo-11/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 11",
+      "pontos": [
+        "Recap: por que IaC, declarativo, CFN (stack/changeset/drift), Terraform (state/plan), CDK",
+        "Hábito novo: infra nasce e morre pelo código; Console vira leitura",
+        "Próximo: Módulo 12 — Observabilidade (CloudWatch, CloudTrail, X-Ray)"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 12 ou parar por aqui",
+      "ref": "AWS/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

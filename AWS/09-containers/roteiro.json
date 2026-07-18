@@ -1,0 +1,224 @@
+{
+  "modulo": "09",
+  "titulo": "Containers",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que vamos fazer neste módulo",
+      "pontos": [
+        "Objetivo: rodar containers na AWS — ECR (imagens) + ECS Fargate (execução)",
+        "Situar no espectro: EC2 (gerencia tudo) ← Fargate → Lambda (não gerencia nada)",
+        "Ao fim: build+push de uma imagem real, task e service no Fargate, quiz e prova",
+        "Atenção: Fargate NÃO é Free Tier — centavos por hora de task; teardown rápido é parte da aula",
+        "Pré-requisito: Docker instalado localmente (docker --version)"
+      ],
+      "checkpoint": "Confirme que o aluno tem Docker instalado e entendeu que haverá custo de centavos",
+      "ref": "09-containers/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "Recap de Docker: imagem, container, Dockerfile, registry",
+      "pontos": [
+        "Container ≠ VM: processo isolado compartilhando o kernel — leve e rápido",
+        "Imagem = pacote imutável versionado por tags; container = instância em execução",
+        "Dockerfile = receita de build (FROM, COPY, RUN, CMD)",
+        "Registry = onde imagens moram (push/pull); na AWS é o ECR",
+        "Ciclo: Dockerfile → build → imagem → push → registry → pull → container rodando"
+      ],
+      "checkpoint": "Pergunte a diferença entre imagem e container; se Docker estiver fraco, sugira praticar local antes",
+      "ref": "09-containers/teoria.md#1-recap-rápido-de-docker-o-mínimo-que-você-precisa"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "ECR — o registry da AWS",
+      "pontos": [
+        "Registry privado gerenciado, integrado ao IAM, com scan de vulnerabilidades",
+        "Um repositório por app; URI completa = conta.dkr.ecr.região.amazonaws.com/repo:tag",
+        "Autenticação: aws ecr get-login-password | docker login (token de 12h)",
+        "Armadilha: 'no basic auth credentials' = login faltando ou expirado",
+        "Custo: ~US$0,10/GB-mês — centavos pra estudo, mas teardown mesmo assim"
+      ],
+      "checkpoint": "Pergunte por que o docker login no ECR precisa do get-login-password",
+      "ref": "09-containers/teoria.md#2-ecr--elastic-container-registry"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "ECS: cluster, task definition, task, service",
+      "pontos": [
+        "Cluster = condomínio (agrupamento lógico); task definition = receita versionada (imagem, CPU/mem, portas, roles)",
+        "Task = prato servido (execução); service = gerente que mantém N tasks sempre no ar",
+        "Task avulsa pra jobs/testes; service pra aplicações de longa duração",
+        "Duas roles: task execution role (infra: pull ECR, logs) vs. task role (seu código fala com a AWS)",
+        "Service repõe tasks mortas e integra com load balancer e auto scaling"
+      ],
+      "checkpoint": "Teste os 4 conceitos com as analogias; pergunte a diferença entre as duas roles",
+      "ref": "09-containers/teoria.md#3-ecs--os-4-conceitos-que-destravam-tudo"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Launch types: Fargate vs. EC2",
+      "pontos": [
+        "Task definition diz O QUE rodar; launch type diz EM CIMA DE QUÊ",
+        "Fargate: AWS provê a capacidade — sem AMI, sem patch, sem capacity planning",
+        "Cobrança Fargate: vCPU-hora + GB-hora por task rodando (0,25 vCPU+0,5GB ≈ US$0,012/h)",
+        "EC2 launch type: você gerencia as instâncias do cluster — controle total (GPU, custo em escala)",
+        "Conectar com o Lambda: job de 45 min que não coube lá roda aqui, sem limite de duração"
+      ],
+      "checkpoint": "Pergunte o que muda de responsabilidade e cobrança entre Fargate e EC2",
+      "ref": "09-containers/teoria.md#4-launch-types-fargate-vs-ec2"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "ALB na frente de um service",
+      "pontos": [
+        "Service registra tasks num target group; ALB distribui e health check tira as doentes",
+        "Modo awsvpc (padrão Fargate): cada task tem sua ENI/IP — target group registra IPs",
+        "Rolling update sem downtime: sobe tasks novas saudáveis, depois mata as antigas",
+        "Custo: ALB ~US$16/mês parado — na prática vamos testar por IP público pra economizar"
+      ],
+      "checkpoint": "Pergunte como o service + ALB conseguem deploy sem downtime",
+      "ref": "09-containers/teoria.md#5-alb-na-frente-de-um-service"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "ECS vs. EKS vs. App Runner — quando cada um",
+      "pontos": [
+        "Critério: quanto controle você precisa vs. quanta complexidade aceita",
+        "App Runner: PaaS — da imagem à URL com TLS e auto scaling, complexidade mínima",
+        "ECS Fargate: o padrão versátil na AWS pra maioria dos times",
+        "EKS: Kubernetes gerenciado — control plane ~US$73/mês + nós; quando K8s é requisito real",
+        "Regra: comece pelo mais simples que atende"
+      ],
+      "checkpoint": "Dê 2-3 cenários e peça pro aluno escolher o serviço certo com justificativa",
+      "ref": "09-containers/teoria.md#6-ecs-vs-eks-vs-app-runner--qual-usar"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "EKS conceitual + recap da teoria",
+      "pontos": [
+        "Kubernetes: orquestrador open source dominante; EKS = control plane gerenciado pela AWS",
+        "Mapa mental: pod ≈ task, deployment ≈ service ECS, node = máquina; opera-se com kubectl/YAML",
+        "Nós do EKS podem ser EC2 ou Fargate",
+        "Recap: Docker → ECR → ECS (4 conceitos) → Fargate → ALB → escolha do orquestrador",
+        "Rodar as 5 perguntas de checagem da teoria"
+      ],
+      "checkpoint": "Antes de seguir, pergunte: 'podemos passar para a prática?' e relembre o aviso de custo",
+      "ref": "09-containers/teoria.md#checagem-de-entendimento"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Build local: app + Dockerfile",
+      "pontos": [
+        "Verificar docker --version (pré-requisito)",
+        "Criar /tmp/m09-app com server.py (http.server na 8080, responde hostname) e Dockerfile",
+        "docker build -t m09-app:v1 . e teste com docker run + curl localhost:8080",
+        "O hostname na resposta vai revelar as tasks diferentes lá na frente"
+      ],
+      "acao": "Guiar a criação dos arquivos, o build e o teste local",
+      "checkpoint": "Confirme que o curl local respondeu antes de seguir",
+      "ref": "09-containers/pratica.md#parte-a--build-local-da-imagem"
+    },
+    {
+      "id": "p2",
+      "fase": "pratica",
+      "titulo": "ECR: repo, login e push",
+      "pontos": [
+        "Criar repositório curso/m09-app (Console ou CLI)",
+        "aws ecr get-login-password | docker login (token 12h)",
+        "docker tag com a URI completa (conta.dkr.ecr.us-east-1...) e docker push",
+        "Conferir a tag v1 no Console; troubleshoot do 'no basic auth credentials'"
+      ],
+      "acao": "Guiar login, tag e push; conferir a imagem no Console",
+      "checkpoint": "Confirme que a imagem v1 aparece no repositório antes de seguir",
+      "ref": "09-containers/pratica.md#parte-b--publicar-no-ecr"
+    },
+    {
+      "id": "p3",
+      "fase": "pratica",
+      "titulo": "Cluster + task definition + task avulsa (o relógio gira!)",
+      "pontos": [
+        "Criar m09-cluster (Fargate) — só agrupamento lógico, nada cobra ainda",
+        "Task definition m09-task: 0.25 vCPU/0.5 GB, imagem do ECR, porta 8080, awslogs, execution role nova",
+        "Run task: VPC default, subnet pública, public IP ENABLED, SG liberando 8080",
+        "curl no IP público da task + aws logs tail /ecs/m09-task",
+        "Parar a task ao final do teste — task parada = cobrança encerrada"
+      ],
+      "acao": "Guiar cluster, task definition e run task; avisar que a cobrança começa aqui",
+      "checkpoint": "Confirme o curl no IP público e que a task avulsa foi PARADA",
+      "ref": "09-containers/pratica.md#parte-c--ecs-fargate-cluster-task-definition-e-task-avulsa"
+    },
+    {
+      "id": "p4",
+      "fase": "pratica",
+      "titulo": "Service com 2 tasks + auto-recuperação",
+      "pontos": [
+        "Criar m09-service com desired count 2 (sem ALB — economia de estudo)",
+        "curl nos IPs das duas tasks — hostnames diferentes, mesma imagem",
+        "Matar uma task de propósito e ver o service repor sozinho (desired count)",
+        "Conectar com a teoria: em produção o ALB entraria aqui na frente"
+      ],
+      "acao": "Guiar a criação do service e o experimento de matar uma task",
+      "checkpoint": "Confirme que o aluno viu a task substituta subir sozinha",
+      "ref": "09-containers/pratica.md#parte-d--service-com-2-tasks"
+    },
+    {
+      "id": "p5",
+      "fase": "pratica",
+      "titulo": "Teardown completo (aqui é custo de verdade) + checklist",
+      "pontos": [
+        "Ordem: service (desired 0 + delete) → conferir list-tasks vazio → cluster → task definition → ECR --force → log group",
+        "Checagem dupla anti-custo: NENHUMA task Running em nenhum cluster",
+        "Task esquecida rodando = cobrança contínua — a lição de custo mais importante do módulo",
+        "Fechar o checklist de conclusão"
+      ],
+      "acao": "Guiar o teardown comando a comando e conferir zero tasks no Console",
+      "checkpoint": "Confirme teardown completo (list-tasks vazio) antes de liberar o quiz",
+      "ref": "09-containers/pratica.md#parte-e--🔥-teardown-obrigatório--aqui-é-a-cobrança-de-verdade"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/apps/modulo-09/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "AWS/apps/modulo-09/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões de cenário, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 10 após passar"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/provas/modulo-09/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 10; se não, revise os pontos errados",
+      "ref": "AWS/provas/modulo-09/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 09",
+      "pontos": [
+        "Recap: você levou uma imagem do build local até um service resiliente no Fargate",
+        "Agora domina o espectro de compute: EC2, containers (Fargate) e funções (Lambda)",
+        "Próximo: Módulo 10 — Mensageria & Integração (SQS, SNS, EventBridge)"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 10 ou parar por aqui",
+      "ref": "AWS/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

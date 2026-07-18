@@ -1,0 +1,110 @@
+{
+  "titulo": "Módulo 08 — Serverless",
+  "questoes": [
+    {
+      "pergunta": "O que 'serverless' significa de verdade?",
+      "opcoes": [
+        "Que não existem servidores envolvidos na execução",
+        "Que você não gerencia os servidores: a AWS provisiona, escala e mantém a infra",
+        "Que o código roda no navegador do usuário",
+        "Que o serviço só funciona offline"
+      ],
+      "correta": 1,
+      "explicacao": "Os servidores existem — mas provisionar, escalar e manter é problema da AWS, não seu."
+    },
+    {
+      "pergunta": "No Lambda em Python, o que é o 'handler'?",
+      "opcoes": [
+        "O arquivo de configuração da função",
+        "A IAM role que a função assume",
+        "A função do seu código que a AWS chama a cada invocação, recebendo event e context",
+        "O servidor web embutido no runtime"
+      ],
+      "correta": 2,
+      "explicacao": "O handler (ex.: lambda_handler(event, context)) é o ponto de entrada chamado a cada invocação."
+    },
+    {
+      "pergunta": "O que é 'cold start'?",
+      "opcoes": [
+        "A latência extra quando a AWS precisa criar um ambiente de execução novo pra função",
+        "Quando a função falha por falta de memória",
+        "O tempo que o S3 leva pra replicar um objeto",
+        "Um erro de timeout após 15 minutos"
+      ],
+      "correta": 0,
+      "explicacao": "Sem ambiente quente disponível, a AWS cria um novo (baixa código, inicia runtime) — essa latência é o cold start."
+    },
+    {
+      "pergunta": "Sua Lambda recebe AccessDenied ao ler um bucket S3. Onde está o problema?",
+      "opcoes": [
+        "No seu usuário IAM, que precisa de permissão de S3",
+        "Na execution role da função, que não tem permissão de leitura no bucket",
+        "No bucket, que precisa ser público",
+        "Na região da função, que precisa ser a mesma do seu usuário"
+      ],
+      "correta": 1,
+      "explicacao": "Quem age é a função, com a identidade da execution role. É nela que a permissão de S3 precisa estar."
+    },
+    {
+      "pergunta": "Quais são as duas dimensões da cobrança do Lambda?",
+      "opcoes": [
+        "Por hora ligada + por GB de disco",
+        "Por invocação + por duração×memória (GB-segundo)",
+        "Por usuário + por região",
+        "Por endpoint + por certificado TLS"
+      ],
+      "correta": 1,
+      "explicacao": "Paga-se ~US$0,20/milhão de invocações + GB-segundo de duração. Free Tier: 1M invocações + 400k GB-s/mês."
+    },
+    {
+      "pergunta": "Qual é o timeout MÁXIMO de uma execução Lambda?",
+      "opcoes": ["30 segundos", "5 minutos", "15 minutos", "1 hora"],
+      "correta": 2,
+      "explicacao": "15 minutos. Trabalho mais longo que isso pede outra ferramenta (Fargate, Batch...)."
+    },
+    {
+      "pergunta": "Por que aumentar a memória de uma Lambda às vezes BARATEIA a execução?",
+      "opcoes": [
+        "Porque memória é gratuita no Lambda",
+        "Porque a CPU escala junto com a memória: a função roda mais rápido e cobra menos duração",
+        "Porque a AWS dá desconto acima de 1 GB",
+        "Não barateia nunca; mais memória sempre custa mais"
+      ],
+      "correta": 1,
+      "explicacao": "CPU é proporcional à memória. Se a duração cair bastante, o GB-s total pode diminuir."
+    },
+    {
+      "pergunta": "Qual a principal diferença entre HTTP API e REST API no API Gateway?",
+      "opcoes": [
+        "HTTP API só aceita requisições GET",
+        "REST API é mais barata e mais rápida",
+        "HTTP API é mais barata e com menor latência, mas com menos recursos avançados",
+        "São idênticas, só muda o nome"
+      ],
+      "correta": 2,
+      "explicacao": "HTTP API (~US$1/milhão) é o padrão moderno; REST API (~US$3,50/milhão) traz recursos como API keys, usage plans e caching."
+    },
+    {
+      "pergunta": "Como o Lambda consome mensagens de uma fila SQS?",
+      "opcoes": [
+        "O SQS invoca a função de forma síncrona a cada mensagem",
+        "O serviço Lambda faz poll na fila, puxa lotes e invoca a função com eles",
+        "A função precisa rodar 24/7 lendo a fila",
+        "Não é possível ligar Lambda a SQS"
+      ],
+      "correta": 1,
+      "explicacao": "SQS é fonte poll-based: o Lambda busca lotes de mensagens e invoca sua função com cada lote."
+    },
+    {
+      "pergunta": "Em qual cenário Lambda NÃO é uma boa escolha?",
+      "opcoes": [
+        "Processar arquivos que chegam esporadicamente num bucket S3",
+        "Uma API com tráfego irregular e imprevisível",
+        "Um job de processamento que leva 2 horas pra rodar",
+        "Um webhook chamado algumas vezes por dia"
+      ],
+      "correta": 2,
+      "explicacao": "O timeout máximo é 15 minutos — jobs longos pedem Fargate/ECS ou AWS Batch. Os demais são casos ideais de Lambda."
+    }
+  ]
+}

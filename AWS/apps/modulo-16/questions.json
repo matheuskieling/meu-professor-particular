@@ -1,0 +1,105 @@
+{
+  "titulo": "Módulo 16 — CI/CD & DevOps",
+  "questoes": [
+    {
+      "pergunta": "Qual a diferença entre Continuous Delivery e Continuous Deployment?",
+      "opcoes": [
+        "São sinônimos",
+        "Delivery mantém uma aprovação humana antes de produção; Deployment vai pra produção automaticamente ao passar nos testes",
+        "Delivery é só pra apps móveis; Deployment é só pra web",
+        "Deployment não roda testes"
+      ],
+      "correta": 1,
+      "explicacao": "A fronteira é a aprovação manual: delivery = artefato sempre pronto, humano aperta o botão; deployment = sem humano no circuito."
+    },
+    {
+      "pergunta": "O que caracteriza Continuous Integration (CI)?",
+      "opcoes": [
+        "Fazer deploy toda sexta-feira",
+        "Todo push dispara build e testes automáticos, revelando quebras em minutos",
+        "Integrar o código só no fim do projeto",
+        "Rodar testes manualmente antes do release"
+      ],
+      "correta": 1,
+      "explicacao": "CI = integrar cedo e sempre, com build + testes automáticos a cada push. Quebrou, o time sabe na hora."
+    },
+    {
+      "pergunta": "Qual estratégia de deploy sobe um ambiente novo completo ao lado do antigo e vira o tráfego de uma vez, permitindo rollback instantâneo?",
+      "opcoes": ["Rolling", "In-place", "Blue/green", "Big bang"],
+      "correta": 2,
+      "explicacao": "Blue/green: dois ambientes completos; a virada (e o rollback) é só redirecionar o tráfego. Custo: dobrar a infra durante a transição."
+    },
+    {
+      "pergunta": "No deploy canary, o que acontece?",
+      "opcoes": [
+        "Todo o tráfego vai pra versão nova imediatamente",
+        "Uma fração do tráfego (ex.: 5%) vai pra versão nova; se as métricas ficarem saudáveis, a fração aumenta até 100%",
+        "O deploy só roda de madrugada",
+        "As instâncias são recriadas uma a uma sem monitoramento"
+      ],
+      "correta": 1,
+      "explicacao": "Canary valida a versão nova com tráfego real e raio de explosão pequeno — exige boas métricas pra decidir avançar ou abortar."
+    },
+    {
+      "pergunta": "Na suíte de CI/CD da AWS, qual serviço faz o quê?",
+      "opcoes": [
+        "CodeBuild orquestra; CodePipeline builda; CodeDeploy testa",
+        "CodePipeline orquestra a esteira; CodeBuild builda/testa; CodeDeploy implanta em EC2/ECS/Lambda",
+        "CodeDeploy orquestra; CodeBuild implanta; CodePipeline testa",
+        "Os três fazem exatamente a mesma coisa"
+      ],
+      "correta": 1,
+      "explicacao": "Mnemônico: Pipeline ORQUESTRA, Build CONSTRÓI/TESTA, Deploy IMPLANTA."
+    },
+    {
+      "pergunta": "Qual arquivo descreve as fases de build (install, build, artifacts...) para o CodeBuild?",
+      "opcoes": ["appspec.yml", "buildspec.yml", "Dockerfile", "pipeline.json"],
+      "correta": 1,
+      "explicacao": "buildspec.yml é a receita do CodeBuild (fases + artefatos). appspec.yml é a do CodeDeploy (arquivos + hooks de deploy)."
+    },
+    {
+      "pergunta": "Por que guardar access keys de longa duração nos secrets do GitHub é uma má prática?",
+      "opcoes": [
+        "Porque o GitHub cobra por secret armazenado",
+        "Porque são credenciais eternas que ninguém rotaciona e, se vazarem, dão acesso à conta de qualquer lugar",
+        "Porque access keys não funcionam fora do console",
+        "Não é má prática; é o método recomendado pela AWS"
+      ],
+      "correta": 1,
+      "explicacao": "Chave permanente = risco permanente. A recomendação atual é OIDC: credenciais temporárias por job, sem segredo armazenado."
+    },
+    {
+      "pergunta": "No fluxo OIDC entre GitHub Actions e AWS, o que o job recebe pra chamar a AWS?",
+      "opcoes": [
+        "A senha do usuário root",
+        "Credenciais temporárias (~1h) obtidas ao trocar o token OIDC pela role via sts:AssumeRoleWithWebIdentity",
+        "Uma access key permanente gerada a cada execução",
+        "Um certificado TLS do ACM"
+      ],
+      "correta": 1,
+      "explicacao": "O token OIDC prova 'sou o job do repo X na branch Y'; o STS o troca por credenciais temporárias da role. Nada fica armazenado."
+    },
+    {
+      "pergunta": "Na trust policy da role OIDC, qual o papel da condição sobre o claim 'sub'?",
+      "opcoes": [
+        "Definir a região onde a role funciona",
+        "Restringir QUEM pode assumir a role: só workflows do repositório/branch especificados",
+        "Definir o tempo de expiração do token",
+        "Escolher o runner do GitHub"
+      ],
+      "correta": 1,
+      "explicacao": "O sub identifica repo/branch/environment. Sem restringi-lo, qualquer repositório do GitHub poderia assumir sua role."
+    },
+    {
+      "pergunta": "No workflow do GitHub Actions com OIDC, qual permissão é obrigatória pro job conseguir pedir o token?",
+      "opcoes": [
+        "permissions: id-token: write",
+        "permissions: secrets: read",
+        "permissions: admin: true",
+        "Nenhuma; funciona por padrão"
+      ],
+      "correta": 0,
+      "explicacao": "Sem 'id-token: write' o job não consegue solicitar o token OIDC — é o erro nº 1 de quem monta a integração."
+    }
+  ]
+}

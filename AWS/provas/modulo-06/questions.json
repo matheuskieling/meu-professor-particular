@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 06: Storage — S3 & cia",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Sua empresa gera logs consultados intensamente por 30 dias, raramente até 1 ano, e por exigência legal devem ser guardados por 7 anos (recuperação pode demorar). Qual desenho de lifecycle?",
+      "opcoes": [
+        "Tudo em Standard pra sempre",
+        "Standard → Standard-IA aos 30 dias → Glacier Deep Archive depois → expirar aos 7 anos",
+        "Tudo direto em Glacier Deep Archive desde o dia 0",
+        "One Zone-IA desde o início, sem transições"
+      ],
+      "correta": 1,
+      "explicacao": "A temperatura do dado cai com o tempo: quente (Standard) → morno (IA) → congelado com prazo legal (Deep Archive) → expiração.",
+      "feedbacks": [
+        "Funciona, mas paga preço de dado quente por 7 anos — desperdício enorme pra logs que esfriam em 30 dias.",
+        "Correto: cada fase da vida do dado na classe de custo certo, com expiração automática no fim do prazo legal.",
+        "No dia 0 os logs são consultados intensamente — Deep Archive recupera em horas e cobraria caro por acesso frequente.",
+        "One Zone-IA arrisca perda se a AZ for destruída — inaceitável pra dado com exigência legal de retenção."
+      ]
+    },
+    {
+      "pergunta": "Um estagiário rodou um script que sobrescreveu centenas de objetos importantes num bucket. O versionamento estava HABILITADO. Qual a situação?",
+      "opcoes": [
+        "Os dados foram perdidos permanentemente",
+        "As versões anteriores continuam no bucket; dá pra restaurar cada objeto à versão pré-script",
+        "Só o último objeto sobrescrito pode ser recuperado",
+        "É preciso acionar o suporte da AWS pra restaurar de fita"
+      ],
+      "correta": 1,
+      "explicacao": "Com versioning, cada PUT vira versão nova SEM apagar a anterior. Restaurar = promover/copiar a versão antiga de volta.",
+      "feedbacks": [
+        "Seria verdade SEM versionamento — com ele, cada sobrescrita preservou a versão anterior.",
+        "Correto: o versionamento existe exatamente pra isso. Todas as versões pré-script estão lá, restauráveis.",
+        "Não há limite de 'último objeto': TODAS as chaves mantêm seu histórico de versões.",
+        "A AWS não tem 'fita' dos seus objetos — a recuperação é self-service via as versões guardadas."
+      ]
+    },
+    {
+      "pergunta": "Você habilitou versionamento há um ano e a fatura de S3 só cresce, embora o volume 'visível' de dados seja estável. Causa provável e correção?",
+      "opcoes": [
+        "O S3 aumentou de preço; nada a fazer",
+        "Versões antigas (noncurrent) acumulando; criar lifecycle rule pra expirá-las",
+        "Os objetos estão duplicando sozinhos; abrir ticket",
+        "O Block Public Access gera cobrança por hora"
+      ],
+      "correta": 1,
+      "explicacao": "Cada versão cobra espaço. Versionamento sem lifecycle de limpeza = fatura crescendo em silêncio.",
+      "feedbacks": [
+        "O preço do S3 é estável (e tende a cair); o padrão 'volume visível estável + fatura subindo' aponta pra versões acumuladas.",
+        "Correto: cada sobrescrita/delete guarda versões noncurrent. A lifecycle rule que expira versões antigas resolve e previne.",
+        "S3 não duplica objetos sozinho; o 'invisível' são as versões noncurrent, que o Console só mostra com Show versions.",
+        "BPA é uma configuração gratuita; não existe cobrança por tê-lo ligado."
+      ]
+    },
+    {
+      "pergunta": "Sua aplicação precisa entregar relatórios privados em PDF pra usuários logados, sem tornar o bucket público e sem dar credenciais AWS a ninguém. Qual o padrão correto?",
+      "opcoes": [
+        "Desligar o Block Public Access e deixar o bucket aberto",
+        "Gerar presigned URLs de curta duração pra cada download",
+        "Criar um usuário IAM por cliente da aplicação",
+        "Enviar os PDFs por e-mail em vez de usar o S3"
+      ],
+      "correta": 1,
+      "explicacao": "Presigned URL: o backend assina uma URL temporária pro objeto específico. Bucket 100% privado, usuário sem conta AWS.",
+      "feedbacks": [
+        "Abrir o bucket exporia TODOS os relatórios de TODOS os usuários — o clássico vazamento por má configuração.",
+        "Correto: é o padrão de mercado. URL assinada, escopo de um objeto, validade curta, bucket privado.",
+        "Usuário IAM por cliente não escala e mistura identidade da aplicação com identidade AWS — antipadrão.",
+        "Foge do problema e cria outros (limite de anexo, segurança do e-mail); o S3 com presigned resolve elegantemente."
+      ]
+    },
+    {
+      "pergunta": "Você quer auditar exatamente quem usou a chave de criptografia dos objetos e quando, além de controlar a rotação. Qual opção de criptografia atende?",
+      "opcoes": [
+        "SSE-S3, o padrão automático",
+        "SSE-KMS, com chave gerenciada no KMS",
+        "Nenhuma; criptografia no S3 não permite auditoria",
+        "Desligar a criptografia pra simplificar"
+      ],
+      "correta": 1,
+      "explicacao": "SSE-KMS registra o uso da chave no CloudTrail e permite políticas/rotação próprias. SSE-S3 é transparente demais pra esse requisito.",
+      "feedbacks": [
+        "SSE-S3 criptografa bem, mas a chave é invisível pra você: sem trilha de quem usou, sem política por chave.",
+        "Correto: KMS dá trilha de auditoria (CloudTrail), controle de acesso por chave e gestão de rotação — ao custo de requests KMS.",
+        "Permite sim: é exatamente o diferencial do SSE-KMS.",
+        "Desligar criptografia viola qualquer requisito de compliance — e desde 2023 nem é o comportamento padrão."
+      ]
+    },
+    {
+      "pergunta": "Ao criar um bucket em 2025+, sobre ACLs e Object Ownership, qual é o padrão e a recomendação?",
+      "opcoes": [
+        "ACLs habilitadas; recomenda-se usá-las pra tudo",
+        "ACLs desabilitadas (Bucket owner enforced); recomenda-se manter e usar policies",
+        "ACLs obrigatórias pra buckets públicos",
+        "Object Ownership define a região do bucket"
+      ],
+      "correta": 1,
+      "explicacao": "Buckets novos nascem com ACLs desabilitadas. Acesso se controla com IAM + bucket policies — ACL é legado.",
+      "feedbacks": [
+        "É o oposto: ACLs são o mecanismo legado, pré-IAM, e vêm desligadas por padrão.",
+        "Correto: Bucket owner enforced é o default e a boa prática — policies (IAM + bucket) cobrem todos os casos modernos.",
+        "Até acesso público se dá por bucket policy (com BPA desligado conscientemente) — sem ACL nenhuma.",
+        "Object Ownership trata da posse dos objetos e do estado das ACLs; região se escolhe na criação, à parte."
+      ]
+    },
+    {
+      "pergunta": "Você configurou site estático: hosting habilitado, index.html no lugar, bucket policy pública correta — mas o navegador recebe 403. O que provavelmente faltou?",
+      "opcoes": [
+        "Comprar um domínio próprio",
+        "Desativar o Block Public Access do bucket",
+        "Habilitar versionamento",
+        "Mudar a classe dos objetos pra Standard-IA"
+      ],
+      "correta": 1,
+      "explicacao": "O BPA bloqueia acesso público MESMO com policy permissiva. Pra site público, é preciso desligá-lo naquele bucket.",
+      "feedbacks": [
+        "Domínio é estética; o endpoint de website funciona sem domínio próprio.",
+        "Correto: enquanto o BPA estiver ligado, a policy pública é neutralizada — é a trava agindo como projetada.",
+        "Versionamento não tem relação com acesso público.",
+        "Classe de armazenamento afeta custo/latência de recuperação, não permissão de acesso."
+      ]
+    },
+    {
+      "pergunta": "Uma frota de instâncias EC2 (em várias AZs) precisa ler e gravar os MESMOS arquivos simultaneamente, montados como diretório no Linux. Qual storage?",
+      "opcoes": [
+        "EBS compartilhado entre todas",
+        "EFS montado em todas as instâncias",
+        "Um bucket S3 montado como disco",
+        "Snapshot EBS restaurado em cada uma"
+      ],
+      "correta": 1,
+      "explicacao": "EFS é o filesystem de rede (NFS) da AWS: múltiplas instâncias, multi-AZ, semântica de arquivos de verdade.",
+      "feedbacks": [
+        "EBS atende UMA instância por vez (e vive numa única AZ) — Multi-Attach é exceção restrita, não solução geral.",
+        "Correto: EFS nasceu pra isso — NFS regional, montado por N instâncias em AZs diferentes ao mesmo tempo.",
+        "S3 é objeto via API: adaptadores de montagem existem, mas não dão semântica POSIX plena — não é o caminho correto aqui.",
+        "Snapshots criam CÓPIAS independentes: cada instância teria seus arquivos divergindo dos das outras."
+      ]
+    },
+    {
+      "pergunta": "Você precisa 'mover' um volume EBS com dados importantes da AZ us-east-1a pra us-east-1b. Como se faz?",
+      "opcoes": [
+        "Arrastar o volume pra outra AZ no Console",
+        "Criar um snapshot do volume e restaurá-lo como novo volume na AZ de destino",
+        "Impossível; volumes EBS não saem da AZ de forma alguma",
+        "Converter o volume em bucket S3"
+      ],
+      "correta": 1,
+      "explicacao": "Volume EBS é preso à AZ, mas o snapshot é regional: snapshot → restore na AZ desejada. (É também assim que nascem AMIs.)",
+      "feedbacks": [
+        "Não existe 'mover' direto: o volume é fisicamente preso à AZ onde nasceu.",
+        "Correto: snapshot (incremental, guardado no S3) e restauração na outra AZ — o caminho canônico.",
+        "O volume em si não sai, mas os DADOS saem via snapshot — dizer 'impossível de forma alguma' é falso.",
+        "Não existe conversão volume→bucket; são modelos de storage diferentes (bloco vs. objeto)."
+      ]
+    },
+    {
+      "pergunta": "Um sistema salva milhões de objetos de ~10 KB acessados raramente. Alguém sugeriu Standard-IA pra economizar. Qual o problema?",
+      "opcoes": [
+        "Standard-IA não aceita objetos pequenos",
+        "IA cobra tamanho mínimo de 128 KB por objeto e tem mínimo de 30 dias — pra objetos de 10 KB pode sair MAIS caro que Standard",
+        "Standard-IA só existe em us-east-1",
+        "Nenhum; IA é sempre mais barato"
+      ],
+      "correta": 1,
+      "explicacao": "As classes IA têm cobrança mínima por objeto (128 KB) e por tempo (30 dias), além de taxa de recuperação. Objeto pequeno demais anula a economia.",
+      "feedbacks": [
+        "Aceita qualquer tamanho — o problema é a COBRANÇA mínima, não uma restrição técnica.",
+        "Correto: 10 KB cobrados como 128 KB = pagar 12x o tamanho real. Classe fria exige analisar o perfil dos objetos.",
+        "As classes de armazenamento existem em todas as regiões comerciais.",
+        "'Sempre mais barato' é a armadilha clássica: mínimos por objeto/tempo e taxas de recuperação podem inverter a conta."
+      ]
+    },
+    {
+      "pergunta": "Sobre a consistência do S3 hoje, o que sua aplicação pode assumir?",
+      "opcoes": [
+        "Após um PUT bem-sucedido, uma leitura imediata pode retornar a versão antiga por minutos",
+        "O S3 é fortemente consistente: após PUT/DELETE, qualquer leitura subsequente já reflete o novo estado",
+        "Só leituras na mesma AZ são consistentes",
+        "A consistência precisa ser habilitada por bucket (com custo extra)"
+      ],
+      "correta": 1,
+      "explicacao": "Desde dez/2020 o S3 oferece consistência forte de leitura-após-escrita pra todas as operações, sem custo nem configuração.",
+      "feedbacks": [
+        "Era o comportamento antigo (consistência eventual em alguns casos) — pegadinha de material desatualizado.",
+        "Correto: read-after-write forte pra PUT e DELETE, automático e gratuito, desde 2020.",
+        "S3 abstrai AZs completamente; a garantia vale pra qualquer leitura na região.",
+        "Não há toggle nem cobrança: a consistência forte é o comportamento padrão universal do S3."
+      ]
+    },
+    {
+      "pergunta": "No teardown, 'aws s3 rb s3://meu-bucket --force' falha dizendo que o bucket não está vazio, mas 'aws s3 ls' nele não mostra nada. O que há?",
+      "opcoes": [
+        "Bug da CLI; tentar de novo resolve",
+        "Restam versões antigas e/ou delete markers (versionamento); é preciso apagar as versões (ex.: Empty no Console) antes do rb",
+        "O bucket está em outra região",
+        "Falta permissão de leitura no bucket"
+      ],
+      "correta": 1,
+      "explicacao": "aws s3 ls mostra só versões atuais. Com versionamento, versões noncurrent e delete markers seguram o bucket 'invisívelmente' cheio.",
+      "feedbacks": [
+        "Não é bug: o rb está corretamente recusando deletar um bucket que ainda contém versões.",
+        "Correto: o --force remove objetos atuais, mas não versões noncurrent/markers. Empty no Console (ou delete-objects por versão) e depois rb.",
+        "Região errada daria erro diferente (bucket não encontrado/redirect), não 'não vazio'.",
+        "Sem permissão o erro seria AccessDenied — a mensagem 'BucketNotEmpty' indica conteúdo versionado remanescente."
+      ]
+    }
+  ]
+}

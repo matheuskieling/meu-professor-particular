@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 18 — Alta Disponibilidade & Disaster Recovery",
+  "questoes": [
+    {
+      "pergunta": "O que medem RTO e RPO, respectivamente?",
+      "opcoes": [
+        "RTO: quantos dados posso perder; RPO: quanto tempo posso ficar fora do ar",
+        "RTO: quanto tempo posso ficar fora do ar; RPO: quantos dados (em tempo) posso perder",
+        "Ambos medem o custo do desastre",
+        "RTO: número de backups; RPO: número de réplicas"
+      ],
+      "correta": 1,
+      "explicacao": "RTO (Recovery Time Objective) = tempo máximo de indisponibilidade aceitável. RPO (Recovery Point Objective) = janela máxima de dados perdidos, medida em tempo."
+    },
+    {
+      "pergunta": "Seu backup roda diariamente às 3h. O banco corrompeu às 15h. Qual o RPO real deste incidente?",
+      "opcoes": [
+        "Zero, pois havia backup",
+        "12 horas (os dados entre 3h e 15h foram perdidos)",
+        "24 horas, a frequência do backup",
+        "3 horas"
+      ],
+      "correta": 1,
+      "explicacao": "O último ponto restaurável é o backup das 3h; tudo entre 3h e 15h (12 horas de dados) foi perdido. RPO real = 12h."
+    },
+    {
+      "pergunta": "Uma aplicação depende de ALB (99,99%), EC2 (99,99%) e RDS Multi-AZ (99,95%) em série. O que acontece com o SLA composto?",
+      "opcoes": [
+        "É a média dos três, ~99,98%",
+        "É igual ao maior deles, 99,99%",
+        "As disponibilidades se multiplicam: fica PIOR que o pior componente (~99,93%)",
+        "SLAs não se combinam"
+      ],
+      "correta": 2,
+      "explicacao": "Dependências em série multiplicam: 0,9999 × 0,9999 × 0,9995 ≈ 0,9993. Cada dependência em série derruba o total; paralelo (redundância) é o que melhora."
+    },
+    {
+      "pergunta": "Por que RDS Multi-AZ NÃO é uma estratégia de Disaster Recovery completa?",
+      "opcoes": [
+        "Porque a standby fica em outra região",
+        "Porque um erro humano (ex.: DROP TABLE) replica sincronamente pra standby — e tudo fica na mesma região",
+        "Porque Multi-AZ não tem failover automático",
+        "Porque Multi-AZ só funciona com Aurora"
+      ],
+      "correta": 1,
+      "explicacao": "Multi-AZ é HA: protege de falha de AZ/instância, na mesma região. Erros lógicos replicam na hora, e um desastre regional derruba as duas AZs. DR exige backups/replicação isolados."
+    },
+    {
+      "pergunta": "Qual a ordem correta das 4 estratégias de DR, da mais barata/lenta para a mais cara/rápida?",
+      "opcoes": [
+        "Warm standby → pilot light → backup & restore → active/active",
+        "Backup & restore → pilot light → warm standby → multi-site active/active",
+        "Active/active → warm standby → pilot light → backup & restore",
+        "Pilot light → backup & restore → active/active → warm standby"
+      ],
+      "correta": 1,
+      "explicacao": "Backup & restore (RTO horas+), pilot light (dezenas de min), warm standby (minutos), active/active (~zero). Custo cresce na mesma ordem."
+    },
+    {
+      "pergunta": "Na estratégia pilot light, o que fica SEMPRE ligado na região de destino?",
+      "opcoes": [
+        "Toda a infraestrutura, em tamanho reduzido",
+        "Nada — só os backups",
+        "O núcleo de dados (replicação contínua do banco); a infra de aplicação existe só como código/AMIs",
+        "Apenas o balanceador de carga"
+      ],
+      "correta": 2,
+      "explicacao": "A 'chama piloto' são os dados replicando (o que não dá pra recriar). A aplicação sobe via IaC na hora do desastre. Infra reduzida rodando seria warm standby."
+    },
+    {
+      "pergunta": "No AWS Backup, qual a vantagem de atribuir recursos ao plano por TAG?",
+      "opcoes": [
+        "Fica mais barato por recurso",
+        "Recursos novos com a tag entram no plano automaticamente — backup vira política, não checklist manual",
+        "Tags fazem o backup rodar mais rápido",
+        "É a única forma suportada"
+      ],
+      "correta": 1,
+      "explicacao": "Atribuição por tag (ex.: Backup=diario) faz qualquer recurso novo taggeado ser protegido sem intervenção. Também dá pra atribuir por ARN, mas aí é manual."
+    },
+    {
+      "pergunta": "O que o S3 Cross-Region Replication exige, e o que acontece com objetos que já existiam antes de ativar a regra?",
+      "opcoes": [
+        "Exige versionamento nos dois buckets; objetos antigos NÃO replicam (só novos, salvo Batch Replication)",
+        "Não exige nada; replica tudo retroativamente",
+        "Exige que os buckets estejam na mesma região",
+        "Exige desligar o versionamento no destino"
+      ],
+      "correta": 0,
+      "explicacao": "CRR requer versionamento habilitado na origem E no destino, mais uma role IAM. A replicação vale para objetos novos; o estoque antigo precisa de S3 Batch Replication."
+    },
+    {
+      "pergunta": "Qual a diferença entre RDS Multi-AZ e uma read replica cross-region?",
+      "opcoes": [
+        "São a mesma coisa",
+        "Multi-AZ é síncrona, com failover automático e sem servir leitura; read replica é assíncrona, serve leitura e é promovida manualmente em desastre",
+        "Read replica é síncrona e automática; Multi-AZ é manual",
+        "Multi-AZ só existe no DynamoDB"
+      ],
+      "correta": 1,
+      "explicacao": "Dois eixos distintos: Multi-AZ = HA (síncrono, automático, mesma região, standby invisível). Read replica = escala de leitura e peça de DR (assíncrona, promovível, pode ser cross-region)."
+    },
+    {
+      "pergunta": "Num failover DNS com Route 53, por que o TTL do registro deve ser baixo (ex.: 60s)?",
+      "opcoes": [
+        "TTL baixo deixa o DNS mais barato",
+        "Clientes cacheiam a resposta pelo TTL: com TTL alto, continuam indo ao endpoint morto por horas, destruindo o RTO",
+        "O Route 53 exige TTL 60 em registros failover",
+        "TTL não influencia failover"
+      ],
+      "correta": 1,
+      "explicacao": "O failover só 'chega' aos clientes quando o cache do TTL expira. TTL de horas prenderia usuários no endpoint que caiu — o RTO real vira TTL + detecção."
+    }
+  ]
+}

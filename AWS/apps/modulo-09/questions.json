@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 09 — Containers",
+  "questoes": [
+    {
+      "pergunta": "Qual a diferença entre uma imagem e um container?",
+      "opcoes": [
+        "São sinônimos",
+        "Imagem é o pacote imutável (app + dependências); container é uma instância dela em execução",
+        "Container é o arquivo de build; imagem é o processo rodando",
+        "Imagem só existe na nuvem; container só existe localmente"
+      ],
+      "correta": 1,
+      "explicacao": "Imagem = pacote congelado e versionado; container = execução viva (e efêmera) daquela imagem."
+    },
+    {
+      "pergunta": "O que é o ECR?",
+      "opcoes": [
+        "O orquestrador de containers da AWS",
+        "O registry gerenciado da AWS: onde você faz push/pull de imagens, com autenticação via IAM",
+        "Um serviço de máquinas virtuais",
+        "O load balancer para containers"
+      ],
+      "correta": 1,
+      "explicacao": "ECR = Elastic Container Registry, o repositório de imagens privado e integrado ao IAM."
+    },
+    {
+      "pergunta": "Como você autentica o Docker no ECR?",
+      "opcoes": [
+        "Com seu usuário e senha do Console AWS",
+        "Não precisa autenticar; o ECR é público",
+        "Com 'aws ecr get-login-password' encadeado num 'docker login' (token válido por 12h)",
+        "Colocando as access keys no Dockerfile"
+      ],
+      "correta": 2,
+      "explicacao": "O Docker não fala IAM: você troca credenciais IAM por um token de login de 12 horas."
+    },
+    {
+      "pergunta": "No ECS, o que é uma task definition?",
+      "opcoes": [
+        "Um container em execução",
+        "O blueprint versionado: imagem, CPU/memória, portas, env vars, roles e logs",
+        "O agrupamento lógico onde as tasks rodam",
+        "O componente que mantém N tasks sempre rodando"
+      ],
+      "correta": 1,
+      "explicacao": "Task definition é a 'receita'; task é a execução; cluster é o agrupamento; service é o gerente."
+    },
+    {
+      "pergunta": "O que um service do ECS faz que uma task avulsa (standalone) não faz?",
+      "opcoes": [
+        "Roda a imagem com mais CPU",
+        "Mantém o desired count: se uma task morre, sobe outra no lugar; integra com load balancer",
+        "Faz o build da imagem automaticamente",
+        "Cria o repositório no ECR"
+      ],
+      "correta": 1,
+      "explicacao": "O service é o 'gerente': garante N tasks sempre no ar e integra com ALB/auto scaling."
+    },
+    {
+      "pergunta": "Qual a diferença entre os launch types Fargate e EC2 no ECS?",
+      "opcoes": [
+        "Fargate: a AWS provê a capacidade (sem gerenciar hosts); EC2: você gerencia as instâncias do cluster",
+        "Fargate só roda Windows; EC2 só roda Linux",
+        "EC2 é sempre mais barato que Fargate",
+        "Fargate não suporta services, só tasks avulsas"
+      ],
+      "correta": 0,
+      "explicacao": "Fargate = serverless de containers (paga por vCPU/GB-hora da task); EC2 = controle total, hosts seus."
+    },
+    {
+      "pergunta": "Como o Fargate cobra?",
+      "opcoes": [
+        "Por invocação, como o Lambda",
+        "Por vCPU-hora + GB-hora de cada task, enquanto ela estiver rodando",
+        "Valor fixo mensal por cluster",
+        "É sempre gratuito no Free Tier"
+      ],
+      "correta": 1,
+      "explicacao": "Task rodando = relógio girando (~US$0,04/vCPU-h + US$0,004/GB-h). Por isso o teardown é crítico."
+    },
+    {
+      "pergunta": "Qual a diferença entre a task execution role e a task role?",
+      "opcoes": [
+        "São a mesma role com nomes diferentes",
+        "Execution role: usada pela infra ECS (puxar imagem do ECR, enviar logs); task role: usada pelo SEU código pra falar com a AWS",
+        "Execution role é do EC2; task role é do Fargate",
+        "Task role é obrigatória; execution role é opcional sempre"
+      ],
+      "correta": 1,
+      "explicacao": "Infra (pull/logs) usa a execution role; seu app (ler S3, SQS...) usa a task role — como a execution role do Lambda."
+    },
+    {
+      "pergunta": "Com rede awsvpc (padrão no Fargate), como o ALB registra as tasks no target group?",
+      "opcoes": [
+        "Por ID de instância EC2",
+        "Por nome de container",
+        "Por IP: cada task tem sua própria ENI/endereço",
+        "O ALB não funciona com Fargate"
+      ],
+      "correta": 2,
+      "explicacao": "No modo awsvpc cada task ganha uma ENI própria — o target group trabalha com IPs, não instâncias."
+    },
+    {
+      "pergunta": "Um time SEM experiência em Kubernetes precisa rodar uma API containerizada na AWS, com integração nativa e sem gerenciar hosts. Qual o caminho padrão?",
+      "opcoes": [
+        "EKS com nós EC2, pois Kubernetes é obrigatório",
+        "ECS com Fargate",
+        "Instalar Docker num EC2 na mão",
+        "CloudFront"
+      ],
+      "correta": 1,
+      "explicacao": "ECS Fargate é o padrão versátil: simples, integrado, sem hosts. EKS entra quando K8s é requisito real (e custa ~US$73/mês só de control plane)."
+    }
+  ]
+}

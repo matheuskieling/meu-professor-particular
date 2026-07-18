@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 05: Escalabilidade & Balanceamento",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Sua API roda num único EC2 m5.large e começou a engasgar nos picos. Você quer resolver de forma que também elimine o ponto único de falha. Qual caminho?",
+      "opcoes": [
+        "Trocar por um m5.4xlarge (scale up)",
+        "Escalar horizontalmente: várias instâncias menores num ASG atrás de um load balancer",
+        "Aumentar o disco EBS da instância",
+        "Mover a instância pra outra AZ com mais capacidade"
+      ],
+      "correta": 1,
+      "explicacao": "Só o scale out resolve capacidade E ponto único de falha ao mesmo tempo: a frota sobrevive à perda de membros.",
+      "feedbacks": [
+        "Scale up dá mais capacidade, mas continua sendo UMA máquina: se ela cair, tudo cai. Não elimina o ponto único de falha.",
+        "Correto: mais máquinas atrás de um LB resolvem capacidade e resiliência — se uma cai, as outras seguem servindo.",
+        "Disco maior não resolve gargalo de CPU/tráfego nem o ponto único de falha.",
+        "Mudar de AZ não muda nada estrutural: continua uma máquina só, agora em outro datacenter."
+      ]
+    },
+    {
+      "pergunta": "Você atualizou o user data do seu Launch Template e as instâncias novas pararam de subir direito. Qual a forma mais rápida de voltar ao estado bom?",
+      "opcoes": [
+        "Deletar o template e criar tudo do zero",
+        "Apontar o ASG de volta pra versão anterior do template",
+        "Entrar via SSH em cada instância nova e corrigir na mão",
+        "Reiniciar o ASG inteiro"
+      ],
+      "correta": 1,
+      "explicacao": "Launch Templates são versionados: rollback é só apontar o ASG pra versão que funcionava.",
+      "feedbacks": [
+        "Desnecessário: o versionamento existe justamente pra não recomeçar do zero.",
+        "Isso: cada mudança gera uma versão nova; voltar pra anterior é o rollback instantâneo de infraestrutura.",
+        "Corrigir na mão não escala e morre no próximo scale out — as novas instâncias nasceriam quebradas de novo.",
+        "Não existe 'reiniciar o ASG'; e mesmo substituindo instâncias, elas usariam a versão quebrada do template."
+      ]
+    },
+    {
+      "pergunta": "Um ASG está com min=2, desired=4, max=6. A política de target tracking calcula que precisa de 8 instâncias pra manter a CPU no alvo. Quantas instâncias o ASG vai rodar?",
+      "opcoes": [
+        "8, porque a política sempre manda",
+        "6, porque o max é o teto absoluto",
+        "4, porque o desired não muda nunca",
+        "2, porque o ASG volta ao mínimo sob estresse"
+      ],
+      "correta": 1,
+      "explicacao": "Políticas mexem no desired, mas sempre dentro de [min, max]. O max é a trava — inclusive de custo.",
+      "feedbacks": [
+        "A política propõe, mas o max dispõe: o desired nunca ultrapassa o teto configurado.",
+        "Correto: o desired sobe até 6 e para — o max é o limite absoluto (e sua proteção de custo).",
+        "O desired é justamente o número que as políticas ajustam; ele muda o tempo todo.",
+        "O min é o piso, não o comportamento sob carga — sob estresse o ASG sobe, não desce."
+      ]
+    },
+    {
+      "pergunta": "Sua aplicação web trava com frequência (processo morre, mas a instância continua running). O ASG usa health check EC2 e nunca substitui as instâncias travadas. Qual a correção?",
+      "opcoes": [
+        "Aumentar o desired capacity",
+        "Habilitar health check do tipo ELB no ASG (atrás do load balancer)",
+        "Trocar o ALB por um NLB",
+        "Diminuir o grace period pra zero"
+      ],
+      "correta": 1,
+      "explicacao": "O check EC2 só vê a máquina; o check ELB usa a visão do load balancer (app responde?) e faz o ASG repor instâncias com app morta.",
+      "feedbacks": [
+        "Mais instâncias travadas não resolvem — o problema é o ASG não detectar a falha da aplicação.",
+        "Exato: com health check ELB, target unhealthy no ALB vira instância substituída pelo ASG. O ciclo do auto-healing fecha.",
+        "Trocar o tipo de LB não muda o tipo de health check que o ASG usa pra decidir substituição.",
+        "Grace period zero só faria o ASG julgar instâncias antes do bootstrap terminar — pioraria, matando instâncias saudáveis em boot."
+      ]
+    },
+    {
+      "pergunta": "Você precisa expor um serviço de jogo em UDP com latência mínima e IP fixo divulgado aos clientes. Qual load balancer?",
+      "opcoes": [
+        "Application Load Balancer",
+        "Network Load Balancer",
+        "Gateway Load Balancer",
+        "Classic Load Balancer"
+      ],
+      "correta": 1,
+      "explicacao": "NLB: camada 4 (TCP/UDP), performance extrema e Elastic IP por AZ. ALB não fala UDP nem oferece IP fixo.",
+      "feedbacks": [
+        "O ALB é camada 7 (HTTP/HTTPS): não atende UDP e não tem IP estático.",
+        "Correto: NLB fala TCP/UDP, tem latência ultrabaixa e suporta Elastic IP — exatamente os três requisitos.",
+        "O GWLB serve pra encadear appliances de inspeção (firewalls), não pra servir clientes de jogo.",
+        "O Classic foi aposentado; não deve ser usado em nada novo."
+      ]
+    },
+    {
+      "pergunta": "No mesmo ALB, você quer que requisições pra /api/* vão pros backends e o resto pro frontend. Onde isso é configurado?",
+      "opcoes": [
+        "Em dois listeners na mesma porta",
+        "Nas regras do listener, roteando por path pra target groups diferentes",
+        "No security group do ALB",
+        "No user data das instâncias"
+      ],
+      "correta": 1,
+      "explicacao": "Regras do listener avaliam condições (path, host, header) em ordem de prioridade e encaminham pro target group certo.",
+      "feedbacks": [
+        "Não dá pra ter dois listeners na mesma porta; a separação é feita por REGRAS dentro de um listener.",
+        "Isso: regra 'path = /api/*' → TG dos backends; regra default → TG do frontend. Roteamento de camada 7 é a graça do ALB.",
+        "Security group controla quem alcança o ALB (rede), não pra onde cada requisição vai (aplicação).",
+        "O user data roda no boot da instância; não tem relação com roteamento de tráfego."
+      ]
+    },
+    {
+      "pergunta": "Os targets do seu ALB ficam eternamente unhealthy, mas acessando a instância por dentro (curl localhost) a app responde 200. Qual a causa mais provável?",
+      "opcoes": [
+        "O security group das instâncias não permite tráfego vindo do security group do ALB",
+        "O ALB está em outra região",
+        "O deregistration delay está alto demais",
+        "Faltou ativar versionamento no target group"
+      ],
+      "correta": 0,
+      "explicacao": "App ok por dentro + unhealthy por fora = rede bloqueando o health check. Quase sempre é o SG da instância sem liberar a origem correta (o SG do ALB).",
+      "feedbacks": [
+        "Correto: o clássico. A regra inbound da instância deve ter como ORIGEM o SG do ALB. Sem isso, o health check nunca chega.",
+        "ALB e targets vivem na mesma VPC/região por construção — não é possível esse cenário.",
+        "O deregistration delay só age quando um target SAI; não impede health checks de chegarem.",
+        "Versionamento não existe em target groups (é conceito de S3)."
+      ]
+    },
+    {
+      "pergunta": "Durante o scale in, usuários reclamavam de requisições cortadas no meio. O que resolve isso?",
+      "opcoes": [
+        "Aumentar o max do ASG",
+        "O connection draining (deregistration delay): o LB para de enviar novas requisições e dá prazo pras em andamento terminarem",
+        "Desligar os health checks",
+        "Usar instâncias maiores"
+      ],
+      "correta": 1,
+      "explicacao": "O draining garante saída graciosa: target sai de rotação, mas as conexões em voo têm um prazo pra concluir.",
+      "feedbacks": [
+        "O max limita o crescimento da frota; não muda como as instâncias SAEM de rotação.",
+        "Exato: com deregistration delay adequado, nenhum scale in/deploy corta requisição no meio.",
+        "Sem health checks o LB mandaria tráfego pra targets mortos — muito pior.",
+        "Tamanho de instância não tem relação com conexões cortadas na saída de um target."
+      ]
+    },
+    {
+      "pergunta": "Sua carga é perfeitamente previsível: pico das 8h às 18h em dias úteis, quase nada à noite. Qual política de scaling é a mais direta pra isso?",
+      "opcoes": [
+        "Scheduled scaling (escalar por horário)",
+        "Simple scaling",
+        "Nenhuma; deixar desired fixo no pico",
+        "Predictive scaling apenas, sem nenhuma outra opção válida"
+      ],
+      "correta": 0,
+      "explicacao": "Carga com horário conhecido = scheduled: desired alto às 8h, baixo às 18h. (Predictive também funciona, mas scheduled é o mais direto e simples.)",
+      "feedbacks": [
+        "Correto: se você JÁ sabe o horário do pico, agendar é o caminho mais simples e determinístico.",
+        "Simple scaling é reativo (espera o alarme disparar) e considerado legado — não aproveita a previsibilidade.",
+        "Desired fixo no pico funciona, mas desperdiça dinheiro a noite inteira — o oposto da elasticidade.",
+        "Predictive até serve pra padrões cíclicos, mas dizer que é a ÚNICA opção é falso — scheduled resolve de forma mais direta."
+      ]
+    },
+    {
+      "pergunta": "Depois de um scale out, o ASG continuou lançando instâncias além do necessário por alguns minutos, e depois terminou várias (efeito sanfona). Qual mecanismo existe pra evitar isso?",
+      "opcoes": [
+        "Cooldown/warmup: aguardar a instância nova ficar pronta e refletir nas métricas antes de reagir de novo",
+        "Health check EC2",
+        "Deregistration delay",
+        "Usar duas políticas de scaling ao mesmo tempo"
+      ],
+      "correta": 0,
+      "explicacao": "Sem cooldown/warmup o ASG reage a métricas defasadas e 'flapa'. O período de espera dá tempo da ação anterior surtir efeito.",
+      "feedbacks": [
+        "Correto: instância nova demora pra servir e aparecer no CloudWatch; o cooldown evita decisões em cima de dado velho.",
+        "Health check EC2 detecta máquina morta; não tem relação com o ritmo das decisões de scaling.",
+        "O deregistration delay atua na saída de targets do LB, não no ritmo do scaling.",
+        "Duas políticas simultâneas mal coordenadas tendem a PIORAR o efeito sanfona."
+      ]
+    },
+    {
+      "pergunta": "Você fez a prática, terminou tudo e três semanas depois chegou uma fatura de ~US$ 16. Qual o esquecido mais provável?",
+      "opcoes": [
+        "Um target group vazio",
+        "Um Application Load Balancer deixado vivo (cobra por hora de existência)",
+        "Um launch template",
+        "Um security group"
+      ],
+      "correta": 1,
+      "explicacao": "ALB custa ~US$ 0,0225/h só por existir (~US$ 16/mês), mesmo sem tráfego. Target groups, templates e SGs são gratuitos.",
+      "feedbacks": [
+        "Target group sem LB e sem targets não custa nada.",
+        "Isso: o ALB cobra por hora mesmo parado. É o item nº 1 do teardown deste módulo.",
+        "Launch template é só metadado — gratuito, pode até deixar.",
+        "Security groups são gratuitos; deixá-los não gera fatura (só bagunça)."
+      ]
+    },
+    {
+      "pergunta": "Numa arquitetura ASG+ALB bem montada, como as instâncias novas do ASG passam a receber tráfego do ALB?",
+      "opcoes": [
+        "Você registra cada instância manualmente no target group após o boot",
+        "O ASG está anexado ao target group: instâncias lançadas são registradas automaticamente (e desregistradas ao sair)",
+        "O ALB escaneia a VPC procurando instâncias com nginx",
+        "As instâncias se conectam ao ALB via user data"
+      ],
+      "correta": 1,
+      "explicacao": "Anexar o target group ao ASG automatiza registro e desregistro — ninguém toca em target na mão.",
+      "feedbacks": [
+        "Registrar na mão quebraria a automação: às 3h da manhã ninguém registraria a instância reposta pelo auto-healing.",
+        "Correto: essa integração é o coração do casamento ASG+ALB — lançou, registrou; terminou, desregistrou (com draining).",
+        "O ALB não descobre targets sozinho; ele só conhece o que está no target group.",
+        "O user data configura a instância por dentro; não é ele que a registra no ALB."
+      ]
+    }
+  ]
+}

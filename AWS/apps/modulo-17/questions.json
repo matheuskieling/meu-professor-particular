@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 17 — Otimização de Custos (FinOps)",
+  "questoes": [
+    {
+      "pergunta": "Quais são as três fases do ciclo FinOps, na ordem correta?",
+      "opcoes": [
+        "Otimização → Visibilidade → Operação",
+        "Visibilidade (Inform) → Otimização (Optimize) → Operação contínua (Operate)",
+        "Compra → Reserva → Cancelamento",
+        "Orçamento → Auditoria → Multa"
+      ],
+      "correta": 1,
+      "explicacao": "Primeiro enxergar pra onde vai o dinheiro, depois otimizar, depois operar continuamente. Não dá pra otimizar o que não se enxerga."
+    },
+    {
+      "pergunta": "Qual a diferença de propósito entre o Cost Explorer e o CUR (Cost and Usage Report)?",
+      "opcoes": [
+        "Cost Explorer é análise interativa com filtros/agrupamentos; CUR é o dado bruto completo, linha a linha, entregue no S3",
+        "São a mesma coisa com nomes diferentes",
+        "CUR é gráfico; Cost Explorer é arquivo CSV",
+        "Cost Explorer só funciona em contas enterprise"
+      ],
+      "correta": 0,
+      "explicacao": "Cost Explorer é a 'lupa' interativa; o CUR/Data Exports é o 'microscópio': cada linha de cobrança, por hora e recurso, para análise profunda e BI."
+    },
+    {
+      "pergunta": "Você ativou a tag `Projeto` como cost allocation tag hoje. O que acontece com o custo do mês passado?",
+      "opcoes": [
+        "Passa a aparecer agrupado pela tag imediatamente",
+        "Nada: a ativação não é retroativa; só o custo dali pra frente é marcado",
+        "A AWS reprocessa a fatura em 24h e marca tudo",
+        "O custo antigo é apagado da fatura"
+      ],
+      "correta": 1,
+      "explicacao": "Cost allocation tags não retroagem: só marcam o custo a partir da ativação (e ainda levam até 24h pra aparecer)."
+    },
+    {
+      "pergunta": "Qual serviço gratuito da AWS analisa métricas de utilização e recomenda right-sizing de instâncias EC2, EBS e Lambda?",
+      "opcoes": [
+        "AWS Trusted Advisor Premium",
+        "Amazon Inspector",
+        "AWS Compute Optimizer",
+        "AWS Config"
+      ],
+      "correta": 2,
+      "explicacao": "O Compute Optimizer analisa as métricas (14 dias por padrão) e classifica recursos como over-provisioned, under-provisioned ou optimized. É gratuito."
+    },
+    {
+      "pergunta": "Qual a principal diferença entre um Compute Savings Plan e um EC2 Instance Savings Plan?",
+      "opcoes": [
+        "Compute SP é mais flexível (qualquer família/região, inclui Fargate e Lambda) com desconto menor; EC2 Instance SP prende a família+região com desconto maior",
+        "EC2 Instance SP cobre Lambda; Compute SP não",
+        "Compute SP só vale por 1 mês",
+        "Não há diferença, só o nome"
+      ],
+      "correta": 0,
+      "explicacao": "É a troca clássica: flexibilidade vs. desconto. Compute SP (~66%) vale pra tudo; EC2 Instance SP (~72%) amarra família e região."
+    },
+    {
+      "pergunta": "Como funciona a interrupção de uma instância Spot?",
+      "opcoes": [
+        "A AWS desliga sem nenhum aviso",
+        "A AWS envia um aviso de 2 minutos (via metadados/EventBridge) antes de retomar a capacidade",
+        "A instância nunca é interrompida se estiver em uso",
+        "Você recebe um e-mail com 24h de antecedência"
+      ],
+      "correta": 1,
+      "explicacao": "O contrato do Spot: até ~90% de desconto, mas a AWS pode retomar a instância com aviso de 2 minutos. A aplicação deve salvar estado e sair graciosamente."
+    },
+    {
+      "pergunta": "Qual destas cargas é a MELHOR candidata a instâncias Spot?",
+      "opcoes": [
+        "Banco de dados de produção",
+        "Workers que processam mensagens de uma fila SQS",
+        "Servidor de licenças com estado em disco local",
+        "O nó primário de um cluster que não tolera failover"
+      ],
+      "correta": 1,
+      "explicacao": "Workers de fila são tolerantes a interrupção: a mensagem volta pra fila (visibility timeout) e outro worker processa. Estado crítico e bancos não combinam com Spot."
+    },
+    {
+      "pergunta": "Por que migrar volumes EBS de gp2 para gp3?",
+      "opcoes": [
+        "gp3 é ~20% mais barato e tem performance base garantida (3.000 IOPS / 125 MB/s), com migração sem downtime",
+        "gp2 será desligado pela AWS este ano",
+        "gp3 é mais caro, mas mais rápido",
+        "Só é possível migrando para outra região"
+      ],
+      "correta": 0,
+      "explicacao": "gp3 custa ~20% menos que gp2 e desacopla performance do tamanho. A mudança de tipo é feita a quente, sem parar a instância."
+    },
+    {
+      "pergunta": "Qual destes é um exemplo do padrão 'custo por existir, não por uso'?",
+      "opcoes": [
+        "Requisições GET no S3",
+        "Um NAT Gateway ligado numa VPC de dev que ninguém usa",
+        "Invocações de Lambda",
+        "Leituras no DynamoDB on-demand"
+      ],
+      "correta": 1,
+      "explicacao": "NAT Gateway cobra ~US$0,045/hora só por existir (~US$32/mês), mais GB processado. EIPs ociosos, volumes soltos e snapshots órfãos seguem o mesmo padrão."
+    },
+    {
+      "pergunta": "Qual a diferença entre AWS Budgets e Cost Anomaly Detection?",
+      "opcoes": [
+        "São o mesmo serviço com nomes diferentes",
+        "Budgets vigia limites que VOCÊ definiu; Anomaly Detection usa ML pra alertar desvios do padrão que você NÃO previu",
+        "Anomaly Detection substitui o Budgets e custa caro",
+        "Budgets só funciona com tags ativadas"
+      ],
+      "correta": 1,
+      "explicacao": "São complementares: budget pega o teto conhecido (e pode até agir via budget actions); anomaly detection pega o inesperado — um serviço fugindo do padrão histórico. Ambos com alertas gratuitos."
+    }
+  ]
+}

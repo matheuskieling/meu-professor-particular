@@ -1,0 +1,110 @@
+{
+  "titulo": "Módulo 03 — Rede: VPC",
+  "questoes": [
+    {
+      "pergunta": "Quantos endereços IP tem o bloco CIDR 10.0.0.0/24?",
+      "opcoes": ["16", "256", "65.536", "1.024"],
+      "correta": 1,
+      "explicacao": "/24 deixa 8 bits livres → 2^8 = 256 IPs (dos quais a AWS reserva 5, sobrando 251 usáveis)."
+    },
+    {
+      "pergunta": "O que torna uma subnet 'pública' na AWS?",
+      "opcoes": [
+        "Ter a palavra 'publica' no nome",
+        "Um checkbox 'public' nas configurações da subnet",
+        "A route table associada a ela ter uma rota 0.0.0.0/0 apontando para um Internet Gateway",
+        "Estar na primeira AZ da região"
+      ],
+      "correta": 2,
+      "explicacao": "Pública/privada é consequência do roteamento: existe caminho pro IGW? É pública. Nome e AZ não importam."
+    },
+    {
+      "pergunta": "Uma subnet pertence a quantas Availability Zones?",
+      "opcoes": [
+        "Exatamente uma",
+        "Todas as AZs da região",
+        "No mínimo duas",
+        "Depende do tamanho do CIDR"
+      ],
+      "correta": 0,
+      "explicacao": "A VPC atravessa todas as AZs da região, mas cada subnet fica presa a UMA AZ. Multi-AZ = múltiplas subnets."
+    },
+    {
+      "pergunta": "Qual componente permite que instâncias numa subnet PRIVADA iniciem conexões de saída pra internet sem ficarem acessíveis de fora?",
+      "opcoes": [
+        "Internet Gateway",
+        "NAT Gateway",
+        "VPC Peering",
+        "Route 53"
+      ],
+      "correta": 1,
+      "explicacao": "O NAT Gateway (que mora na subnet pública) faz a 'mão única': sai, mas não entra conexão iniciada de fora."
+    },
+    {
+      "pergunta": "Sobre o NAT Gateway, qual afirmação está CORRETA?",
+      "opcoes": [
+        "É gratuito dentro do Free Tier",
+        "Cobra por hora de existência E por GB processado, sem Free Tier",
+        "Só cobra quando há tráfego",
+        "É criado automaticamente em toda VPC"
+      ],
+      "correta": 1,
+      "explicacao": "~US$ 0,045/h (≈US$ 32/mês) + ~US$ 0,045/GB, desde o minuto da criação. Campeão de custo esquecido."
+    },
+    {
+      "pergunta": "Qual a principal diferença entre Security Group e NACL?",
+      "opcoes": [
+        "SG é stateful e atua na instância; NACL é stateless e atua na subnet",
+        "SG é stateless e atua na subnet; NACL é stateful e atua na instância",
+        "SG só existe na default VPC; NACL só na customizada",
+        "Não há diferença, são sinônimos"
+      ],
+      "correta": 0,
+      "explicacao": "SG: stateful (respostas passam sozinhas), na ENI/instância, só Allow. NACL: stateless, na borda da subnet, Allow e Deny em ordem."
+    },
+    {
+      "pergunta": "Você liberou a porta 443 de ENTRADA num Security Group. Precisa criar regra de SAÍDA para as respostas dessas conexões?",
+      "opcoes": [
+        "Sim, sempre, nas portas efêmeras",
+        "Não: o SG é stateful e permite as respostas automaticamente",
+        "Só se a instância tiver IP público",
+        "Sim, mas apenas na porta 443"
+      ],
+      "correta": 1,
+      "explicacao": "Stateful = o SG rastreia conexões: a resposta de uma conexão permitida passa sem regra extra. Na NACL (stateless) seria diferente."
+    },
+    {
+      "pergunta": "Quais rotas uma route table de subnet PRIVADA típica (sem NAT) contém?",
+      "opcoes": [
+        "0.0.0.0/0 → IGW",
+        "Apenas a rota local (CIDR da VPC), implícita e não removível",
+        "0.0.0.0/0 → NAT Gateway obrigatoriamente",
+        "Nenhuma rota, nem a local"
+      ],
+      "correta": 1,
+      "explicacao": "Toda route table tem a rota local implícita. Privada sem NAT = só ela: tráfego interno funciona, internet não."
+    },
+    {
+      "pergunta": "Por que dois blocos CIDR de VPCs que serão conectadas por peering NÃO podem se sobrepor?",
+      "opcoes": [
+        "Porque a AWS cobra mais por CIDRs iguais",
+        "Porque IPs sobrepostos tornam o roteamento ambíguo — pacotes não sabem pra qual rede ir",
+        "Podem se sobrepor sem problema",
+        "Porque o DNS para de funcionar"
+      ],
+      "correta": 1,
+      "explicacao": "Se 10.0.1.5 existe nas duas redes, a rota é ambígua. Por isso planeje CIDRs únicos desde o início."
+    },
+    {
+      "pergunta": "Qual regra de SSH (porta 22) é a adequada num security group?",
+      "opcoes": [
+        "Origem 0.0.0.0/0, pra acessar de qualquer lugar",
+        "Origem <seu-ip>/32, restringindo a exatamente o seu IP",
+        "Origem 10.0.0.0/8, por ser faixa privada",
+        "SSH não passa por security group"
+      ],
+      "correta": 1,
+      "explicacao": "SSH aberto pro mundo (0.0.0.0/0) atrai bots o dia inteiro. /32 = um único IP: o seu."
+    }
+  ]
+}

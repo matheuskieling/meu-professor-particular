@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 11: Infraestrutura como Código (IaC)",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Sua equipe recria o ambiente de staging à mão e ele nunca fica igual ao de produção — deploys quebram só em prod. Qual benefício da IaC ataca DIRETAMENTE esse problema?",
+      "opcoes": [
+        "Reprodutibilidade: o mesmo código gera ambientes idênticos, eliminando o drift entre eles",
+        "Redução do custo por hora das instâncias EC2",
+        "Aumento automático da velocidade da aplicação",
+        "Backup automático dos bancos de dados"
+      ],
+      "correta": 0,
+      "explicacao": "Ambientes divergentes vêm de criação manual. Com IaC, dev/staging/prod nascem do mesmo código (com parâmetros diferentes) — idênticos por construção.",
+      "feedbacks": [
+        "Exato: mesmo código → mesmo ambiente. Staging e prod saem do mesmo template/módulo com parâmetros diferentes, e o drift entre eles desaparece.",
+        "IaC não mexe no preço por hora dos recursos — o custo dos recursos é o mesmo, criados por código ou por clique.",
+        "IaC organiza como a infra é criada e mantida; não torna a aplicação mais rápida.",
+        "Backup é responsabilidade de serviços como RDS snapshots/AWS Backup; IaC descreve infraestrutura, não faz backup de dados."
+      ]
+    },
+    {
+      "pergunta": "Você roda duas vezes seguidas o mesmo `terraform apply` (sem mudar nada no código entre elas). O que acontece na segunda vez, e que propriedade explica isso?",
+      "opcoes": [
+        "Todos os recursos são criados em duplicidade — é o comportamento padrão",
+        "Nada muda, porque o modelo declarativo é idempotente: o estado atual já bate com o desejado",
+        "O Terraform destrói e recria tudo para garantir consistência",
+        "O apply falha com erro, exigindo um destroy antes"
+      ],
+      "correta": 1,
+      "explicacao": "Ferramentas declarativas comparam desejado vs. atual. Se já batem, o plano é vazio: '0 to add, 0 to change, 0 to destroy'. Isso é idempotência.",
+      "feedbacks": [
+        "Não: duplicar recursos é o defeito de scripts imperativos ingênuos. O Terraform consulta o state, vê que tudo já existe e não cria nada de novo.",
+        "Correto: o segundo apply gera um plano vazio. Aplicar N vezes = mesmo resultado. É a idempotência do modelo declarativo em ação.",
+        "Destruir e recriar só acontece quando uma mudança exige (o -/+ no plan) — nunca gratuitamente.",
+        "Não há erro: aplicar sem mudanças é uma operação válida e comum (ex.: em pipelines de CI que rodam apply a cada merge)."
+      ]
+    },
+    {
+      "pergunta": "Num update de stack do CloudFormation, o changeset mostra 'Replacement: True' para o recurso do seu banco RDS. O que isso significa?",
+      "opcoes": [
+        "O CFN vai aplicar a mudança in-place, sem impacto",
+        "O CFN vai destruir o banco atual e criar um novo — risco real de perda de dados",
+        "O CFN vai criar uma réplica de leitura temporária durante o update",
+        "O update será rejeitado automaticamente por segurança"
+      ],
+      "correta": 1,
+      "explicacao": "Replacement = a propriedade alterada não pode mudar in-place; o recurso é destruído e recriado. Num banco, isso significa perder os dados se não houver backup/snapshot.",
+      "feedbacks": [
+        "É o oposto: 'Replacement: False' seria in-place. True significa destruir e recriar o recurso.",
+        "Exato: o recurso será substituído. Antes de executar, você faria snapshot/backup ou repensaria a mudança. É por isso que changeset se lê SEMPRE antes do update.",
+        "O CFN não cria réplicas por conta própria durante updates — ele destrói e recria o recurso marcado como replacement.",
+        "O CFN não rejeita: se você executar o changeset, ele fará a substituição. A proteção é VOCÊ ler a prévia (ou usar DeletionPolicy/proteções extras)."
+      ]
+    },
+    {
+      "pergunta": "A criação de uma stack falhou no 7º de 10 recursos. Minutos depois, você olha a conta e não encontra nenhum dos 6 recursos que tinham sido criados. Por quê?",
+      "opcoes": [
+        "Alguém da equipe apagou os recursos manualmente",
+        "O CloudFormation fez rollback automático: em falha, desfaz o que já criou",
+        "A AWS expira recursos de stacks com falha após 5 minutos",
+        "Os recursos existem, mas ficaram em outra região"
+      ],
+      "correta": 1,
+      "explicacao": "Comportamento padrão do CFN: falha na criação → rollback automático (stack em ROLLBACK_COMPLETE). Nada fica pela metade; os motivos ficam na aba Events.",
+      "feedbacks": [
+        "Não precisa de humano: o próprio CFN desfez. A aba Events mostra o DELETE de cada recurso durante o rollback.",
+        "Correto: é o rollback automático padrão. A stack termina em ROLLBACK_COMPLETE e a causa da falha fica registrada nos Events.",
+        "Não existe expiração de recursos por tempo; foi o rollback do CFN, imediato após a falha.",
+        "Região errada é a armadilha clássica de recurso 'sumido', mas aqui a causa é o rollback — os Events da stack comprovam."
+      ]
+    },
+    {
+      "pergunta": "Um colega alterou uma regra de security group direto no Console, num recurso gerenciado por uma stack CloudFormation. Qual recurso do CFN revela essa divergência?",
+      "opcoes": [
+        "Changeset",
+        "Drift detection",
+        "Outputs",
+        "Rollback automático"
+      ],
+      "correta": 1,
+      "explicacao": "Drift detection compara o template com a realidade e marca recursos MODIFIED — exatamente o caso de mudanças feitas 'por fora'.",
+      "feedbacks": [
+        "Changeset é a prévia de um UPDATE que você propõe — não detecta mudanças que outros fizeram por fora.",
+        "Isso: Detect drift compara o que o template declara com o que existe e aponta o recurso como MODIFIED, mostrando as diferenças.",
+        "Outputs são valores expostos pela stack (ARNs, endpoints) — não têm relação com divergências.",
+        "Rollback atua em falhas durante create/update — não monitora mudanças manuais posteriores."
+      ]
+    },
+    {
+      "pergunta": "Você rodou `terraform plan` e um recurso aparece com o símbolo `-/+`. O que isso indica?",
+      "opcoes": [
+        "O recurso será atualizado in-place, sem interrupção",
+        "O recurso será destruído e recriado — o equivalente ao 'Replacement' do CFN",
+        "O recurso será apenas renomeado no state",
+        "O recurso será importado de outra ferramenta"
+      ],
+      "correta": 1,
+      "explicacao": "No plan: + cria, ~ altera in-place, - destrói, -/+ destrói E recria. O -/+ é o alerta vermelho — em recursos com dados, pare e pense.",
+      "feedbacks": [
+        "In-place é o `~` (til). O -/+ é bem mais agressivo: destruir e recriar.",
+        "Correto: -/+ = destroy and recreate. Mesmo perigo do Replacement do CFN — é o motivo de nunca dar apply sem ler o plan.",
+        "Renomear no state se faz com `terraform state mv` — o plan não expressa isso com -/+.",
+        "Importar recurso existente é outro fluxo (`terraform import`); -/+ é substituição de recurso."
+      ]
+    },
+    {
+      "pergunta": "Um dev commitou o terraform.tfstate no repositório público da empresa. Por que isso é grave?",
+      "opcoes": [
+        "O arquivo é grande e deixa o clone do repositório lento",
+        "O state pode conter dados sensíveis em texto claro (senhas geradas, endpoints, IDs) — é vazamento de informação",
+        "O Git corrompe arquivos JSON automaticamente",
+        "Não é grave: o state é público por natureza"
+      ],
+      "correta": 1,
+      "explicacao": "O state guarda atributos reais dos recursos — inclusive segredos gerados (senhas de banco, por exemplo) em texto claro. Ele deve viver em backend remoto restrito e criptografado, nunca no Git.",
+      "feedbacks": [
+        "Tamanho é irrelevante aqui. O problema é o CONTEÚDO: o state expõe detalhes e possíveis segredos da infraestrutura.",
+        "Exato: o tfstate pode conter senhas e dados sensíveis em claro. O lugar dele é um backend remoto (S3 criptografado, acesso restrito, com lock) — e no .gitignore.",
+        "O Git não corrompe JSON. O risco é de segurança (vazamento), não de integridade do arquivo.",
+        "Ao contrário: o state é um dos artefatos mais sensíveis do Terraform e deve ser tratado como segredo."
+      ]
+    },
+    {
+      "pergunta": "Dois engenheiros rodaram `terraform apply` ao mesmo tempo contra o mesmo state remoto SEM lock configurado. Qual é o risco?",
+      "opcoes": [
+        "Nenhum: o Terraform enfileira os applies automaticamente em qualquer configuração",
+        "Corrupção do state: escritas concorrentes deixam o mapa código→recursos inconsistente",
+        "A AWS bloqueia a conta por atividade suspeita",
+        "O segundo apply melhora o resultado do primeiro"
+      ],
+      "correta": 1,
+      "explicacao": "Sem lock, dois applies escrevem o state ao mesmo tempo e podem corrompê-lo — recursos duplicados ou órfãos. O lock do backend (nativo no S3 atual; DynamoDB no passado) serializa os applies.",
+      "feedbacks": [
+        "O enfileiramento só existe QUANDO há lock no backend. Sem lock, nada impede a concorrência — e é aí que mora o perigo.",
+        "Correto: escritas concorrentes corrompem o state. Por isso backend remoto em equipe sempre vem com lock (use_lockfile no S3 atual; tabela DynamoDB em setups antigos).",
+        "A AWS não monitora applies do Terraform — o problema é interno à ferramenta, no arquivo de state.",
+        "Não existe 'melhorar': o segundo apply pode sobrescrever o resultado do primeiro e deixar o estado inconsistente com a realidade."
+      ]
+    },
+    {
+      "pergunta": "Sua empresa usa AWS e Azure e quer padronizar UMA ferramenta de IaC para as duas nuvens. Qual é a escolha mais adequada?",
+      "opcoes": [
+        "CloudFormation, porque é gratuito",
+        "Terraform, porque é multi-provider (AWS, Azure, GCP e centenas de outros)",
+        "CDK, porque gera CloudFormation",
+        "Nenhuma: cada nuvem exige obrigatoriamente sua ferramenta nativa"
+      ],
+      "correta": 1,
+      "explicacao": "CFN e CDK são exclusivos do ecossistema AWS. O Terraform fala com centenas de providers — é a escolha natural para multi-cloud (além da maior comunidade do mercado).",
+      "feedbacks": [
+        "CFN é gratuito, mas só existe para AWS — não gerencia recursos do Azure. Não atende o requisito multi-cloud.",
+        "Exato: providers são o superpoder do Terraform. Uma linguagem (HCL), um fluxo (plan/apply), várias nuvens.",
+        "O CDK sintetiza CloudFormation, que é só AWS. (Existem variantes como CDKTF, mas a resposta direta para multi-cloud é Terraform.)",
+        "Não é obrigatório usar a nativa: Terraform gerencia as duas nuvens com uma só ferramenta — é exatamente o caso de uso dele."
+      ]
+    },
+    {
+      "pergunta": "Um time de desenvolvedores TypeScript quer definir infraestrutura AWS com loops, classes, testes unitários e autocomplete na IDE. Qual caminho aproveita melhor essas habilidades?",
+      "opcoes": [
+        "Escrever YAML do CloudFormation à mão",
+        "AWS CDK: infra em TypeScript, sintetizada em CloudFormation via cdk synth",
+        "Editar recursos pelo Console com capricho",
+        "Escrever scripts bash com comandos aws cli"
+      ],
+      "correta": 1,
+      "explicacao": "O CDK foi feito pra esse perfil: linguagem de programação real + constructs com boas práticas embutidas, gerando CFN por baixo (com rollback, eventos e changesets de sempre).",
+      "feedbacks": [
+        "YAML funciona, mas joga fora o que o time tem de melhor: abstrações, testes e ferramentas da linguagem. O CDK entrega isso por cima do próprio CFN.",
+        "Correto: CDK = infra na linguagem do time. cdk synth gera o template CFN; cdk deploy cria a stack. Constructs de alto nível encapsulam boas práticas.",
+        "Console é clique: irreproduzível, sem revisão, sem histórico — tudo que a IaC veio eliminar.",
+        "Scripts bash com aws cli são IaC imperativa frágil: sem idempotência, sem prévia, sem grafo de dependências."
+      ]
+    },
+    {
+      "pergunta": "Depois de adotar IaC, qual prática abaixo é considerada ERRADA num ambiente gerenciado por código?",
+      "opcoes": [
+        "Revisar o plan/changeset no pull request antes de aplicar",
+        "Fazer ajustes rápidos direto no Console de produção 'só dessa vez'",
+        "Aplicar mudanças via pipeline de CI/CD",
+        "Usar o Console em modo somente leitura para investigar"
+      ],
+      "correta": 1,
+      "explicacao": "Mexer por fora gera drift: a nuvem passa a mentir pro código, e o próximo apply pode reverter (ou conflitar com) a mudança manual. Adotou IaC, TUDO muda pelo código.",
+      "feedbacks": [
+        "Essa é a prática CORRETA e central do fluxo GitOps: a prévia vai no PR e é revisada antes do apply.",
+        "Isso: o 'só dessa vez' é como o drift nasce. A mudança manual diverge do código e será revertida ou causará conflito no próximo apply. Urgência se resolve com PR rápido, não com clique.",
+        "Aplicar via pipeline é o desejável — humanos não aplicam da máquina local em produção.",
+        "Olhar sem mexer é saudável e esperado: o Console vira ferramenta de leitura/diagnóstico, não de mudança."
+      ]
+    },
+    {
+      "pergunta": "Você precisa destruir TODOS os recursos que criou num laboratório: uma stack CloudFormation e um diretório Terraform aplicado. Qual é o teardown correto?",
+      "opcoes": [
+        "Apagar os arquivos lab.yaml e main.tf da sua máquina",
+        "Delete stack no CFN + terraform destroy no diretório do Terraform",
+        "Somente fechar o Console — os recursos expiram sozinhos",
+        "Apagar o terraform.tfstate e o template — sem state, os recursos somem"
+      ],
+      "correta": 1,
+      "explicacao": "Cada ferramenta desfaz o que criou: delete-stack destrói os recursos da stack; terraform destroy destrói o que o state gerencia. Apagar arquivos locais NÃO toca na nuvem.",
+      "feedbacks": [
+        "Apagar o código local não destrói nada na AWS — os recursos continuam existindo (e custando, se forem pagos). Pior: você perdeu a forma fácil de gerenciá-los.",
+        "Correto: `aws cloudformation delete-stack` + `terraform destroy`, e depois conferir que nada sobrou. Teardown no mundo IaC é um comando por ferramenta.",
+        "Recursos não expiram sozinhos: ficam lá até alguém destruir. É exatamente por isso que o teardown é ritual obrigatório.",
+        "Apagar o state é o PIOR cenário: os recursos continuam na nuvem, mas órfãos — o Terraform 'esquece' que existem e você terá que caçá-los à mão."
+      ]
+    }
+  ]
+}

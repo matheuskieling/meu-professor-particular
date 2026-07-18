@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 07 — Bancos de dados",
+  "questoes": [
+    {
+      "pergunta": "Qual a principal vantagem de usar RDS em vez de instalar MySQL num EC2?",
+      "opcoes": [
+        "RDS é sempre mais barato que EC2",
+        "A AWS gerencia patch, backup, failover e a máquina; você foca em schema, queries e dados",
+        "RDS dá acesso root ao sistema operacional",
+        "RDS não usa instâncias"
+      ],
+      "correta": 1,
+      "explicacao": "RDS é o motor gerenciado: menos plantão operacional pra você. Em troca, você NÃO tem acesso ao SO (por isso existem parameter groups)."
+    },
+    {
+      "pergunta": "Qual o propósito do Multi-AZ no RDS?",
+      "opcoes": [
+        "Aumentar a performance de leitura",
+        "Alta disponibilidade: standby síncrono em outra AZ com failover automático",
+        "Reduzir custos pela metade",
+        "Distribuir escritas entre duas instâncias"
+      ],
+      "correta": 1,
+      "explicacao": "Multi-AZ = disponibilidade. O standby é invisível (não atende queries) e assume automaticamente no failover, mantendo o mesmo endpoint."
+    },
+    {
+      "pergunta": "Qual o propósito de uma read replica no RDS?",
+      "opcoes": [
+        "Substituir o backup automático",
+        "Escalar leituras: cópia assíncrona com endpoint próprio pra onde a app aponta consultas",
+        "Garantir failover em 10 segundos",
+        "Criptografar o banco"
+      ],
+      "correta": 1,
+      "explicacao": "Read replica = performance de leitura. Replicação assíncrona (pode ter lag) e endpoint separado. Pode inclusive ficar em outra região."
+    },
+    {
+      "pergunta": "Qual a diferença-chave entre backup automático e snapshot manual no RDS?",
+      "opcoes": [
+        "Automático permite point-in-time restore e some com a instância; manual fica (e cobra) até você apagar",
+        "Manual é mais completo que o automático",
+        "Automático só existe no Aurora",
+        "Não há diferença"
+      ],
+      "correta": 0,
+      "explicacao": "Automático: diário + logs, restore pra qualquer segundo da retenção, apagado com a instância. Manual: persiste (e custa) até deleção explícita."
+    },
+    {
+      "pergunta": "Como você altera parâmetros do motor (ex.: max_connections) numa instância RDS?",
+      "opcoes": [
+        "Editando o my.cnf via SSH na instância",
+        "Através de um parameter group anexado à instância",
+        "Abrindo ticket no suporte AWS",
+        "Não é possível alterar parâmetros no RDS"
+      ],
+      "correta": 1,
+      "explicacao": "Sem acesso ao SO/arquivos no RDS, os parâmetros do motor vivem no parameter group. Alguns exigem reboot pra aplicar."
+    },
+    {
+      "pergunta": "O que diferencia estruturalmente o Aurora do RDS clássico?",
+      "opcoes": [
+        "Aurora usa um protocolo próprio incompatível com MySQL/PostgreSQL",
+        "Storage distribuído desacoplado (6 cópias em 3 AZs) com instâncias de compute em cima; até 15 réplicas do mesmo storage",
+        "Aurora roda no seu datacenter",
+        "Aurora não faz backup"
+      ],
+      "correta": 1,
+      "explicacao": "A grande sacada do Aurora é o storage desacoplado e replicado 6x/3AZs. Réplicas leem o MESMO storage (lag mínimo) e o failover é ~30s."
+    },
+    {
+      "pergunta": "No DynamoDB, qual o papel da partition key?",
+      "opcoes": [
+        "Definir a região da tabela",
+        "Seu hash determina em qual partição o item é armazenado; buscas por ela são diretas e eficientes",
+        "Ordenar os itens alfabeticamente",
+        "Criptografar o item"
+      ],
+      "correta": 1,
+      "explicacao": "A PK é o endereço do item. Query por PK vai direto à partição — rápido e barato em qualquer escala. A SK ordena dentro da partição."
+    },
+    {
+      "pergunta": "Por que um Scan é caro no DynamoDB?",
+      "opcoes": [
+        "Porque cobra uma taxa fixa de US$ 10",
+        "Porque lê a tabela INTEIRA e você paga pela capacidade de tudo que foi lido, não só pelo que o filtro retornou",
+        "Porque bloqueia a tabela pra escritas",
+        "Scan não existe no DynamoDB"
+      ],
+      "correta": 1,
+      "explicacao": "O filtro do scan é aplicado DEPOIS da leitura: ScannedCount conta tudo. Em tabela grande = lento e caro. A solução é modelar chaves/GSIs."
+    },
+    {
+      "pergunta": "Você precisa buscar itens por um atributo que não é chave (ex.: status), numa tabela que já existe. Qual o caminho certo?",
+      "opcoes": [
+        "Criar um LSI (Local Secondary Index)",
+        "Criar um GSI (Global Secondary Index) com esse atributo como partition key",
+        "Recriar a tabela do zero",
+        "Usar scan com filtro em produção"
+      ],
+      "correta": 1,
+      "explicacao": "GSI define PK/SK novas e pode ser criado a qualquer momento. LSI só na criação da tabela; scan é justamente o que queremos evitar."
+    },
+    {
+      "pergunta": "No padrão cache-aside com ElastiCache, o que acontece num cache MISS?",
+      "opcoes": [
+        "A aplicação retorna erro ao usuário",
+        "A aplicação busca no banco, responde, e grava o resultado no cache com TTL pras próximas",
+        "O cache busca sozinho no banco automaticamente",
+        "O banco é reiniciado"
+      ],
+      "correta": 1,
+      "explicacao": "Cache-aside: app tenta o cache; no miss, vai ao banco e popula o cache com TTL. Leituras repetidas viram hits de microssegundos."
+    }
+  ]
+}

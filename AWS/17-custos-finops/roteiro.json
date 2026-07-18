@@ -1,0 +1,223 @@
+{
+  "modulo": "17",
+  "titulo": "Otimização de Custos (FinOps)",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — de pagador de fatura a operador de custos",
+      "pontos": [
+        "Objetivo: dominar FinOps — enxergar, otimizar e operar o custo da conta continuamente",
+        "Gancho: o aluno já tem uma fatura real acumulada no curso; vamos dissecá-la ao vivo",
+        "Roteiro: cultura FinOps → ler a fatura → tags → right-sizing → modelos de compra → vilões → travas",
+        "Prática 100% gratuita, incluindo uma caça a recursos zumbis via CLI"
+      ],
+      "checkpoint": "Pergunte se o aluno já levou algum susto de fatura (na AWS ou fora) e se está pronto",
+      "ref": "17-custos-finops/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "Cultura FinOps: o ciclo Inform → Optimize → Operate",
+      "pontos": [
+        "Na nuvem, quem faz deploy cria custo: cada apply é uma decisão financeira",
+        "Três fases: visibilidade (pra onde vai o dinheiro), otimização (gastar menos), operação (manter)",
+        "Ordem importa: não dá pra otimizar o que não se enxerga — visibilidade primeiro",
+        "Unit economics: custo por unidade de valor (por pedido, por usuário), não só custo absoluto"
+      ],
+      "checkpoint": "Pergunte por que 'comprar Savings Plan' sem visibilidade é começar pelo fim",
+      "ref": "17-custos-finops/teoria.md#1-finops-custo-é-problema-de-engenharia-não-só-do-financeiro"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "Lendo a fatura: Billing, Cost Explorer e CUR",
+      "pontos": [
+        "Billing = o extrato (quanto devo); Cost Explorer = a lupa (onde e por quê); CUR = o microscópio",
+        "Cost Explorer: filtros e group by (serviço, região, tag, usage type), granularidade diária, forecast",
+        "UI do Cost Explorer é grátis; a API cobra ~US$0,01/chamada",
+        "CUR/Data Exports: cada linha de cobrança, por hora e recurso, entregue no S3 — fonte de verdade para BI/FinOps"
+      ],
+      "checkpoint": "Pergunte qual ferramenta usaria para 'por que outubro custou 30% a mais?' e por quê",
+      "ref": "17-custos-finops/teoria.md#2-entendendo-a-fatura-billing-cost-explorer-e-cur"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "Cost allocation tags e estratégia de tagging",
+      "pontos": [
+        "Tag comum não aparece na fatura: precisa ser ATIVADA como cost allocation tag no Billing",
+        "Ativação não é retroativa e leva até 24h; recurso sem tag vira o 'buraco negro' da fatura",
+        "Tags são case-sensitive: Projeto ≠ projeto ≠ PROJETO",
+        "Estratégia: dicionário mínimo obrigatório, grafia padronizada, aplicar via IaC, fiscalizar (Config/Tag Policies)"
+      ],
+      "checkpoint": "Pergunte por que aplicar tags via IaC é melhor que confiar na disciplina do time",
+      "ref": "17-custos-finops/teoria.md#3-tags-de-alocação-de-custo-cost-allocation-tags"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Right-sizing e Compute Optimizer",
+      "pontos": [
+        "Desperdício clássico: instância grande com 5% de CPU — pagar por capacidade nunca usada",
+        "Decisão por dados: CloudWatch (14+ dias, incluindo picos); memória exige o agent",
+        "Compute Optimizer: gratuito, analisa métricas e classifica over/under-provisioned/optimized",
+        "Um degrau a menos de instância ≈ ~50% de economia naquela instância",
+        "Right-sizing vem ANTES de reservar: senão você trava o desperdício por 1-3 anos"
+      ],
+      "checkpoint": "Pergunte que métrica invisível ao CloudWatch padrão pode sabotar um downsize",
+      "ref": "17-custos-finops/teoria.md#4-right-sizing-pagar-pelo-tamanho-certo"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Modelos de compra: On-Demand, Savings Plans, RIs e Spot",
+      "pontos": [
+        "Troca fundamental: quanto mais compromisso/amarração, maior o desconto",
+        "Compute SP (flexível: qualquer família/região + Fargate/Lambda, ~66%) vs EC2 Instance SP (família+região fixas, ~72%)",
+        "RIs: substituídas pelos SPs no EC2, mas ainda O mecanismo para RDS/ElastiCache/Redshift",
+        "Spot: até 90% off sobre capacidade ociosa; AWS retoma com aviso de 2 minutos (metadados/EventBridge)",
+        "Spot serve batch, CI, workers de fila; nunca bancos/estado. Diversificar tipos e AZs",
+        "Portfólio maduro: base em SP + picos On-Demand + cargas tolerantes em Spot"
+      ],
+      "checkpoint": "Proponha 3 cargas (banco prod, workers SQS, API estável) e peça o modelo ideal de cada",
+      "ref": "17-custos-finops/teoria.md#5-modelos-de-compra-on-demand-savings-plans-reserved-spot"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "Storage barato e os vilões clássicos de custo",
+      "pontos": [
+        "S3: lifecycle (Standard→IA→Glacier), Intelligent-Tiering, abortar multiparts incompletos",
+        "gp2→gp3: ~20% mais barato com performance base garantida, migração sem downtime",
+        "Snapshots órfãos: cobram por GB-mês para sempre até alguém apagar",
+        "Lista negra: NAT Gateway (hora + GB), tráfego entre AZs, IPv4 público (~US$3,60/mês), logs sem retenção, zumbis",
+        "Padrão comum dos vilões: custo por EXISTIR, não por uso — daí o teardown religioso"
+      ],
+      "checkpoint": "Peça pro aluno citar 3 vilões de memória e o antídoto de cada",
+      "ref": "17-custos-finops/teoria.md#7-os-vilões-clássicos-de-custo-a-lista-negra"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "Operação contínua: Budgets avançado, Anomaly Detection e Pricing Calculator",
+      "pontos": [
+        "Budgets além do básico: escopo por serviço/tag/conta, alertas em gasto real E previsto (forecast)",
+        "Budget Actions: o budget pode AGIR — aplicar política IAM ou parar EC2/RDS ao estourar",
+        "Cost Anomaly Detection: ML aprende o padrão e alerta desvios não previstos — gratuito",
+        "Três camadas juntas: Budgets (teto definido) + Anomalias (imprevisto) + revisão no Cost Explorer",
+        "Pricing Calculator: estimar ANTES de construir; vamos estimar a arquitetura do Módulo 15"
+      ],
+      "checkpoint": "Pergunte a diferença entre o que o Budget pega e o que o Anomaly Detection pega; depois: 'podemos ir pra prática?'",
+      "ref": "17-custos-finops/teoria.md#8-operação-contínua-budgets-avançado-e-anomaly-detection"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Tour pelo Cost Explorer com a fatura real do curso",
+      "pontos": [
+        "Habilitar o Cost Explorer se preciso (dados levam até 24h na primeira vez)",
+        "Group by Service: quais serviços dominaram o gasto do curso?",
+        "Granularidade diária: enxergar os 'morrinhos' dos dias de prática",
+        "Group by Region e filtro por usage type (achar DataTransfer, NatGateway)"
+      ],
+      "acao": "Guiar o tour e desafiar: 'qual foi o serviço mais caro do curso, e em que dia?'",
+      "checkpoint": "Confirme que o aluno respondeu à pergunta-desafio com os próprios dados",
+      "ref": "17-custos-finops/pratica.md#parte-a--tour-guiado-pelo-cost-explorer-console"
+    },
+    {
+      "id": "p2",
+      "fase": "pratica",
+      "titulo": "Ativar cost allocation tags",
+      "pontos": [
+        "Billing → Cost allocation tags → ativar Projeto/Ambiente (user-defined)",
+        "Opcional: ativar aws:createdBy (AWS-generated)",
+        "Reforçar: não retroage, até 24h pra aparecer; testar o group by por tag amanhã"
+      ],
+      "acao": "Guiar a ativação no console de Billing",
+      "checkpoint": "Confirme as tags ativadas e que o aluno entendeu por que não vê efeito imediato",
+      "ref": "17-custos-finops/pratica.md#parte-b--ativar-cost-allocation-tags-console"
+    },
+    {
+      "id": "p3",
+      "fase": "pratica",
+      "titulo": "Budget por serviço + Cost Anomaly Detection",
+      "pontos": [
+        "Criar budget-ec2-mensal (US$5) filtrado por serviço, alertas em 80% real e 100% previsto",
+        "Mostrar onde ficariam as Budget Actions (sem configurar hoje)",
+        "Criar monitor de anomalias por serviço + assinatura diária com limiar",
+        "Amarrar: budget vigia o teto definido; anomalia vigia o padrão desconhecido"
+      ],
+      "acao": "Guiar a criação do budget e do monitor no console",
+      "checkpoint": "Confirme budget e monitor criados antes de seguir",
+      "ref": "17-custos-finops/pratica.md#parte-c--budget-por-serviço--anomaly-detection-console"
+    },
+    {
+      "id": "p4",
+      "fase": "pratica",
+      "titulo": "Estimar a arquitetura de referência no Pricing Calculator",
+      "pontos": [
+        "calculator.aws: ALB + 2× t3.small + RDS Multi-AZ + S3 (+ CloudFront opcional)",
+        "Comparar EC2 On-Demand vs Compute Savings Plan 1 ano — ver o desconto ao vivo",
+        "Descobrir qual componente domina o custo mensal (a resposta surpreende)",
+        "Exportar/salvar a estimativa — ela volta no projeto final"
+      ],
+      "acao": "Guiar a montagem da estimativa e discutir o resultado",
+      "checkpoint": "Pergunte qual componente dominou o custo e se o desconto do SP bateu com a teoria",
+      "ref": "17-custos-finops/pratica.md#parte-d--estimar-a-arquitetura-de-referência-pricing-calculator"
+    },
+    {
+      "id": "p5",
+      "fase": "pratica",
+      "titulo": "Caça aos recursos zumbis via CLI + teardown invertido",
+      "pontos": [
+        "describe-volumes status=available (volumes soltos cobrando à toa)",
+        "describe-addresses sem AssociationId (EIPs ociosos)",
+        "Snapshots órfãos: cruzar snapshots com volumes vivos",
+        "Bônus: instâncias paradas, log groups sem retenção, volumes ainda em gp2",
+        "Deletar com cuidado (irreversível) ou taguear Revisar=true",
+        "Teardown invertido: budget, anomaly detection e tags FICAM — são proteção, não gasto"
+      ],
+      "acao": "Guiar os comandos describe-*, interpretar os achados e decidir o destino de cada um",
+      "checkpoint": "Feche a prática confirmando o checklist de conclusão do módulo",
+      "ref": "17-custos-finops/pratica.md#parte-e--caça-aos-recursos-zumbis-cli"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/apps/modulo-17/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "AWS/apps/modulo-17/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões de cenário, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 18 após passar"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/provas/modulo-17/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 18; se não, revise os pontos errados",
+      "ref": "AWS/provas/modulo-17/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 17",
+      "pontos": [
+        "Recap: ciclo FinOps, fatura dissecada, tags ativas, modelos de compra, zumbis caçados",
+        "As travas criadas (budget, anomaly detection) ficam ligadas pro resto do curso e da vida",
+        "Custo agora é métrica de engenharia: revisitar o Cost Explorer mensalmente",
+        "Próximo: Módulo 18 — Alta Disponibilidade & Disaster Recovery"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 18 ou parar por aqui",
+      "ref": "AWS/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

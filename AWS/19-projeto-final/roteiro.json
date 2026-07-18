@@ -1,0 +1,214 @@
+{
+  "modulo": "19",
+  "titulo": "Projeto Final (Capstone)",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Kickoff — o desafio final",
+      "pontos": [
+        "Este módulo não ensina nada novo: é o aluno aplicando os módulos 01-18 numa aplicação real",
+        "Mudança de papel: eu viro MENTOR (reviso, questiono, verifico marcos), o aluno decide e executa",
+        "Formato: 7 fases com marcos verificáveis; nada de recurso antes do design review",
+        "Regras de custo: budget capstone de US$5, tag Projeto=capstone em tudo, alvo ≤ US$5 total",
+        "A autonomia é o diploma: se pedir resposta pronta, recebe pergunta de volta 😄"
+      ],
+      "checkpoint": "Confirme que o aluno leu/vai ler o briefing (teoria.md) e topa o formato mentor/mentorado",
+      "ref": "19-projeto-final/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "O cenário e os requisitos funcionais",
+      "pontos": [
+        "linkz.br: encurtador de URLs com contador de cliques e página de stats (alternativa: galeria de fotos)",
+        "RF1-RF5: criar link, redirecionar, contar cliques, top 10, /health que TOCA o dado",
+        "O produto é uma desculpa: o código pode ter 100 linhas; a nota está na infraestrutura",
+        "Por que o cenário é bom: leitura>>escrita, dado simples, tráfego irregular, todo mundo entende"
+      ],
+      "checkpoint": "Peça pro aluno explicar o produto e os 5 RFs com as próprias palavras",
+      "ref": "19-projeto-final/teoria.md#2-requisitos-funcionais-o-mínimo-que-o-produto-faz"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "Requisitos não-funcionais: onde o curso inteiro aparece",
+      "pontos": [
+        "RNF1-RNF7: HA multi-AZ, IaC total, CI/CD, observabilidade, least-privilege, custo ≤US$5, recuperabilidade testada",
+        "Cada RNF amarra módulos específicos (mostrar a tabela de rastreabilidade)",
+        "Decisões em aberto DE PROPÓSITO: compute, banco, edge, ferramenta de IaC/CI",
+        "Não há resposta única: serverless tende a ser mais barato; EC2+ASG+RDS exercita mais módulos — justificar é o que vale"
+      ],
+      "checkpoint": "Pergunte qual dupla compute+banco o aluno está inclinado a escolher e por quê",
+      "ref": "19-projeto-final/teoria.md#3-requisitos-não-funcionais-onde-o-curso-inteiro-aparece"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "Entregáveis e rubrica de avaliação",
+      "pontos": [
+        "7 entregáveis: diagrama, repo IaC, pipeline, dashboard, runbook, estimativa de custo, evidências (falha+teardown)",
+        "Rubrica: 8 dimensões avaliadas em Insuficiente/Bom/Excelente — meta é Bom em todas",
+        "Destaques: teardown é dimensão de nota; alarme que nunca disparou é fé, não observabilidade",
+        "Runbook de incidente: 1 página, comandos prontos, procedimento de restore com RPO/RTO"
+      ],
+      "checkpoint": "Percorra a rubrica e pergunte em qual dimensão o aluno se sente menos seguro",
+      "ref": "19-projeto-final/teoria.md#5-rubrica-de-avaliação"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "As decisões em aberto: os dois caminhos de referência",
+      "pontos": [
+        "Caminho A 'clássico': EC2+ASG+ALB+RDS Multi-AZ — exercita mais módulos, custa ~US$1,50-2,50/dia",
+        "Caminho B 'serverless': Lambda+API Gateway+DynamoDB — HA de fábrica, centavos por dia",
+        "É legítimo misturar; o que vale é o ADR justificando o trade-off",
+        "A escolha define o custo por dia e o formato das fases 2-6 — decidir cedo, no papel"
+      ],
+      "checkpoint": "Pergunte pra qual caminho o aluno pende e desafie com um trade-off do outro lado",
+      "ref": "19-projeto-final/teoria.md#as-decisões-que-são-suas-e-serão-questionadas-no-design-review"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "As 7 fases, as regras do jogo e o ritmo",
+      "pontos": [
+        "F1 design/estimativa → review → F2 rede+dados IaC → F3 app+compute → F4 CI/CD → F5 observabilidade → F6 teste de falha → F7 teardown+retro",
+        "Uma fase por vez; marco batido e verificado (com evidência) antes da próxima",
+        "Errar no papel é grátis, errar no apply custa: nada de recurso antes do design review",
+        "Único módulo com recursos ligados por DIAS: vigiar budget diariamente; entre sessões, destroy+apply é aceitável e elegante",
+        "Ritmo sugerido: sessão 1 = F1+review (custo zero); depois 2 fases por sessão",
+        "Região travada em us-east-1; tag Projeto=capstone em tudo; Git desde a fase 1"
+      ],
+      "checkpoint": "Confirme o entendimento das regras e do ritmo antes de seguir",
+      "ref": "19-projeto-final/teoria.md#6-as-fases-visão-geral"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "O contrato mentor/mentorado + checagem final do briefing",
+      "pontos": [
+        "O Claude vai: kickoff, design review duro, verificar marcos, destravar quando o aluno travar DE VERDADE, post-mortem e retro",
+        "O Claude NÃO vai: escrever o IaC inteiro, decidir a arquitetura, pular verificações, aceitar 'funcionou na minha máquina'",
+        "Pediu resposta pronta? Recebe pergunta de volta — a autonomia é o diploma",
+        "Rodar as 7 perguntas da checagem de entendimento do briefing",
+        "NAT Gateway é opcional e questionável — decisão de arquitetura é decisão de custo"
+      ],
+      "checkpoint": "Aplique a checagem de entendimento; se sólido, pergunte: 'começamos a Fase 1?'",
+      "ref": "19-projeto-final/teoria.md#7-o-papel-do-claude-e-o-seu"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Fase 1 — Design & estimativa + DESIGN REVIEW",
+      "pontos": [
+        "Aluno produz: diagrama, 3-5 mini-ADRs, estimativa no Pricing Calculator + custo do período",
+        "Criar o budget capstone (US$5, alertas 50/80/100%) e ativar a tag Projeto=capstone ANTES de tudo",
+        "Design review: desafiar com 'cadê o SPOF?', 'o que cai com a AZ?', 'por que essa role/peça existe?', 'quanto custa por dia?'",
+        "Iterar até o design fechar; registrar o que mudou no review"
+      ],
+      "acao": "Conduzir o design review de verdade: perguntas duras, uma por vez, e aprovar ou devolver o design",
+      "checkpoint": "Só libere a Fase 2 com diagrama+ADRs+estimativa aprovados e budget criado",
+      "ref": "19-projeto-final/pratica.md#fase-1--design--estimativa-custo-us-0"
+    },
+    {
+      "id": "p2",
+      "fase": "pratica",
+      "titulo": "Fases 2 e 3 — Fundação (rede+dados) e app+compute via IaC",
+      "pontos": [
+        "F2: repo IaC com .gitignore correto, rede (se houver), camada de dados, secrets gerenciados, BACKUP desde já",
+        "Teste de reprodutibilidade: apply → destroy → apply sem passos manuais",
+        "F3: app mínima (RF1-RF5), compute multi-AZ via IaC, role least-privilege, health check no /health que toca o dado",
+        "Verificações: curl de fora prova os RFs; targets saudáveis em 2+ AZs; sem '*' na role do app",
+        "Avisos de custo: RDS Multi-AZ ~US$0,80/dia, ALB ~US$0,60/dia — anotar o custo/dia que começou a correr"
+      ],
+      "acao": "Verificar os marcos das fases 2 e 3 (pedir evidências: apply limpo, curls, console), ajudar só quando o aluno travar de verdade",
+      "checkpoint": "Marcos F2 e F3 batidos com evidência antes de liberar o CI/CD",
+      "ref": "19-projeto-final/pratica.md#fase-2--fundação-rede--dados-via-iac--começa-a-custar--o-quê-depende-do-design"
+    },
+    {
+      "id": "p3",
+      "fase": "pratica",
+      "titulo": "Fases 4 e 5 — CI/CD e observabilidade",
+      "pontos": [
+        "F4: pipeline com teste+deploy; autenticação via role/OIDC (nunca access keys no repo); provar push→deploy sem downtime",
+        "Rollback documentado no README",
+        "F5: dashboard com métricas-chave do design, logs com retenção definida, ≥2 alarmes → SNS → e-mail",
+        "Provocar um alarme DE VERDADE e receber o e-mail — alarme nunca disparado é fé",
+        "Verificar histórico do pipeline e print do alarme como evidência"
+      ],
+      "acao": "Verificar os marcos das fases 4 e 5 com evidências (histórico do pipeline, dashboard, e-mail de alarme)",
+      "checkpoint": "Marcos F4 e F5 batidos; pergunte se o aluno está pronto pro teste de falha",
+      "ref": "19-projeto-final/pratica.md#fase-4--cicd--us-0-minutos-de-build-no-free-tier"
+    },
+    {
+      "id": "p4",
+      "fase": "pratica",
+      "titulo": "Fase 6 — Teste de falha & recuperação (o exame prático)",
+      "pontos": [
+        "Propor o cenário: matar instância do ASG (ou equivalente serverless) com dashboard aberto",
+        "Aluno mede a linha do tempo: injeção → detecção (alarme?) → recuperação (ASG repôs?) → serviço ok",
+        "Perda lógica de dados: deletar um registro e RESTAURAR do backup seguindo o runbook — cronometrar RTO, verificar RPO",
+        "Post-mortem: o que o alarme pegou, o que surpreendeu, atualizar o runbook",
+        "Conectar com módulo 18: chaos com hipótese+observabilidade+raio limitado, não vandalismo"
+      ],
+      "acao": "Conduzir o teste de falha como um GameDay: propor, observar junto, fazer o post-mortem",
+      "checkpoint": "Linha do tempo + RPO/RTO medidos e anotados no runbook antes de liberar o teardown",
+      "ref": "19-projeto-final/pratica.md#fase-6--teste-de-falha--recuperação-o-exame-prático-de-hadr"
+    },
+    {
+      "id": "p5",
+      "fase": "pratica",
+      "titulo": "Fase 7 — TEARDOWN TOTAL + retrospectiva",
+      "pontos": [
+        "Antes de destruir: coletar evidências (dashboard, pipeline, custo real vs estimativa)",
+        "destroy via IaC + caça manual: NAT/EIP, snapshots, tabela restaurada da F6, recovery points, buckets versionados, log groups, SNS, secrets, roles, OIDC",
+        "Prova do zero: Cost Explorer por tag Projeto=capstone ≈ 0 no dia seguinte; budget fica de sentinela",
+        "Retrospectiva: estimativa vs real, o que o review salvou, o que a falha ensinou, rubrica dimensão a dimensão"
+      ],
+      "acao": "Percorrer o checklist de caça item a item com o aluno e conduzir a retrospectiva final",
+      "checkpoint": "Checklist 100% + custo zerando comprovado; então proponha quiz e prova finais",
+      "ref": "19-projeto-final/pratica.md#fase-7---teardown-total--retrospectiva-a-nota-final-é-a-conta-zerada"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz final — revisão geral do curso",
+      "pontos": [
+        "10 questões INTEGRADORAS cruzando módulos (rede+compute+dados+operação)",
+        "Estilo troubleshooting: 'ALB responde 502 e o ASG está saudável — onde investigar?'",
+        "Eu conduzo no chat e aprofundo cada tema que vacilar"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/apps/modulo-19/questions.json",
+      "checkpoint": "Ao terminar, mapeie os temas errados para os módulos a revisar",
+      "ref": "AWS/apps/modulo-19/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova final do curso",
+      "pontos": [
+        "12 cenários integradores — o exame de formatura do curso inteiro",
+        "Feedback por alternativa; aprovação 70%",
+        "Cobre do módulo 01 ao 18, sempre em situações cruzadas"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/provas/modulo-19/questions.json --id prova",
+      "checkpoint": "Se passou: formatura! Se não, revisar os módulos dos erros e refazer",
+      "ref": "AWS/provas/modulo-19/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "🎓 Formatura — fechamento do curso",
+      "pontos": [
+        "CELEBRAR: o aluno saiu do zero, construiu, operou, quebrou, recuperou e destruiu uma arquitetura completa",
+        "Recap da jornada: fundamentos → IAM → rede → compute → dados → operação → arquitetura → FinOps → DR → capstone",
+        "O objetivo do curso foi cumprido: autonomia plena para gerenciar ambientes cloud",
+        "Próximo passo sugerido: trilha de certificação — CLF-C02 (simulado em certificacoes/clf-c02) e depois SAA-C03",
+        "Hábitos que ficam: teardown religioso, budget ligado, revisão mensal no Cost Explorer, backup testado"
+      ],
+      "checkpoint": "Parabenize de verdade, pergunte como foi a experiência e se quer começar a trilha de certificação",
+      "ref": "AWS/CLAUDE.md#trilha-de-certificações-paralela-ao-curso"
+    }
+  ]
+}

@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 10: Mensageria & Integração",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "No checkout de um e-commerce, o serviço de Pedidos chama sincronamente o de E-mail; quando o e-mail cai, vendas são perdidas. Qual mudança resolve com o MENOR acoplamento?",
+      "opcoes": [
+        "Aumentar o timeout da chamada HTTP pro serviço de e-mail",
+        "Pedidos publica numa fila/tópico; o serviço de e-mail consome no seu ritmo — a venda nunca espera o e-mail",
+        "Replicar o serviço de e-mail em 3 AZs mantendo a chamada síncrona",
+        "Fazer o e-mail antes de confirmar o pedido"
+      ],
+      "correta": 1,
+      "explicacao": "E-mail é trabalho que pode acontecer depois — caso clássico de assíncrono: a falha dele deixa de derrubar a venda.",
+      "feedbacks": [
+        "Timeout maior só prolonga a espera do cliente e mantém a dependência — a falha continua cascateando.",
+        "Exato: com a fila no meio, o e-mail caído só acumula mensagens; a venda fecha e o e-mail sai quando o serviço voltar.",
+        "Alta disponibilidade ajuda, mas o acoplamento continua: qualquer degradação do e-mail ainda trava o checkout.",
+        "Isso INVERTE a prioridade: a etapa menos crítica passaria a bloquear a mais crítica ainda mais cedo."
+      ]
+    },
+    {
+      "pergunta": "Um worker processa mensagens que levam ~2 minutos cada, mas a fila tem visibility timeout de 30 segundos. Qual sintoma você verá?",
+      "opcoes": [
+        "Mensagens deletadas antes da hora",
+        "Mensagens reaparecendo durante o processamento e sendo processadas em duplicidade por outros workers",
+        "A fila rejeitando mensagens novas",
+        "Nada; o timeout não afeta o processamento"
+      ],
+      "correta": 1,
+      "explicacao": "Timeout menor que o processamento = a mensagem volta a ficar visível no meio do trabalho. Regra: timeout ≥ tempo máximo + folga.",
+      "feedbacks": [
+        "Delete só acontece quando o consumidor chama DeleteMessage — timeout não deleta nada.",
+        "Correto: aos 30s a mensagem reaparece e outro worker a pega, gerando processamento duplo. Ajuste o timeout (ou use ChangeMessageVisibility).",
+        "O visibility timeout não afeta a entrada de mensagens novas.",
+        "Afeta diretamente: é a janela que impede (ou não) a reentrega durante o processamento."
+      ]
+    },
+    {
+      "pergunta": "Um sistema de transações bancárias exige que os eventos de UMA MESMA conta sejam processados na ordem exata, sem duplicação na publicação. Qual configuração?",
+      "opcoes": [
+        "Fila Standard com long polling",
+        "Fila FIFO com message group ID por conta",
+        "Tópico SNS com filter policy",
+        "EventBridge com rate(1 minute)"
+      ],
+      "correta": 1,
+      "explicacao": "Ordem estrita + deduplicação = FIFO; o message group ID por conta ordena dentro da conta e paraleliza entre contas.",
+      "feedbacks": [
+        "Standard pode duplicar e embaralhar — inaceitável pra sequência de transações. Long polling só otimiza o consumo.",
+        "Correto: FIFO garante ordem por message group e dedup de 5 min; agrupar por conta mantém paralelismo entre contas diferentes.",
+        "SNS é distribuição push, sem garantia de ordem — não resolve o requisito.",
+        "Agendamento não tem relação com ordenação de eventos de negócio."
+      ]
+    },
+    {
+      "pergunta": "Uma mensagem com payload corrompido faz o consumidor falhar sempre. Sem DLQ, qual é o comportamento e qual a solução?",
+      "opcoes": [
+        "A mensagem some após a primeira falha; nada a fazer",
+        "Loop infinito: reaparece a cada visibility timeout; solução = redrive policy com maxReceiveCount movendo pra DLQ",
+        "O SQS conserta o payload automaticamente",
+        "A fila inteira é bloqueada; solução = deletar a fila"
+      ],
+      "correta": 1,
+      "explicacao": "Mensagem venenosa cicla pra sempre sem DLQ. A redrive policy corta o loop e preserva a mensagem pra análise.",
+      "feedbacks": [
+        "Falha não deleta a mensagem — ela volta após o timeout, indefinidamente (até a retenção expirar).",
+        "Correto: N tentativas → DLQ + alarme + análise humana; após o fix, redrive de volta pra principal.",
+        "O SQS não interpreta nem altera payloads — ele só transporta.",
+        "A fila não trava por causa de uma mensagem; deletar a fila perderia todas as outras."
+      ]
+    },
+    {
+      "pergunta": "Seu loop de consumo com short polling gera milhões de ReceiveMessage vazios por dia. Qual o ajuste correto?",
+      "opcoes": [
+        "Aumentar o visibility timeout",
+        "Habilitar long polling (WaitTimeSeconds até 20s, ou ReceiveMessageWaitTimeSeconds na fila)",
+        "Migrar pra FIFO",
+        "Aumentar a retenção pra 14 dias"
+      ],
+      "correta": 1,
+      "explicacao": "Long polling faz a chamada esperar mensagem chegar: menos requests (que custam), entrega mais rápida.",
+      "feedbacks": [
+        "Visibility timeout controla a invisibilidade pós-receive — não reduz chamadas vazias.",
+        "Isso: a chamada espera até 20s por mensagem em vez de responder vazio na hora. Configure como padrão da fila.",
+        "FIFO muda garantias de ordem/dedup, não o padrão de polling.",
+        "Retenção define quanto tempo a mensagem vive na fila — nada a ver com requests vazios."
+      ]
+    },
+    {
+      "pergunta": "O evento 'pedido criado' precisa alimentar: cobrança, nota fiscal e analytics — cada um com seu ritmo e sua tolerância a falhas. Qual arquitetura canônica?",
+      "opcoes": [
+        "Pedidos chama os 3 serviços via HTTP em sequência",
+        "SNS (tópico) com fan-out pra uma fila SQS POR consumidor",
+        "Uma única fila SQS compartilhada pelos 3 consumidores",
+        "Os 3 serviços fazem polling no banco de Pedidos"
+      ],
+      "correta": 1,
+      "explicacao": "Fan-out SNS→SQS: cada consumidor recebe sua cópia com buffer, retry e DLQ próprios; o produtor publica uma vez.",
+      "feedbacks": [
+        "Chamadas em sequência recriam o acoplamento e a falha em cascata que queremos eliminar.",
+        "Correto: 1 publish → 3 filas. Consumidor novo? Mais uma fila+subscription, sem tocar em Pedidos.",
+        "Numa fila única os 3 COMPETIRIAM pelas mensagens — cada evento iria pra só um deles, não pra todos.",
+        "Polling no banco alheio é acoplamento no pior nível (schema) e não escala."
+      ]
+    },
+    {
+      "pergunta": "Na fila única compartilhada por N workers idênticos (work queue), como as mensagens são distribuídas?",
+      "opcoes": [
+        "Cada worker recebe uma cópia de cada mensagem",
+        "Os workers competem: cada mensagem é entregue a UM worker (e escala = adicionar workers)",
+        "Só o worker mais antigo recebe mensagens",
+        "As mensagens são divididas por ordem alfabética"
+      ],
+      "correta": 1,
+      "explicacao": "Fila = distribuição de trabalho: cada mensagem vai pra um consumidor. Cópia pra todos é o modelo do SNS.",
+      "feedbacks": [
+        "Cópia pra todos os interessados é pub/sub (SNS/EventBridge) — a fila entrega cada mensagem uma vez.",
+        "Correto: é o padrão work queue — o visibility timeout garante que dois workers não peguem a mesma mensagem ao mesmo tempo.",
+        "Não há prioridade por idade de worker; quem faz receive primeiro leva.",
+        "Não existe distribuição por conteúdo/ordem alfabética no SQS."
+      ]
+    },
+    {
+      "pergunta": "Você quer reagir a QUALQUER evento 'objeto criado' vindo da AWS e também a eventos do seu app, roteando por CONTEÚDO (ex.: só pedidos > R$1000 pro fluxo VIP). Qual serviço é o mais indicado?",
+      "opcoes": [
+        "SQS puro",
+        "SNS puro",
+        "EventBridge: barramentos (default/custom) + regras com event patterns filtrando pelo conteúdo",
+        "Uma Lambda fazendo if/else gigante"
+      ],
+      "correta": 2,
+      "explicacao": "Roteamento rico por conteúdo + eventos nativos da AWS + barramentos custom é exatamente o terreno do EventBridge.",
+      "feedbacks": [
+        "SQS não filtra nem roteia — entrega tudo pra quem consome a fila.",
+        "SNS filtra por ATRIBUTOS da mensagem, mas não pelo corpo do evento com a riqueza dos event patterns; e não recebe eventos nativos da AWS como o bus default.",
+        "Correto: patterns como detail.valor > 1000 roteiam no barramento, antes de qualquer consumidor.",
+        "O if/else na Lambda funciona, mas centraliza o roteamento em código seu — o EventBridge faz isso declarativo e gerenciado."
+      ]
+    },
+    {
+      "pergunta": "Um relatório precisa rodar todo dia às 7h, sem servidor dedicado. Qual a solução serverless natural na AWS?",
+      "opcoes": [
+        "Um EC2 t3.micro ligado 24/7 com crontab",
+        "Regra agendada do EventBridge (cron) disparando uma Lambda",
+        "Uma fila FIFO com delay de 24 horas",
+        "Um loop infinito numa Lambda com sleep"
+      ],
+      "correta": 1,
+      "explicacao": "EventBridge (Scheduler) é o crontab da nuvem: expressão cron/rate → target Lambda. Zero servidor, custo ~zero.",
+      "feedbacks": [
+        "Funciona, mas paga uma instância 24/7 pra rodar 1 job/dia — e devolve SO/patches pra você.",
+        "Correto: cron(0 7 * * ? *) → Lambda. Foi o padrão que você montou na prática (com rate de 1 min).",
+        "Delay máximo do SQS é 15 minutos — e fila não é agendador.",
+        "Lambda tem timeout de 15 min; loop com sleep é anti-padrão e pagaria duração à toa."
+      ]
+    },
+    {
+      "pergunta": "Após o fan-out SNS→SQS, as mensagens na fila chegam 'embrulhadas' num JSON com Type, TopicArn etc., quebrando o parser do consumidor. O que fazer?",
+      "opcoes": [
+        "Trocar SNS por EventBridge, que não envelopa",
+        "Habilitar raw message delivery na subscription SQS do tópico",
+        "Aumentar o visibility timeout",
+        "Usar fila FIFO, que remove o envelope"
+      ],
+      "correta": 1,
+      "explicacao": "Raw message delivery entrega só o corpo publicado, sem o envelope JSON do SNS.",
+      "feedbacks": [
+        "EventBridge também tem seu próprio envelope de evento — trocar de serviço não é a correção; é uma configuração da subscription.",
+        "Correto: com RawMessageDelivery=true a fila recebe exatamente o payload publicado — você viu o envelope na prática.",
+        "Visibility timeout não tem relação com o formato da mensagem.",
+        "FIFO muda garantias de entrega, não o formato do que o SNS entrega."
+      ]
+    },
+    {
+      "pergunta": "Um consumidor debita R$ 50 da conta do cliente ao processar 'pagamento aprovado'. Com SQS standard (at-least-once), como evitar débito duplo na reentrega?",
+      "opcoes": [
+        "Confiar que duplicatas nunca acontecem na prática",
+        "Idempotência: registrar o id do pagamento processado (ex.: constraint única) e ignorar repetições",
+        "Reduzir o visibility timeout pra 1 segundo",
+        "Processar mais rápido pra 'ganhar' da duplicata"
+      ],
+      "correta": 1,
+      "explicacao": "At-least-once = duplicata VAI acontecer. O consumidor idempotente checa a chave de negócio antes de agir.",
+      "feedbacks": [
+        "Standard duplica por design — e mesmo FIFO reentrega após falha do consumidor. 'Nunca acontece' é como nasce o débito duplo.",
+        "Correto: 'já processei pagamento_id X? ignora'. Constraint única no banco segura até condição de corrida.",
+        "Timeout de 1s AUMENTA a chance de reentrega no meio do processamento — piora tudo.",
+        "Velocidade não elimina reentrega — a proteção é lógica (idempotência), não corrida."
+      ]
+    },
+    {
+      "pergunta": "No teardown, você deletou o tópico SNS mas esqueceu a regra EventBridge rate(1 minute) apontando pra Lambda. Qual a consequência?",
+      "opcoes": [
+        "Nenhuma; regras sem tópico SNS param sozinhas",
+        "A Lambda continua sendo invocada a cada minuto (1.440/dia) — dentro do Free Tier, mas recurso órfão rodando",
+        "A conta é bloqueada pela AWS",
+        "A regra se auto-deleta após 24 horas"
+      ],
+      "correta": 1,
+      "explicacao": "A regra é independente do SNS: continua disparando a Lambda pra sempre. Teardown é conferir TODOS os serviços tocados.",
+      "feedbacks": [
+        "A regra não depende do tópico — o target dela é a Lambda, e segue firme.",
+        "Correto: o cron continua batendo. Free Tier absorve, mas é ruído nos logs e o hábito perigoso que o curso combate.",
+        "A AWS não bloqueia conta por recurso esquecido — ela cobra (quando cobra) em silêncio.",
+        "Regras não expiram: vivem até você deletá-las (remove-targets + delete-rule)."
+      ]
+    }
+  ]
+}

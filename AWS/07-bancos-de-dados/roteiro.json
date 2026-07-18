@@ -1,0 +1,226 @@
+{
+  "modulo": "07",
+  "titulo": "Bancos de dados",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o cardápio de bancos da AWS",
+      "pontos": [
+        "Objetivo: conhecer RDS, Aurora, DynamoDB e ElastiCache — e saber ESCOLHER entre eles",
+        "A pergunta-guia do módulo: 'como meus dados serão acessados?'",
+        "Por que gerenciado: a AWS opera máquina/backup/failover; você cuida de schema, queries e dados",
+        "Prática: DynamoDB como protagonista (custo zero) + RDS MySQL real com teardown rigoroso"
+      ],
+      "checkpoint": "Confirme que o aluno está pronto e pergunte quais bancos ele já usou",
+      "ref": "07-bancos-de-dados/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "RDS: relacional gerenciado",
+      "pontos": [
+        "Motores: MySQL, PostgreSQL, MariaDB, SQL Server, Oracle — gerenciados (sem acesso ao SO)",
+        "Você escolhe classe (db.t3.micro...), storage; a AWS opera patch, backup, failover",
+        "Alternativa DIY (MySQL no EC2) existe, mas o plantão vira seu — responsabilidade compartilhada",
+        "Parameter group: como se ajusta o motor sem acesso a arquivos; janela de manutenção semanal"
+      ],
+      "checkpoint": "Pergunte o que muda entre MySQL no EC2 e no RDS em termos de responsabilidade",
+      "ref": "07-bancos-de-dados/teoria.md#2-amazon-rds--relacional-gerenciado"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "Multi-AZ vs. read replicas — a diferença crucial ⭐",
+      "pontos": [
+        "Multi-AZ = DISPONIBILIDADE: standby SÍNCRONO em outra AZ, invisível, failover automático (~1-2min, mesmo endpoint)",
+        "Read replica = PERFORMANCE: cópia ASSÍNCRONA com endpoint próprio, recebe leituras (pode ter lag)",
+        "Analogia: pneu estepe vs. carro extra na frota",
+        "Armadilha 1: Multi-AZ NÃO melhora performance (standby não atende query nenhuma)",
+        "Armadilha 2: replica não é HA primária (assíncrona = pode perder escritas); dá pra usar os dois juntos",
+        "Replica pode ficar em outra REGIÃO e ser promovida a banco independente"
+      ],
+      "checkpoint": "Este é O ponto do módulo: peça pro aluno explicar a diferença com as próprias palavras",
+      "ref": "07-bancos-de-dados/teoria.md#multi-az-vs-read-replicas--a-diferença-crucial-"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "Backups: automáticos vs. snapshots manuais",
+      "pontos": [
+        "Automático: diário + transaction logs → point-in-time restore (retenção 1-35 dias); some com a instância",
+        "Snapshot manual: você dispara; fica (e COBRA) até você apagar",
+        "Restaurar sempre cria instância NOVA — não volta a existente no tempo",
+        "Ao deletar: final snapshot (produção: sempre; lab: --skip-final-snapshot)"
+      ],
+      "checkpoint": "Pergunte: deletei a instância — o que sobrou dos backups automáticos? E dos manuais?",
+      "ref": "07-bancos-de-dados/teoria.md#backups-automáticos-vs-snapshots-manuais"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Aurora e Aurora Serverless v2",
+      "pontos": [
+        "Motor da AWS compatível com MySQL/PostgreSQL — a app não muda",
+        "Arquitetura: storage desacoplado, 6 cópias em 3 AZs, cresce sozinho; instâncias são só compute",
+        "Até 15 réplicas do MESMO storage (lag mínimo) + reader endpoint; failover ~30s",
+        "Serverless v2: capacidade em ACUs escalando fino com a carga — ideal pra carga intermitente",
+        "Quando Aurora vs. RDS: performance/escala/failover → Aurora; carga modesta ou motor específico → RDS"
+      ],
+      "checkpoint": "Pergunte o que muda estruturalmente do RDS clássico pro Aurora (storage!)",
+      "ref": "07-bancos-de-dados/teoria.md#3-aurora--o-relacional-cloud-native-da-aws"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "DynamoDB: modelo de dados, query vs. scan",
+      "pontos": [
+        "NoSQL serverless: sem instância, 3 AZs automáticas, ms de um dígito em qualquer escala",
+        "Partition key decide ONDE o item mora (hash); sort key ordena dentro da partição (intervalos)",
+        "Modelagem pelos PADRÕES DE ACESSO ('quais perguntas farei?'), não pela 3ª forma normal",
+        "Query: direto na partição, paga pelo retornado; Scan: lê a tabela INTEIRA, paga pelo LIDO",
+        "Scan em produção ≈ erro de modelagem — vamos SENTIR isso na prática (ScannedCount vs Count)"
+      ],
+      "checkpoint": "Teste: tabela pedidos (PK=cliente, SK=data) — como buscar 'pedidos do cliente em junho'?",
+      "ref": "07-bancos-de-dados/teoria.md#4-dynamodb--nosql-serverless"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "DynamoDB: GSI/LSI, capacidade, TTL — e quando NoSQL faz sentido",
+      "pontos": [
+        "GSI: PK+SK novas, criável a qualquer momento — resolve 'buscar por outro atributo' (95% dos casos)",
+        "LSI: mesma PK, outra SK, só na criação da tabela",
+        "Capacidade: on-demand (paga por request, imprevisível/lab) vs. provisionada (barata em carga estável; throttling)",
+        "TTL: item expira e é deletado de graça — sessões, caches; extras: Streams, DAX, Global Tables",
+        "NoSQL faz sentido: acesso por chave, escala, latência constante; NÃO: relatórios ad-hoc, JOINs, agregações"
+      ],
+      "checkpoint": "Pergunte quando escolher GSI vs. LSI e um caso onde DynamoDB seria má escolha",
+      "ref": "07-bancos-de-dados/teoria.md#4-dynamodb--nosql-serverless"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "ElastiCache + comparativo final de escolha",
+      "pontos": [
+        "Redis (rico, replicação, o padrão) vs. Memcached (simples, multi-thread); na dúvida, Redis",
+        "Cache-aside: tenta o cache → HIT responde; MISS → banco → grava no cache com TTL",
+        "Primeira arma contra banco afogado em LEITURAS repetidas (antes até de read replica)",
+        "Armadilhas: dado desatualizado (TTL sensato) e cold start (avalanche no banco)",
+        "Comparativo final: relacional/ad-hoc → RDS/Aurora; chave em escala → DynamoDB; leitura repetida → cache"
+      ],
+      "checkpoint": "Recap com 3 cenários de escolha de banco; pergunte: 'partimos pra prática?'",
+      "ref": "07-bancos-de-dados/teoria.md#6-comparativo-final--qual-banco-escolher"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "DynamoDB: criar tabela + itens (Console)",
+      "pontos": [
+        "Custo: DynamoDB Free Tier sempre-grátis (25 GB) — parte 1 é custo zero, sem pressa",
+        "Criar tabela pedidos: PK=cliente_id, SK=data_pedido, on-demand",
+        "Notar: nenhuma decisão de infraestrutura (instância/AZ) — serverless",
+        "Inserir item pelo Console e ver o schemaless (atributos livres além das chaves)"
+      ],
+      "acao": "Guiar a criação da tabela e o primeiro item no Console",
+      "checkpoint": "Confirme a tabela ACTIVE e o porquê da escolha das chaves entendido",
+      "ref": "07-bancos-de-dados/pratica.md#parte-a--criar-tabela-console"
+    },
+    {
+      "id": "p2",
+      "fase": "pratica",
+      "titulo": "put-item, get-item e query (CLI)",
+      "pontos": [
+        "put-item com o formato de tipos {S:...}/{N:...} — estranho no início, explica na hora",
+        "get-item: chave completa PK+SK, O(1)",
+        "query por PK (todos os pedidos do c001) e por intervalo na SK (só julho)",
+        "Fixar: custo proporcional ao RETORNADO, não ao tamanho da tabela"
+      ],
+      "acao": "Guiar os comandos e interpretar cada resposta JSON",
+      "checkpoint": "Confirme as duas queries rodadas e o intervalo na sort key entendido",
+      "ref": "07-bancos-de-dados/pratica.md#parte-b--crud-pela-cli"
+    },
+    {
+      "id": "p3",
+      "fase": "pratica",
+      "titulo": "Scan caro → GSI barato",
+      "pontos": [
+        "Scan com filtro por status + --return-consumed-capacity",
+        "Ler ScannedCount vs Count: leu TUDO pra retornar pouco — paga pelo lido",
+        "Criar GSI status-data-index via update-table e esperar ACTIVE",
+        "Repetir a MESMA pergunta como query no índice: Count == ScannedCount",
+        "Moral: acesso novo → índice novo, nunca scan"
+      ],
+      "acao": "Guiar o scan, a criação do GSI e a query comparativa",
+      "checkpoint": "O aluno deve verbalizar por que o scan é caro e o que o GSI mudou",
+      "ref": "07-bancos-de-dados/pratica.md#parte-c--gsi-transformando-o-scan-em-query"
+    },
+    {
+      "id": "p4",
+      "fase": "pratica",
+      "titulo": "RDS MySQL: criar e conectar",
+      "pontos": [
+        "AVISO de custo: Free Tier 12 meses (750h db.t3.micro Single-AZ); sem pausas até o teardown",
+        "Template Free tier, SEM Multi-AZ, senha anotada, public access Yes (SÓ pra lab!)",
+        "Enquanto cria (5-10min): achar parameter group e janela de manutenção nas abas",
+        "Conectar com mysql -h endpoint, CREATE TABLE, INSERT, SELECT — um MySQL de verdade",
+        "Contrastar com DynamoDB: schema, SQL, instância 24/7"
+      ],
+      "acao": "Guiar a criação no Console e a conexão real via client mysql",
+      "checkpoint": "Confirme o SELECT funcionando antes de seguir — e já anuncie o teardown",
+      "ref": "07-bancos-de-dados/pratica.md#parte-d--criar-a-instância-console"
+    },
+    {
+      "id": "p5",
+      "fase": "pratica",
+      "titulo": "TEARDOWN do RDS + fechamento da prática",
+      "pontos": [
+        "delete-db-instance com --skip-final-snapshot --delete-automated-backups (lab; em produção é o oposto)",
+        "Verificar: describe-db-instances até NotFound e describe-db-snapshots VAZIO",
+        "Apagar o security group m07-rds-sg",
+        "Os dois esquecimentos caros: instância viva e snapshot órfão",
+        "DynamoDB: deletar a tabela é opcional (custo ~zero), mas o ritual é o ritual"
+      ],
+      "acao": "Executar e verificar o teardown completo; fechar o checklist",
+      "checkpoint": "Só siga com snapshots comprovadamente zerados; feche o checklist do módulo",
+      "ref": "07-bancos-de-dados/pratica.md#parte-e--teardown-do-rds-obrigatório"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/apps/modulo-07/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "AWS/apps/modulo-07/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões de cenário, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 08 após passar"
+      ],
+      "acao": "Rodar: python3 AWS/apps/session.py start AWS/provas/modulo-07/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 08; se não, revise os pontos errados",
+      "ref": "AWS/provas/modulo-07/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 07",
+      "pontos": [
+        "Recap: RDS (Multi-AZ vs replicas!), Aurora, DynamoDB (query vs scan, GSI), cache-aside",
+        "Você agora ESCOLHE banco pelo padrão de acesso — habilidade de arquiteto",
+        "Checagem final de custos: RDS deletado? Zero snapshots?",
+        "Próximo: Módulo 08 — Serverless (Lambda, API Gateway — e o DynamoDB volta como par perfeito)"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 08 ou parar por aqui",
+      "ref": "AWS/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

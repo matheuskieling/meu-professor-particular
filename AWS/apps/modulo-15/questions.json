@@ -1,0 +1,110 @@
+{
+  "titulo": "Módulo 15 — Arquitetura & Well-Architected",
+  "questoes": [
+    {
+      "pergunta": "Quantos e quais são os pilares do Well-Architected Framework?",
+      "opcoes": [
+        "4: segurança, custo, performance e rede",
+        "6: excelência operacional, segurança, confiabilidade, eficiência de performance, otimização de custos e sustentabilidade",
+        "3: compute, storage e networking",
+        "5: os mesmos 6, menos sustentabilidade"
+      ],
+      "correta": 1,
+      "explicacao": "São 6 pilares. Sustentabilidade é o mais recente (2021) — material antigo ainda fala em 5."
+    },
+    {
+      "pergunta": "Qual pilar tem como princípios 'recupere-se automaticamente de falhas', 'teste os procedimentos de recuperação' e 'pare de adivinhar capacidade'?",
+      "opcoes": ["Otimização de custos", "Excelência operacional", "Confiabilidade", "Sustentabilidade"],
+      "correta": 2,
+      "explicacao": "São os princípios clássicos do pilar de Confiabilidade (reliability): resistir a falhas e atender a demanda."
+    },
+    {
+      "pergunta": "Por que se diz que os pilares do Well-Architected 'conflitam de propósito'?",
+      "opcoes": [
+        "Porque a AWS não conseguiu alinhá-los",
+        "Porque maximizar um (ex.: confiabilidade) geralmente custa em outro (ex.: custo) — a prioridade vem dos requisitos do workload",
+        "Porque cada região usa pilares diferentes",
+        "Eles não conflitam; sempre dá pra maximizar todos"
+      ],
+      "correta": 1,
+      "explicacao": "Arquitetura é trade-off: mais redundância = mais custo. A pergunta certa é qual requisito é prioritário PARA ESTE workload."
+    },
+    {
+      "pergunta": "No padrão multi-tier clássico, onde ficam o ALB e o banco de dados?",
+      "opcoes": [
+        "Ambos em subnets públicas",
+        "ALB em subnet pública; banco em subnet privada",
+        "ALB em subnet privada; banco em subnet pública",
+        "Ambos fora da VPC"
+      ],
+      "correta": 1,
+      "explicacao": "O ALB recebe a internet (público); o banco nunca é exposto — fica em subnet privada, acessível só pela camada de aplicação."
+    },
+    {
+      "pergunta": "Qual é o principal trade-off ao adotar microservices em vez de um monolito?",
+      "opcoes": [
+        "Microservices são sempre mais lentos",
+        "A complexidade migra do código para a operação (rede, observabilidade, versões entre serviços)",
+        "Microservices não podem usar bancos de dados",
+        "Não há trade-off; microservices são superiores sempre"
+      ],
+      "correta": 1,
+      "explicacao": "Deploy independente e escala granular custam complexidade operacional. Monolito bem modularizado é escolha válida pra muitos casos."
+    },
+    {
+      "pergunta": "O que é o anti-padrão 'monolito distribuído'?",
+      "opcoes": [
+        "Um monolito replicado em várias AZs",
+        "Microservices tão acoplados que precisam ser deployados juntos — a complexidade dos dois mundos, os benefícios de nenhum",
+        "Um monolito que usa CDN",
+        "Qualquer sistema com mais de um servidor"
+      ],
+      "correta": 1,
+      "explicacao": "Se os 'micro' serviços não têm deploy independente, você pagou o preço da distribuição sem ganhar a autonomia."
+    },
+    {
+      "pergunta": "Num e-commerce, qual o papel de uma fila SQS entre o checkout e o processamento de pedidos?",
+      "opcoes": [
+        "Deixar o checkout mais bonito",
+        "Absorver picos: pedidos acima da capacidade viram backlog na fila em vez de erro 500, e são processados no ritmo dos workers",
+        "Substituir o banco de dados",
+        "Criptografar os pedidos"
+      ],
+      "correta": 1,
+      "explicacao": "A fila é buffer: desacopla a taxa de chegada da taxa de processamento. Com retry e DLQ, pedidos não se perdem."
+    },
+    {
+      "pergunta": "'Pets vs. cattle' é uma metáfora sobre o quê?",
+      "opcoes": [
+        "Escolher o tipo de instância EC2",
+        "Tratar servidores como substituíveis por automação (gado) em vez de máquinas únicas configuradas à mão (pets)",
+        "A política de tags da empresa",
+        "Bancos relacionais vs. NoSQL"
+      ],
+      "correta": 1,
+      "explicacao": "Um servidor-pet configurado à mão, que 'ninguém pode reiniciar', é um anti-padrão. Com IaC + ASG, qualquer instância é descartável."
+    },
+    {
+      "pergunta": "Por que 'backup que nunca foi restaurado não é backup'?",
+      "opcoes": [
+        "Porque backups expiram em 30 dias",
+        "Porque sem testar a restauração você não sabe se o backup funciona nem se o procedimento/tempo atendem — fere 'teste os procedimentos de recuperação'",
+        "Porque a AWS cobra por restauração",
+        "Porque backups só funcionam em Multi-AZ"
+      ],
+      "correta": 1,
+      "explicacao": "O princípio do pilar de confiabilidade é testar a recuperação. Backup não testado é esperança, não estratégia."
+    },
+    {
+      "pergunta": "O que o Well-Architected Tool do console faz — e quanto custa?",
+      "opcoes": [
+        "Provisiona a arquitetura automaticamente; custa por recurso criado",
+        "Guia uma revisão por perguntas por pilar, aponta riscos (HRIs/MRIs) e gera plano de melhoria; é gratuito",
+        "Audita a fatura e emite reembolsos; custa US$ 100/mês",
+        "Só funciona com suporte Enterprise"
+      ],
+      "correta": 1,
+      "explicacao": "É uma ferramenta gratuita de autoavaliação: workload → perguntas → riscos priorizados + milestones pra medir evolução."
+    }
+  ]
+}

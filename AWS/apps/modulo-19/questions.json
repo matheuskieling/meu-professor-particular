@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 19 — Projeto Final: revisão geral do curso",
+  "questoes": [
+    {
+      "pergunta": "Seu ALB responde 502 Bad Gateway, mas o ASG mostra todas as instâncias 'healthy' (checagem EC2). Onde investigar PRIMEIRO?",
+      "opcoes": [
+        "Na tabela de rotas da VPC",
+        "No health check do TARGET GROUP e na aplicação: a instância pode estar viva (EC2) com o app morto/porta errada/SG bloqueando ALB→instância",
+        "No Route 53",
+        "Nos backups do AWS Backup"
+      ],
+      "correta": 1,
+      "explicacao": "502 = o ALB não obteve resposta válida do backend. ASG 'healthy' com health check tipo EC2 só diz que a VM roda — não que o app responde. Cheque target group, porta, processo e o SG que permite ALB→instância."
+    },
+    {
+      "pergunta": "Uma instância EC2 em subnet privada precisa baixar pacotes da internet. Sem NAT, o download falha. Qual alternativa GRATUITA resolveria se o destino fosse apenas o S3?",
+      "opcoes": [
+        "Um segundo Internet Gateway",
+        "VPC Gateway Endpoint para S3 (rota privada, sem NAT, sem custo)",
+        "Elastic IP na instância privada",
+        "Peering com outra VPC"
+      ],
+      "correta": 1,
+      "explicacao": "Gateway endpoints (S3 e DynamoDB) criam rota privada e gratuita, dispensando NAT pra esses serviços. Internet geral ainda exigiria NAT — mas questionar a necessidade dele é decisão de custo (Módulo 17)."
+    },
+    {
+      "pergunta": "Sua função Lambda precisa ler UMA tabela do DynamoDB. Qual política respeita least privilege (Módulos 02/13)?",
+      "opcoes": [
+        "AdministratorAccess, pra garantir",
+        "dynamodb:* em todos os recursos",
+        "Somente as actions de leitura necessárias (ex.: GetItem/Query) com Resource restrito ao ARN daquela tabela",
+        "AmazonDynamoDBFullAccess"
+      ],
+      "correta": 2,
+      "explicacao": "Least privilege = ações mínimas + recurso específico. Actions de leitura no ARN da tabela; nada de wildcard em action nem em resource."
+    },
+    {
+      "pergunta": "No projeto, você alterou um security group manualmente no console 'só pra testar' e esqueceu. Semanas depois, o `terraform plan` mostra uma diferença. Como se chama isso e qual a atitude certa?",
+      "opcoes": [
+        "Drift; reconciliar: ou codificar a mudança no IaC, ou aplicar o IaC pra voltar ao declarado — o código é a fonte de verdade",
+        "Bug do Terraform; ignorar",
+        "Feature: console e IaC são independentes",
+        "Rodar terraform destroy imediatamente"
+      ],
+      "correta": 0,
+      "explicacao": "Mudança manual fora do IaC = drift. Ou a mudança era válida (traga pro código), ou não era (apply restaura). Infra 'de clique' quebra a reprodutibilidade que o IaC garante."
+    },
+    {
+      "pergunta": "Push na main disparou o pipeline, o deploy trocou instâncias via instance refresh, e os usuários não perceberam nada. Qual dupla de mecanismos garantiu o zero-downtime?",
+      "opcoes": [
+        "Snapshot de EBS + tags",
+        "O ALB só envia tráfego a targets saudáveis + a troca gradual (rolling) mantém instâncias antigas servindo até as novas passarem no health check",
+        "TTL alto no DNS + cache do navegador",
+        "NAT Gateway em cada AZ"
+      ],
+      "correta": 1,
+      "explicacao": "Rolling/instance refresh troca aos poucos; o health check do target group garante que só entra no rodízio quem responde. Juntos, deploy sem janela de indisponibilidade."
+    },
+    {
+      "pergunta": "Alarme de 5xx disparou de madrugada. Pelo runbook, sua PRIMEIRA parada pra entender o que a aplicação estava fazendo no momento do erro é:",
+      "opcoes": [
+        "CloudTrail",
+        "Os logs da aplicação no CloudWatch Logs (e o dashboard de métricas do período)",
+        "AWS Config",
+        "Cost Explorer"
+      ],
+      "correta": 1,
+      "explicacao": "Métricas dizem QUE algo quebrou; logs dizem O QUÊ/POR QUÊ. CloudTrail audita chamadas de API de gestão (quem mudou o quê) — útil depois; Config audita configuração; Cost Explorer é custo."
+    },
+    {
+      "pergunta": "Sua conta apresentou um pico de gasto num serviço que você nunca usou, começando às 3h. Que combinação de serviços te avisaria E ajudaria a investigar o autor?",
+      "opcoes": [
+        "Cost Anomaly Detection (alerta do desvio) + CloudTrail (quem fez as chamadas que criaram os recursos)",
+        "AWS Budgets + S3 CRR",
+        "Compute Optimizer + X-Ray",
+        "Trusted Advisor + EFS"
+      ],
+      "correta": 0,
+      "explicacao": "Anomalia de custo detecta o desvio do padrão (Módulo 17); CloudTrail mostra a identidade e as chamadas de API (Módulo 12) — típico de credencial comprometida (revogar, Módulo 02!)."
+    },
+    {
+      "pergunta": "No teste de falha, você terminou uma instância do ASG. A sequência esperada de recuperação automática é:",
+      "opcoes": [
+        "Route 53 muda o registro DNS pra outra região",
+        "Health check reprova o target → ALB para de enviar tráfego a ele → ASG detecta e lança instância substituta → nova instância passa no health check e volta ao rodízio",
+        "O AWS Backup restaura a instância a partir do último recovery point",
+        "Nada acontece sem intervenção manual"
+      ],
+      "correta": 1,
+      "explicacao": "É o ciclo HA intra-região (Módulos 05/18): detecção pelo health check, isolamento pelo ALB, reposição pelo ASG. DNS failover e restore de backup são camadas pra falhas maiores."
+    },
+    {
+      "pergunta": "Um item crítico foi deletado da tabela DynamoDB às 15h. PITR está habilitado. Qual o procedimento?",
+      "opcoes": [
+        "PITR restaura a tabela para um instante antes das 15h COMO UMA NOVA TABELA; você recupera o dado de lá (a restauração não sobrescreve a original)",
+        "Apertar 'undo' no console do DynamoDB",
+        "O item volta sozinho em 24h",
+        "Só um snapshot manual das 3h salvaria"
+      ],
+      "correta": 0,
+      "explicacao": "Point-in-time recovery restaura pra qualquer segundo dos últimos 35 dias — sempre numa tabela nova. RPO ~0 pra erro lógico; o RTO é o tempo do restore + cópia do dado (e não esqueça a tabela restaurada no teardown!)."
+    },
+    {
+      "pergunta": "Fim do capstone: `terraform destroy` rodou com sucesso. Por que o checklist de caça manual AINDA é necessário?",
+      "opcoes": [
+        "Não é; destroy remove tudo por definição",
+        "Porque sobram recursos criados FORA do IaC: snapshots/AMIs manuais, a tabela restaurada no teste de DR, recovery points em vaults, logs criados pela app, buckets versionados que não esvaziam sozinhos",
+        "Porque o destroy só funciona em us-east-1",
+        "Porque a AWS exige aprovação humana pra deletar"
+      ],
+      "correta": 1,
+      "explicacao": "O IaC só destrói o que ele criou. Artefatos laterais (backups, restores do teste, log groups, versões de objetos, snapshots finais de RDS) ficam — e cobram. Daí a caça via describe-* e o Cost Explorer confirmando o zero no dia seguinte."
+    }
+  ]
+}

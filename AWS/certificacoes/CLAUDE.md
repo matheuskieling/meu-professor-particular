@@ -83,3 +83,8 @@ dizendo explicitamente ao aluno se está pronto ou o que falta.
 - Todas as questões têm `feedbacks` por alternativa (por que cada opção está certa/errada).
 - Bancos rápidos podem crescer conforme o curso avança; as provas completas ficam estáveis
   (para permitir comparar tentativas).
+
+## Próximas certificações (futuro)
+Além de CLF-C02 e SAA-C03 (prontas), o curso vai cobrir DVA-C02, SOA-C02, DEA-C01, MLA-C01, AIF-C01,
+SCS-C02, ANS-C01, SAP-C02 e DOP-C02 — cada uma como uma **trilha separada** (módulos próprios +
+banco rápido + 3 provas). Plano completo em **`AWS/ROADMAP.md`**. Ainda não implementado.

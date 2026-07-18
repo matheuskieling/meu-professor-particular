@@ -138,6 +138,20 @@ certificação**, fiéis ao exame real (65 questões, mesmo tempo, mesmo corte, 
 Quem conduz os simulados é o agente, e **ele mesmo te avisa**: "você bateu o portão, pode agendar"
 ou "falta X, revise Y". Você não precisa controlar nada disso manualmente.
 
+### E depois das básicas? Trilhas de especialização (em breve)
+
+Hoje o curso te leva até **CLF-C02** e **SAA-C03**. O plano é, depois disso, o curso **se ramificar
+em trilhas** que você escolhe por interesse — Developer, SysOps, Data Engineer, ML, AI Practitioner,
+Security, Networking e as Professional — cada uma com módulos e simulados próprios. Quando terminar
+as básicas, o agente vai te perguntar **qual caminho seguir**, lembrar sua escolha e retomar de lá.
+Isso ainda **não está pronto**; o roadmap completo está em [`ROADMAP.md`](ROADMAP.md).
+
+**Não quer esperar a gente construir?** Como você estuda no **seu próprio fork**, é só pedir ao seu
+agente para construir a próxima trilha seguindo o `ROADMAP.md` — por exemplo: *"seguindo o
+AWS/ROADMAP.md, monte a trilha DVA-C02 e me conduza por ela"*. O roadmap diz o que cada certificação
+exige e os `CLAUDE.md` dizem como montar módulos e provas, então o agente consegue criar tudo no seu
+fork e te guiar, sem depender do repositório principal.
+
 ## Regras de ouro (valem o curso inteiro)
 
 - 💸 **Custos:** priorizamos o **Free Tier**. Toda prática avisa o que cobra e sempre termina com

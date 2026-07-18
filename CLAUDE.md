@@ -65,7 +65,10 @@ courses/
 
 Os **drivers vivem só em `engine/`** e são **agnósticos de curso** — descobrem o curso pelo caminho
 do conteúdo ou por `--curso <dir>`/autodetecção. Um **curso novo é só conteúdo** (roteiros + bancos):
-não se copia nem se recria driver nenhum. Detalhes e "como criar um curso" em `engine/CLAUDE.md`.
+não se copia nem se recria driver nenhum. Passo a passo técnico de "como criar um curso" em
+`engine/CLAUDE.md`; o guia voltado ao aluno (o que pedir ao agente) está em `README.md` na seção
+"Criar seus próprios cursos". Ao montar um curso novo, proponha o currículo para o aluno aprovar
+antes de escrever os módulos.
 
 ### Os dois modos de cada módulo
 

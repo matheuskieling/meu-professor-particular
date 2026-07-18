@@ -46,6 +46,34 @@ curso). Você também pode estudar sozinho pelos arquivos `.md` e rodar os quizz
 O curso de AWS ainda tem **simulados de certificação fiéis ao exame real** (CLF-C02 e SAA-C03,
 65 questões, mesmo tempo e corte) e te avisa **quando você está pronto** pra prova de verdade.
 
+## 🧱 Criar seus próprios cursos (expandir além do oficial)
+
+Esta plataforma **não é só de AWS** — dá pra criar curso de qualquer tema (Design Patterns, Go,
+Kubernetes, SQL, o que você quiser). Você **não precisa programar nada**: o motor (`engine/`) e as
+skills já funcionam para qualquer curso novo, então **basta pedir ao seu agente**, no **seu fork**,
+que ele monta tudo no formato-padrão (roteiro de aula ao vivo + teoria + prática + quiz + prova).
+
+**O que informar ao agente** (quanto mais claro, melhor o curso):
+- **Tema e nome** do curso (ex.: "Design Patterns em TypeScript").
+- **Público/nível** (iniciante? já programa? quer profundidade?).
+- **Tamanho**: quantos módulos, ou "você decide o currículo".
+- **Estilo**: mais teórico ou mão-na-massa? tem prática executável (código, terminal)?
+- **Avaliação**: quer quiz + prova por módulo? simulados de certificação (se o tema tiver)?
+- **Idioma** (padrão: português).
+
+**Modelo de pedido** (copie e ajuste):
+
+> "Seguindo o formato-padrão do repositório (veja `CLAUDE.md` e `engine/CLAUDE.md`), crie um curso
+> novo de **<tema>** para **<seu nível>**. Proponha primeiro o **currículo de módulos** para eu
+> aprovar; depois monte cada módulo com `roteiro.json` + `teoria.md` + `pratica.md` + quiz (10
+> questões) e prova (12 questões com feedback por alternativa), na pasta `<Nome-do-Curso>/`. Quando
+> terminar, me conduza pelo módulo 1."
+
+O agente cria o curso como **conteúdo puro** (sem copiar nem recriar drivers) — o `engine/` e as
+skills `/retomar-curso` / `/revisar` passam a funcionar nele automaticamente. Como é o **seu fork**,
+você constrói e estuda sem depender do repo principal; se quiser, depois abre um **PR** para
+contribuir o curso de volta. Passo a passo técnico em [`engine/CLAUDE.md`](engine/CLAUDE.md).
+
 ## 🔄 Seu progresso
 
 - Fica em `<Curso>/.sessions/` e é **commitado no seu fork** (o agente faz isso por você ao
@@ -59,6 +87,11 @@ O curso de AWS ainda tem **simulados de certificação fiéis ao exame real** (C
 ├── README.md            ← você está aqui
 ├── CLAUDE.md            ← instruções-mestre para os agentes (fonte de verdade)
 ├── AGENTS.md            ← ponteiro para agentes de outros harnesses
-├── .claude/skills/      ← skills do Claude Code (ex.: /retomar-curso)
-└── AWS/                 ← Curso 1 (README próprio com o passo a passo)
+├── .claude/skills/      ← skills do Claude Code (/retomar-curso, /revisar)
+├── engine/              ← motor compartilhado por TODOS os cursos (drivers Python)
+│   └── CLAUDE.md        ← como o motor funciona + como criar um curso novo
+└── AWS/                 ← Curso 1 (só conteúdo; README próprio com o passo a passo)
 ```
+
+> Cada curso é um diretório na raiz, só com **conteúdo** (roteiros + bancos). O `engine/` serve
+> todos — criar um curso novo **não** duplica nem recria nada do motor.

@@ -24,5 +24,9 @@ o seu, descrevendo aquele escopo. Não duplique instruções aqui — este arqui
   cada sessão de estudo. A branch `main` do repo principal fica sempre zerada.
 - **Retomar:** `git pull` (se fork/branch) → `aula.py status` + `current` → resumo curto de onde
   paramos → continuar do beat atual.
+- **Comando `/retomar-curso`:** se o usuário digitar `/retomar-curso` (ou pedir para começar ou
+  continuar um curso) e o seu harness não tiver esse comando nativo, **leia
+  `.claude/skills/retomar-curso/SKILL.md` e siga-o** — é a definição canônica do fluxo de retomada,
+  válida para qualquer agente (apesar do caminho, não é exclusiva do Claude).
 - **Regras de ouro:** priorizar AWS Free Tier; teardown de recursos pagos ao fim de cada prática;
   nunca commitar credenciais/secrets.

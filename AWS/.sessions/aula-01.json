@@ -247,13 +247,13 @@
       }
     ]
   },
-  "pos": 4,
+  "pos": 5,
   "status": {
     "intro": "visto",
     "t1": "visto",
     "t2": "visto",
     "t3": "visto",
-    "t4": "pendente",
+    "t4": "visto",
     "t5": "pendente",
     "t6": "pendente",
     "t7": "pendente",
@@ -275,5 +275,6 @@
       "text": "Aluno perguntou por que S3/RDS sao PaaS e nao SaaS (nao gerencia infra). Expliquei: PaaS = peca de construcao pra dev montar seu app; SaaS = produto final pro usuario. S3/RDS ficam embaixo do SaaS. Taxonomia e fuzzy; o que importa e o espectro de gerenciamento."
     }
   ],
-  "iniciado_em": "2026-07-18T17:53:33+00:00"
+  "iniciado_em": "2026-07-18T17:53:33+00:00",
+  "marco_sessao": 4
 }

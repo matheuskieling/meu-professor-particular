@@ -247,17 +247,17 @@
       }
     ]
   },
-  "pos": 5,
+  "pos": 9,
   "status": {
     "intro": "visto",
     "t1": "visto",
     "t2": "visto",
     "t3": "visto",
     "t4": "visto",
-    "t5": "pendente",
-    "t6": "pendente",
-    "t7": "pendente",
-    "t8": "pendente",
+    "t5": "visto",
+    "t6": "visto",
+    "t7": "visto",
+    "t8": "visto",
     "p1": "pendente",
     "p2": "pendente",
     "p3": "pendente",
@@ -273,8 +273,18 @@
       "beat": "t3",
       "ts": "2026-07-18T18:16:52+00:00",
       "text": "Aluno perguntou por que S3/RDS sao PaaS e nao SaaS (nao gerencia infra). Expliquei: PaaS = peca de construcao pra dev montar seu app; SaaS = produto final pro usuario. S3/RDS ficam embaixo do SaaS. Taxonomia e fuzzy; o que importa e o espectro de gerenciamento."
+    },
+    {
+      "beat": "t5",
+      "ts": "2026-07-19T01:25:36+00:00",
+      "text": "Aluno perguntou se provas AWS cobram nuance de responsabilidade por serviço. Sim: CLF-C02 = questoes diretas (fisico=AWS, config/IAM/SO-em-EC2=cliente). SAA-C03 = cenarios que movem a linha (ex.: patch de banco = cliente no EC2, AWS no RDS; S3 durabilidade=AWS mas bucket publico=cliente). Regra: quao gerenciado e o servico? Mais gerenciado=AWS puxa mais, EXCETO IAM/config de acesso que sao sempre do cliente."
+    },
+    {
+      "beat": "t7",
+      "ts": "2026-07-19T01:36:52+00:00",
+      "text": "Aluno trabalha com .NET/C#. Trazer exemplos com AWS SDK for .NET (pacotes NuGet AWSSDK.*, async-first, DI via AWSSDK.Extensions.NETCore.Setup) quando fizer sentido."
     }
   ],
   "iniciado_em": "2026-07-18T17:53:33+00:00",
-  "marco_sessao": 4
+  "marco_sessao": 5
 }

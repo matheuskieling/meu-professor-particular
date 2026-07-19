@@ -247,7 +247,7 @@
       }
     ]
   },
-  "pos": 9,
+  "pos": 12,
   "status": {
     "intro": "visto",
     "t1": "visto",
@@ -258,9 +258,9 @@
     "t6": "visto",
     "t7": "visto",
     "t8": "visto",
-    "p1": "pendente",
-    "p2": "pendente",
-    "p3": "pendente",
+    "p1": "visto",
+    "p2": "visto",
+    "p3": "visto",
     "p4": "pendente",
     "p5": "pendente",
     "p6": "pendente",
@@ -283,8 +283,28 @@
       "beat": "t7",
       "ts": "2026-07-19T01:36:52+00:00",
       "text": "Aluno trabalha com .NET/C#. Trazer exemplos com AWS SDK for .NET (pacotes NuGet AWSSDK.*, async-first, DI via AWSSDK.Extensions.NETCore.Setup) quando fizer sentido."
+    },
+    {
+      "beat": "p1",
+      "ts": "2026-07-19T13:56:46+00:00",
+      "text": "Aluno JA TINHA conta AWS. Pulamos criacao. MFA (Authenticator app) ativado no root com sucesso. CLI ainda NAO instalada (aws: command not found) - fazer na Parte C."
+    },
+    {
+      "beat": "p2",
+      "ts": "2026-07-19T14:01:14+00:00",
+      "text": "Budget zero-spend criado com sucesso. Billing em US$0,00 (sem recursos legados sangrando). Conta limpa."
+    },
+    {
+      "beat": "p3",
+      "ts": "2026-07-19T14:07:49+00:00",
+      "text": "Momento de aprendizado: aluno nao conseguia trocar de regiao pq estava numa pagina GLOBAL (Billing), onde o seletor trava em 'Global' e fica inclicavel. Ensinei servicos GLOBAIS (IAM, Billing, Route53, CloudFront) vs REGIONAIS (EC2, S3, RDS, Lambda). Seletor de regiao so fica ativo em servico regional. Conta confirmada saudavel: regioes default 'Enabled by default', sem SCP. Login como root (conta mkieling)."
+    },
+    {
+      "beat": "p4",
+      "ts": "2026-07-19T14:23:15+00:00",
+      "text": "PARADA no beat p4 (criar usuario IAM). Ainda NAO criou o usuario IAM nem gerou access keys - retomar dai. Aluno perguntou sobre account alias 'mkieling-iam' vs Account ID numerico (5146-4044-5902): expliquei alias = apelido opcional pra URL de login IAM; conta do trabalho sem alias mostra o numero. PENDENTE proxima sessao: criar usuario admin-matheus + AdministratorAccess, gerar access keys (com aviso de seguranca), instalar+configurar CLI (ainda nao instalada), rodar comandos p5/p6, quiz, prova."
     }
   ],
   "iniciado_em": "2026-07-18T17:53:33+00:00",
-  "marco_sessao": 5
+  "marco_sessao": 9
 }

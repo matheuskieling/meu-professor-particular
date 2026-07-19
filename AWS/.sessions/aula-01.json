@@ -303,6 +303,11 @@
       "beat": "p4",
       "ts": "2026-07-19T14:23:15+00:00",
       "text": "PARADA no beat p4 (criar usuario IAM). Ainda NAO criou o usuario IAM nem gerou access keys - retomar dai. Aluno perguntou sobre account alias 'mkieling-iam' vs Account ID numerico (5146-4044-5902): expliquei alias = apelido opcional pra URL de login IAM; conta do trabalho sem alias mostra o numero. PENDENTE proxima sessao: criar usuario admin-matheus + AdministratorAccess, gerar access keys (com aviso de seguranca), instalar+configurar CLI (ainda nao instalada), rodar comandos p5/p6, quiz, prova."
+    },
+    {
+      "beat": "p4",
+      "ts": "2026-07-19T14:25:24+00:00",
+      "text": "CORRECAO da nota anterior: o usuario IAM (admin-matheus com AdministratorAccess) JA FOI CRIADO. Paramos no Passo 2 do beat p4: GERAR AS ACCESS KEYS (ainda nao geradas). Retomar direto na geracao das access keys (com aviso de seguranca: secret aparece 1 vez so, nunca no repo, revogar se vazar), depois instalar CLI (aws: command not found), aws configure, comandos p5/p6, quiz, prova."
     }
   ],
   "iniciado_em": "2026-07-18T17:53:33+00:00",

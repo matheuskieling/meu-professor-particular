@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 03: OCP (Aberto/Fechado)",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Qual frase enuncia corretamente o Open/Closed Principle?",
+      "opcoes": [
+        "Software deve estar sempre aberto para modificação por qualquer desenvolvedor",
+        "Entidades devem ser abertas para extensão, mas fechadas para modificação",
+        "Toda classe deve ter exatamente uma responsabilidade",
+        "Interfaces devem ser pequenas e específicas para cada cliente"
+      ],
+      "correta": 1,
+      "explicacao": "OCP (Meyer/Uncle Bob): comportamento novo entra como código novo (extensão), sem editar o código já testado (modificação).",
+      "feedbacks": [
+        "É o oposto: OCP quer FECHAR a modificação do código existente, não abri-la a todos.",
+        "Correto: aberto para extensão (código novo), fechado para modificação (não mexer no que funciona).",
+        "Essa é a definição de SRP (responsabilidade única), não de OCP.",
+        "Essa é a definição de ISP (segregação de interfaces), não de OCP."
+      ]
+    },
+    {
+      "pergunta": "Por que 'fechado para modificação' é valioso para código que já está em produção?",
+      "opcoes": [
+        "Porque código em produção não pode mais compilar",
+        "Porque reabrir código testado para encaixar casos novos gera risco de regressão e invalida a confiança já construída",
+        "Porque a linguagem impede editar arquivos antigos",
+        "Porque modificar código sempre deixa o sistema mais lento"
+      ],
+      "correta": 1,
+      "explicacao": "Código testado e rodando é um ativo; cada edição pode quebrar o que já funcionava. OCP evita reabrir esse código para estender.",
+      "feedbacks": [
+        "Código em produção compila normalmente; a questão é risco de quebrar, não de compilar.",
+        "Isso: estender sem editar o código velho protege contra regressões e preserva os testes/revisões já feitos.",
+        "Nenhuma linguagem impede editar arquivos antigos — OCP é uma decisão de design, não uma trava técnica.",
+        "O problema não é performance, e sim o risco de regressão ao editar código estável."
+      ]
+    },
+    {
+      "pergunta": "Qual destes é o smell mais característico de uma violação de OCP?",
+      "opcoes": [
+        "Uma classe com muitos campos privados",
+        "Um switch/if-else sobre um 'tipo' (enum/string) que ganha um caso novo a cada requisito",
+        "Um método que retorna void",
+        "Uma interface com um único método"
+      ],
+      "correta": 1,
+      "explicacao": "O switch por tipo que só cresce é a marca de OCP violado: cada tipo novo obriga a editar a mesma classe.",
+      "feedbacks": [
+        "Campos privados são normais e não indicam violação de OCP.",
+        "Exato: o switch/if por tipo que cresce a cada caso é o sinal clássico de que estender exige modificar.",
+        "Retornar void não tem relação com OCP.",
+        "Uma interface enxuta (um método) é até desejável — nada a ver com o smell de OCP."
+      ]
+    },
+    {
+      "pergunta": "Um DiscountCalculator tem: if (cliente.Tipo == VIP) ... else if (Normal) ... else if (Parceiro) ..., e cresce a cada novo tipo de cliente. Qual refatoração respeita OCP?",
+      "opcoes": [
+        "Transformar os if em um switch equivalente",
+        "Criar uma IDiscountPolicy e uma implementação por tipo de cliente, injetada onde é usada",
+        "Mover os if para um método estático compartilhado",
+        "Adicionar um parâmetro booleano isVip ao método"
+      ],
+      "correta": 1,
+      "explicacao": "Strategy: cada regra de desconto vira uma implementação de IDiscountPolicy; um tipo novo = uma classe nova registrada, sem editar o resto.",
+      "feedbacks": [
+        "Trocar if por switch é o MESMO smell com outra roupa — continua editando a classe a cada tipo.",
+        "Correto: encapsular cada regra atrás de IDiscountPolicy e injetá-la fecha a modificação e abre a extensão.",
+        "Mover para um método estático não elimina o if que cresce por tipo; só muda de lugar.",
+        "Uma flag booleana piora: acopla mais casos ainda dentro do mesmo método."
+      ]
+    },
+    {
+      "pergunta": "Depois de refatorar Shape para que cada forma implemente Area(), o que caracteriza esse design como aderente ao OCP?",
+      "opcoes": [
+        "O calculador ficou com um switch maior e mais completo",
+        "Adicionar uma forma nova = criar uma classe nova, sem editar as formas ou o chamador existentes",
+        "Todas as formas foram unificadas em uma única classe gigante",
+        "O cálculo de área foi movido para o banco de dados"
+      ],
+      "correta": 1,
+      "explicacao": "Extensão via nova classe, modificação zero no código existente: exatamente aberto para extensão e fechado para modificação.",
+      "feedbacks": [
+        "Se sobrou um switch, a refatoração não terminou — o objetivo é eliminá-lo, não engordá-lo.",
+        "Isso: nova forma é uma classe nova; Circle, Rectangle e o chamador permanecem intactos.",
+        "Unificar tudo numa classe gigante é o oposto — cria uma God class e mantém o acoplamento.",
+        "Mover cálculo para o banco não tem relação com OCP e ainda espalha lógica indevidamente."
+      ]
+    },
+    {
+      "pergunta": "Como o padrão Strategy se relaciona com o DIP (Inversão de Dependência)?",
+      "opcoes": [
+        "São conceitos sem qualquer relação",
+        "A classe que usa a Strategy depende da abstração (a interface), não das implementações concretas — que chegam por injeção",
+        "Strategy proíbe o uso de injeção de dependência",
+        "DIP exige que Strategy use apenas métodos estáticos"
+      ],
+      "correta": 1,
+      "explicacao": "OCP via Strategy depende de uma abstração injetada; depender da abstração em vez do concreto é exatamente DIP.",
+      "feedbacks": [
+        "Têm relação direta: OCP via Strategy costuma se apoiar em DIP.",
+        "Correto: o serviço depende da interface (abstração) e recebe a implementação por injeção — isso é DIP.",
+        "Ao contrário: injeção de dependência é justamente como a Strategy é ligada na prática.",
+        "DIP não impõe métodos estáticos; aliás, estáticos dificultam a injeção."
+      ]
+    },
+    {
+      "pergunta": "O que significa dizer que OCP se aplica a 'pontos de variação'?",
+      "opcoes": [
+        "Que você deve tentar estar fechado contra absolutamente qualquer mudança possível",
+        "Que você identifica o eixo em que antecipa variação e fecha a modificação só nesse eixo",
+        "Que só se aplica OCP a variáveis locais",
+        "Que todo ponto do código deve virar uma interface"
+      ],
+      "correta": 1,
+      "explicacao": "Não dá para fechar contra tudo; escolhe-se o eixo que realmente varia (ex.: formato, transportadora) e abstrai-se ali.",
+      "feedbacks": [
+        "Impossível e indesejável: fechar contra tudo cria um sistema irreconhecível de tão abstrato.",
+        "Isso: OCP é uma aposta consciente no eixo que vai mudar — você paga a indireção só onde a variação é real.",
+        "Não tem a ver com variáveis locais; 'ponto de variação' é um eixo de mudança do domínio.",
+        "Transformar todo ponto em interface é over-engineering — o oposto do que OCP pede."
+      ]
+    },
+    {
+      "pergunta": "Um sistema tem uma única forma de exportar (PDF), estável há dois anos, sem pedido de outros formatos. Introduzir agora uma IExporter com só PdfExporter é:",
+      "opcoes": [
+        "Uma aplicação exemplar de OCP",
+        "Provavelmente over-engineering (YAGNI): abstração para uma variação que não existe",
+        "Uma violação de SRP",
+        "Necessário para o código compilar"
+      ],
+      "correta": 1,
+      "explicacao": "Sem variação real, a abstração só adiciona indireção e custo, sem colher benefício. Um método concreto seria mais simples e suficiente.",
+      "feedbacks": [
+        "OCP bem aplicado responde a uma variação real; aqui não há variação, então não é exemplar.",
+        "Correto: é YAGNI — flexibilidade que ninguém pediu, pagando o custo sem retorno.",
+        "Não é sobre SRP; o problema é abstrair um eixo que não varia.",
+        "O código compila sem a interface; ela não é um requisito técnico."
+      ]
+    },
+    {
+      "pergunta": "Qual é a orientação da 'Rule of Three' para decidir quando abstrair via OCP?",
+      "opcoes": [
+        "Sempre abstrair já na primeira implementação, por precaução",
+        "Fazer simples na 1ª vez e refatorar para a abstração quando o padrão de variação se prova (por volta da 3ª ocorrência)",
+        "Nunca abstrair, deixando o if-else crescer indefinidamente",
+        "Abstrair apenas se o time tiver ao menos três pessoas"
+      ],
+      "correta": 1,
+      "explicacao": "Na 3ª variação o eixo de mudança está evidente; a abstração passa a ser baseada em evidência, não em especulação.",
+      "feedbacks": [
+        "Abstrair na 1ª vez costuma ser especulação (YAGNI) — você ainda não sabe se vai variar.",
+        "Isso: simples primeiro; abstraia quando a repetição prova o eixo de variação (a 3ª ocorrência).",
+        "Deixar crescer para sempre reintroduz a rigidez e a fragilidade — o extremo oposto.",
+        "O número de pessoas no time não define o momento de abstrair; a evidência de variação define."
+      ]
+    },
+    {
+      "pergunta": "Rigidez (não conseguir estender sem editar tudo) e over-engineering (abstrair o que não varia) são, em relação a OCP:",
+      "opcoes": [
+        "Problemas totalmente independentes",
+        "Os dois lados de errar a DOSE — ambos afastam do objetivo de mudança barata",
+        "Sinônimos exatos",
+        "Sempre desejáveis em código profissional"
+      ],
+      "correta": 1,
+      "explicacao": "OCP serve à mudança barata. Rigidez custa caro para estender; over-engineering custa caro para entender. Os dois erram a dose.",
+      "feedbacks": [
+        "São ligados: ambos decorrem de calibrar mal o quanto abstrair.",
+        "Correto: acertar OCP é acertar a dose entre rígido demais e abstrato demais.",
+        "Não são sinônimos: um é falta de abstração, o outro é excesso — extremos opostos.",
+        "Nenhum dos dois é desejável; ambos aumentam o custo de manter o sistema."
+      ]
+    },
+    {
+      "pergunta": "Ao refatorar um switch(order.Carrier) que decidia como CALCULAR o frete de cada transportadora, o que é aceitável manter num único ponto de composição?",
+      "opcoes": [
+        "A lógica completa de cálculo de cada transportadora, replicada",
+        "O mapeamento Carrier -> estratégia (via DI ou fábrica), enquanto o comportamento de cada frete vive em sua própria classe",
+        "Um switch de comportamento em cada camada da aplicação",
+        "Nada: mesmo o mapeamento de seleção viola OCP e deve ser eliminado"
+      ],
+      "correta": 1,
+      "explicacao": "O switch de comportamento (como calcular) é o que viola OCP e deve sumir. Um mapeamento de seleção centralizado (Carrier->estratégia) é aceitável.",
+      "feedbacks": [
+        "Replicar a lógica de cálculo é justamente o smell que estamos eliminando.",
+        "Correto: o comportamento vai para classes; só a SELEÇÃO fica centralizada num ponto de composição (DI/fábrica).",
+        "Espalhar switch de comportamento por várias camadas é o pior cenário — multiplica a violação.",
+        "Um ponto único de seleção não viola OCP; ele existe para isso e muda só quando entra uma transportadora."
+      ]
+    },
+    {
+      "pergunta": "Dado um ShippingCalculator refatorado para Strategy, o que acontece quando entra a transportadora 'Total Express'?",
+      "opcoes": [
+        "É preciso editar todas as estratégias existentes",
+        "Cria-se uma classe TotalExpressShipping : IShippingStrategy e a registra; as classes existentes não são tocadas",
+        "É preciso reescrever o ShippingCalculator do zero",
+        "É preciso adicionar um novo case a um switch central"
+      ],
+      "correta": 1,
+      "explicacao": "Uma classe nova + um registro no ponto de composição. Aberto para extensão, fechado para modificação — o teste de OCP passa.",
+      "feedbacks": [
+        "Editar as estratégias existentes seria justamente o que OCP evita.",
+        "Correto: nova estratégia = classe nova + registro; nada do que já funcionava é editado.",
+        "Reescrever o calculador contraria o objetivo — ele deve permanecer estável.",
+        "Se ainda houvesse um switch central para editar, a refatoração para OCP não teria se concluído."
+      ]
+    }
+  ]
+}

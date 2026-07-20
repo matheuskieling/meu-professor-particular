@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 01: Fundamentos de Design & por que SOLID existe",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Por que SOLID e o bom design de software importam, na prática?",
+      "opcoes": [
+        "Porque deixam o código mais bonito e agradam o linter",
+        "Porque baixam o custo de MUDAR o código, que é lido/mudado muito mais do que escrito",
+        "Porque fazem o programa rodar mais rápido em produção",
+        "Porque reduzem o número de linhas do projeto"
+      ],
+      "correta": 1,
+      "explicacao": "O custo real de um sistema está na manutenção. Design bom = mudança barata e segura.",
+      "feedbacks": [
+        "'Bonito' é subjetivo e não é o ponto; SOLID serve à mudança barata, não à estética ou ao linter.",
+        "Isso: como código é lido/mudado mais do que escrito, o valor está em tornar a próxima mudança barata.",
+        "SOLID é sobre estrutura interna (design), não sobre performance de runtime — não é essa a promessa.",
+        "SOLID pode até AUMENTAR linhas (mais classes); a métrica é custo de mudança, não contagem de linhas."
+      ]
+    },
+    {
+      "pergunta": "Um ajuste pequeno de requisito obriga você a mexer em cinco arquivos e recompilar meio sistema. Que sintoma de design podre é esse?",
+      "opcoes": [
+        "Fragilidade",
+        "Rigidez",
+        "Imobilidade",
+        "Coesão"
+      ],
+      "correta": 1,
+      "explicacao": "Rigidez: mudar é caro porque uma alteração vira cascata de outras.",
+      "feedbacks": [
+        "Fragilidade é quando a mudança QUEBRA coisas inesperadas — aqui a mudança é só cara/cascateada, não quebra.",
+        "Correto: rigidez é o design difícil de mudar, em que um ajuste dispara uma cascata de mudanças.",
+        "Imobilidade é não conseguir REUSAR uma parte; aqui o problema é o custo de mudar, não de reaproveitar.",
+        "Coesão não é um sintoma de design podre — é uma propriedade desejável (queremos alta)."
+      ]
+    },
+    {
+      "pergunta": "Existe um módulo de envio de e-mail ótimo, mas você não consegue reusá-lo em outro projeto porque ele vem colado a banco, config e vinte dependências. Que sintoma é esse?",
+      "opcoes": [
+        "Viscosidade",
+        "Rigidez",
+        "Imobilidade",
+        "Fragilidade"
+      ],
+      "correta": 2,
+      "explicacao": "Imobilidade: há algo reaproveitável, mas o custo de desgrudá-lo é alto demais.",
+      "feedbacks": [
+        "Viscosidade é o design premiar a gambiarra; aqui o problema é não conseguir extrair/reusar a parte boa.",
+        "Rigidez é sobre o custo de MUDAR; aqui a parte funciona bem, o problema é reaproveitá-la em outro lugar.",
+        "Correto: imobilidade é ter algo útil preso a dependências, caro demais para desacoplar e reusar.",
+        "Fragilidade é mudar aqui e quebrar ali; não é o caso — a dor é o acoplamento que impede o reuso."
+      ]
+    },
+    {
+      "pergunta": "Sobre acoplamento e coesão, qual afirmação está CORRETA?",
+      "opcoes": [
+        "Acoplamento é o foco de uma classe; coesão é a dependência entre classes",
+        "Queremos acoplamento baixo (partes independentes) e coesão alta (partes focadas)",
+        "Queremos acoplamento alto para as classes conversarem bem",
+        "Coesão e acoplamento são sinônimos"
+      ],
+      "correta": 1,
+      "explicacao": "Baixo acoplamento + alta coesão é a régua-mestra de todo o SOLID.",
+      "feedbacks": [
+        "As definições estão trocadas: acoplamento é a DEPENDÊNCIA entre partes; coesão é o FOCO de uma parte.",
+        "Isso: baixo acoplamento (como peças de LEGO) e alta coesão (cada unidade focada numa ideia).",
+        "Acoplamento alto é justamente o que evitamos — ele causa fragilidade e imobilidade.",
+        "São conceitos diferentes: um mede dependência entre unidades, o outro o foco de uma unidade."
+      ]
+    },
+    {
+      "pergunta": "Uma classe `RelatorioUtils` acumula formatação de PDF, consulta ao banco, cálculo de impostos e envio de e-mail. Qual smell é, e qual princípio o ataca primeiro?",
+      "opcoes": [
+        "Interface gorda → ISP",
+        "Classe God / baixa coesão → SRP",
+        "switch sobre tipo → OCP",
+        "Herança quebrada → LSP"
+      ],
+      "correta": 1,
+      "explicacao": "Muitas responsabilidades que mudam por razões diferentes = classe God (baixa coesão), atacada pelo SRP.",
+      "feedbacks": [
+        "Interface gorda é sobre uma INTERFACE com métodos demais; aqui o problema é uma CLASSE fazendo tudo.",
+        "Correto: várias razões de mudar na mesma classe é o smell da classe God — o SRP separa por responsabilidade.",
+        "switch sobre tipo é outro smell (cresce a cada caso); não é o que descreve essa classe multifunção.",
+        "LSP trata de subtipos substituíveis; não há herança nem substituição em jogo aqui."
+      ]
+    },
+    {
+      "pergunta": "Você encontra `p.Tipo switch { \"pf\" => ..., \"pj\" => ..., _ => throw ... }` que ganha um novo `case` toda vez que surge um tipo de cliente. Qual princípio isso viola e o que a correção faz?",
+      "opcoes": [
+        "DIP — passaria a instanciar tudo com new",
+        "OCP — trocaria o switch por polimorfismo (uma classe por tipo), aberto a extensão sem editar",
+        "LSP — faria o subtipo lançar exceção",
+        "ISP — quebraria a interface em duas"
+      ],
+      "correta": 1,
+      "explicacao": "Editar um método a cada tipo novo viola o Open/Closed. Polimorfismo deixa-o aberto a extensão e fechado a modificação.",
+      "feedbacks": [
+        "DIP trata de depender de abstrações; e usar 'new' pra tudo pioraria o acoplamento, não corrige o switch.",
+        "Correto: o OCP substitui o switch por polimorfismo — adicionar um tipo vira adicionar uma classe, não editar o método.",
+        "LSP é sobre substituibilidade de subtipos; lançar exceção num subtipo é justamente o que ele PROÍBE.",
+        "ISP trata de interfaces gordas; não é o smell aqui — o problema é o switch que cresce por modificação."
+      ]
+    },
+    {
+      "pergunta": "`Notificar(Cliente c, bool porSms)` usa o booleano pra escolher entre e-mail e SMS dentro do método. Que smell é esse?",
+      "opcoes": [
+        "new espalhado",
+        "Flag booleana de comportamento (prenuncia OCP)",
+        "Interface gorda",
+        "Herança que quebra expectativa"
+      ],
+      "correta": 1,
+      "explicacao": "Um booleano que liga/desliga caminhos de comportamento pede comportamentos separados — território do OCP.",
+      "feedbacks": [
+        "'new espalhado' é instanciar dependências concretas; aqui o smell é o booleano que controla o comportamento.",
+        "Isso: a flag booleana acende caminhos de comportamento dentro do método — o OCP separaria isso em estratégias.",
+        "Interface gorda é ter uma interface com métodos demais; não é o caso deste método único com flag.",
+        "Não há herança nem substituição de subtipo neste trecho; o smell é a flag de comportamento."
+      ]
+    },
+    {
+      "pergunta": "Dentro de `PedidoService.Finalizar()` há `new SmtpEmailSender(...)` e `new SqlConnection(...)`. Qual é a consequência prática desse acoplamento?",
+      "opcoes": [
+        "Nenhuma; instanciar dependências assim é a forma recomendada",
+        "Fica impossível testar/trocar as dependências sem servidores reais — alto acoplamento (DIP resolve)",
+        "O código fica mais coeso",
+        "Melhora a substituibilidade de subtipos (LSP)"
+      ],
+      "correta": 1,
+      "explicacao": "Instanciar concretos com new gruda a classe às implementações. O DIP inverte: dependa de abstrações injetadas.",
+      "feedbacks": [
+        "Não é recomendado: o 'new' concreto grudado impede teste isolado e troca de implementação.",
+        "Correto: sem abstração injetada você precisa de banco e SMTP reais pra testar — o DIP corrige com dependências invertidas.",
+        "É o oposto: misturar criação de infraestrutura na regra de negócio REDUZ a coesão.",
+        "LSP é sobre subtipos substituíveis; instanciar concretos não tem relação com substituibilidade."
+      ]
+    },
+    {
+      "pergunta": "Qual é a associação CORRETA de cada letra do SOLID?",
+      "opcoes": [
+        "S=Security, O=Optimization, L=Logging, I=Injection, D=Data",
+        "S=Single Responsibility, O=Open/Closed, L=Liskov Substitution, I=Interface Segregation, D=Dependency Inversion",
+        "S=Simplicity, O=Objects, L=Layers, I=Inheritance, D=Design",
+        "S=Static, O=Override, L=Lambda, I=Immutable, D=Delegate"
+      ],
+      "correta": 1,
+      "explicacao": "SRP, OCP, LSP, ISP, DIP — os cinco princípios que os próximos módulos abrem um a um.",
+      "feedbacks": [
+        "Nada disso; são termos aleatórios que não correspondem aos princípios SOLID.",
+        "Correto: essa é a expansão canônica das cinco letras de SOLID.",
+        "Palavras que começam com as letras certas, mas não são os princípios — cuidado com pegadinhas assim.",
+        "São recursos de linguagem C#, não os princípios de design SOLID."
+      ]
+    },
+    {
+      "pergunta": "Quem consolidou os princípios SOLID e quem cunhou o acrônimo?",
+      "opcoes": [
+        "Barbara Liskov consolidou tudo sozinha",
+        "Robert C. Martin (Uncle Bob) consolidou; Michael Feathers cunhou o acrônimo",
+        "A comunidade Java os criou em 2010",
+        "A Microsoft os definiu junto com o .NET"
+      ],
+      "correta": 1,
+      "explicacao": "Uncle Bob reuniu ideias de vários autores; Feathers reordenou as iniciais no acrônimo SOLID.",
+      "feedbacks": [
+        "Liskov contribuiu com o 'L' (substituição), mas não consolidou os cinco nem cunhou o acrônimo.",
+        "Isso: Uncle Bob consolidou os princípios e Michael Feathers criou o acrônimo memorável.",
+        "Os princípios são anteriores a 2010 e não são de 'uma comunidade Java' — foram destilados por Uncle Bob.",
+        "Não são um padrão da Microsoft; são princípios gerais de OO, independentes de linguagem/fornecedor."
+      ]
+    },
+    {
+      "pergunta": "Num microserviço simples que muda uma vez por ano, você criou `IParser` com um único implementador e três fábricas 'por precaução'. O que houve?",
+      "opcoes": [
+        "Aplicou SOLID corretamente; toda interface ajuda sempre",
+        "Over-engineering: abstração especulativa sem dor real, violando o espírito do YAGNI",
+        "Melhorou a coesão do serviço",
+        "Reduziu o acoplamento de forma sempre vantajosa"
+      ],
+      "correta": 1,
+      "explicacao": "Princípios são heurísticas a serviço da mudança barata. Abstrair sem necessidade real é over-engineering; YAGNI é o antídoto.",
+      "feedbacks": [
+        "Nem toda interface ajuda: uma com um único implementador, sem mudança à vista, só adiciona indireção.",
+        "Correto: aplicar princípio por especulação (sem dor/mudança provável) é over-engineering — YAGNI diz pra não fazer.",
+        "Não melhora coesão; só espalha a lógica por camadas anêmicas que se chamam em cadeia.",
+        "A indireção tem custo; sem benefício real (mudança provável), o 'baixo acoplamento' aqui não compensa."
+      ]
+    },
+    {
+      "pergunta": "Um code smell no seu código significa que:",
+      "opcoes": [
+        "Há um bug: o programa vai falhar em produção",
+        "Há um sinal na superfície de um possível problema de DESIGN — o programa funciona, mas a próxima mudança pode doer",
+        "O código está formatado errado (indentação/estilo)",
+        "Falta um comentário explicando o método"
+      ],
+      "correta": 1,
+      "explicacao": "Smell não é bug: o código roda. É um alerta de design que sugere que a próxima mudança será mais cara.",
+      "feedbacks": [
+        "Smell não é bug — o programa funciona; é um risco de design, não uma falha de execução garantida.",
+        "Isso: o smell é um indício de problema estrutural; o código roda, mas mudar depois tende a doer.",
+        "Estilo/indentação é outra coisa (formatação); smell é sobre a estrutura/design, não sobre aparência.",
+        "Falta de comentário pode ser um problema menor, mas não é o que define um code smell de design."
+      ]
+    }
+  ]
+}

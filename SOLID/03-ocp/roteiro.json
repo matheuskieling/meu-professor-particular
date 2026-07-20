@@ -1,0 +1,151 @@
+{
+  "modulo": "03",
+  "titulo": "OCP — Aberto para Extensão, Fechado para Modificação",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que vamos fazer neste módulo",
+      "pontos": [
+        "Objetivo: aprender a adicionar comportamento novo SEM editar código já testado e em produção",
+        "Formato: eu explico, você pergunta à vontade, e a gente avança quando fizer sentido",
+        "O vilão do módulo: o switch/if-else que cresce em cima de um 'tipo' a cada requisito novo",
+        "Ao fim: prática (refatorar um switch para polimorfismo/Strategy), quiz e prova"
+      ],
+      "checkpoint": "Confirme que o aluno está pronto pra começar e topa o formato conversado",
+      "ref": "03-ocp/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "A definição: estender sem modificar",
+      "pontos": [
+        "OCP (Bertrand Meyer, popularizado pelo Uncle Bob): entidades devem ser abertas para EXTENSÃO e fechadas para MODIFICAÇÃO",
+        "Traduzindo: comportamento novo entra criando código NOVO, não editando código velho que já funciona",
+        "Código testado e em produção é um ativo — reabri-lo pra encaixar um caso novo é risco de regressão",
+        "Analogia da tomada: você pluga um aparelho novo sem reabrir a parede; a interface (a tomada) é fechada, o que pluga nela é aberto",
+        "A régua do Módulo 01: OCP baixa acoplamento e sobe coesão — cada comportamento fica no seu próprio lugar"
+      ],
+      "checkpoint": "Pergunte se ficou clara a distinção 'estender (código novo)' x 'modificar (editar o velho)'",
+      "ref": "03-ocp/teoria.md#1-a-definicao-aberto-para-extensao-fechado-para-modificacao"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "O smell central: o switch/if que cresce por tipo",
+      "pontos": [
+        "O cheiro clássico: um switch(shape.Type) ou if em cima de um enum/string de 'tipo' de coisa",
+        "Exemplos: AreaCalculator com switch por forma; DiscountCalculator com if por tipo de cliente; relatório com if(format=='PDF') else if('CSV')",
+        "Sintoma: cada tipo novo obriga a EDITAR a mesma classe — e um erro ali quebra os tipos que já funcionavam",
+        "Isso é rigidez + fragilidade (Módulo 01) na veia: a classe vira um ímã de modificação",
+        "Sinal de alerta: a lista de casos só cresce, nunca fecha — e o mesmo switch reaparece em vários lugares"
+      ],
+      "checkpoint": "Peça pro aluno descrever por que 'adicionar um Triangle' virou 'editar o AreaCalculator' — e o risco disso",
+      "ref": "03-ocp/teoria.md#2-o-smell-central-o-switch-que-cresce-por-tipo"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "A solução: polimorfismo e abstração (antes/depois em C#)",
+      "pontos": [
+        "A cura: mover o comportamento pra dentro de cada tipo, atrás de uma abstração",
+        "Antes: switch(shape.Type) decide a área; o tipo é um dado burro (enum) e o cálculo mora fora",
+        "Depois: abstract class Shape { abstract double Area(); } (ou interface IShape) e cada forma implementa a sua Area()",
+        "O calculador some ou vira uma linha: shape.Area() — o polimorfismo faz o 'switch' por você, em runtime",
+        "Adicionar um Triangle = criar UMA classe nova que implementa Area(); nada no calculador é tocado (OCP na prática)"
+      ],
+      "checkpoint": "Confirme que o aluno enxerga: o switch virou classes; estender = nova classe, não editar a antiga",
+      "ref": "03-ocp/teoria.md#3-a-solucao-polimorfismo-e-abstracao"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Strategy + injeção; pontos de variação",
+      "pontos": [
+        "Strategy é a materialização mais comum de OCP: encapsular 'o que varia' atrás de uma interface e injetá-la",
+        "Ex.: IDiscountPolicy, IShippingStrategy, IExporter — comportamento novo = nova implementação registrada no container de DI",
+        "Liga com DIP (Módulo 06): a classe depende da abstração, não das implementações concretas",
+        "'Ponto de variação': OCP se aplica ONDE você antecipa mudança — você escolhe os eixos, não fecha contra tudo",
+        "Não dá pra estar fechado contra TODA mudança; a arte é prever o eixo certo (o tipo de forma, a regra de desconto) e abstrair só ele"
+      ],
+      "checkpoint": "Pergunte qual seria o 'ponto de variação' num sistema de frete e como o Strategy o isolaria",
+      "ref": "03-ocp/teoria.md#4-strategy-injecao-e-pontos-de-variacao"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Dosagem: OCP prematuro, YAGNI e a Rule of Three",
+      "pontos": [
+        "O perigo: OCP prematuro = abstração especulativa = over-engineering (YAGNI — You Aren't Gonna Need It)",
+        "Interface + hierarquia pra algo que NUNCA variou é PIOR que um if simples: mais indireção, mais arquivos, menos clareza",
+        "Regra prática: da PRIMEIRA vez, escreva simples (até o if está ok); refatore pra OCP quando o padrão EMERGE",
+        "Rule of Three: na segunda/terceira variação, quando o eixo de mudança fica evidente, aí sim abstraia",
+        "OCP se apoia em polimorfismo (LSP, Módulo 04) e abstrações (DIP, Módulo 06) — mas serve à mudança barata, não ao ego arquitetural"
+      ],
+      "checkpoint": "Peça pro aluno decidir: um relatório que só exporta PDF (e nunca mudou) merece uma IExporter agora? Por quê?",
+      "ref": "03-ocp/teoria.md#5-dosagem-ocp-prematuro-yagni-e-a-rule-of-three"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "Recap da teoria + checagem de entendimento",
+      "pontos": [
+        "Recapitular: definição (estender sem modificar), o smell do switch por tipo, a cura (polimorfismo/Strategy)",
+        "Fixar a dosagem: simples primeiro, abstrair quando o padrão emerge (Rule of Three)",
+        "Rodar mentalmente as 5 perguntas de checagem da teoria"
+      ],
+      "checkpoint": "Antes de seguir, pergunte: 'podemos passar para a prática de refatoração?'",
+      "ref": "03-ocp/teoria.md#checagem-de-entendimento"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Refatorar um switch crescente para polimorfismo/Strategy",
+      "pontos": [
+        "Vou apresentar um trecho de C# com um switch/if-else que cresce por tipo (o smell do módulo)",
+        "Sua missão: identificar o eixo de variação e refatorar pra abstração + implementações",
+        "Passo a passo: extrair a abstração, mover cada caso pra sua classe, deixar o chamador polimórfico",
+        "Fechar discutindo a dosagem: essa abstração se justifica aqui? Onde ela seria over-engineering?"
+      ],
+      "acao": "Apresentar o código no chat, deixar o aluno propor a refatoração, e conduzir/criticar passo a passo até a solução",
+      "checkpoint": "Confirme que o aluno eliminou o switch, adicionou um caso novo SEM tocar no chamador, e sabe justificar a dosagem",
+      "ref": "03-ocp/pratica.md#o-codigo-para-refatorar"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 engine/session.py start SOLID/apps/modulo-03/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "SOLID/apps/modulo-03/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 04 (LSP) após passar"
+      ],
+      "acao": "Rodar: python3 engine/session.py start SOLID/provas/modulo-03/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 04 (LSP); se não, revise os pontos errados",
+      "ref": "SOLID/provas/modulo-03/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 03",
+      "pontos": [
+        "Recap do que dominou: estender sem modificar, matar o switch por tipo, Strategy + injeção, e dosar (YAGNI/Rule of Three)",
+        "OCP se apoia em polimorfismo (LSP) e abstrações (DIP) — os próximos módulos fecham esse triângulo",
+        "Próximo: Módulo 04 — LSP (Substituição de Liskov), que garante que seus subtipos realmente substituem o supertipo"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 04 (LSP) ou parar por aqui",
+      "ref": "SOLID/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

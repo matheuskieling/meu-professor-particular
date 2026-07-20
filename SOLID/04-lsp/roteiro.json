@@ -1,0 +1,158 @@
+{
+  "modulo": "04",
+  "titulo": "LSP — Liskov Substitution Principle (Substituição de Liskov)",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que vamos fazer neste módulo",
+      "pontos": [
+        "Objetivo: dominar o L do SOLID — a Substituição de Liskov — e saber quando a herança é honesta",
+        "Ideia-chave: um subtipo deve poder substituir o supertipo SEM surpresas para quem usa a abstração",
+        "Aviso importante: LSP é sobre COMPORTAMENTO (contrato), não sobre a taxonomia do mundo real",
+        "Formato: eu explico, você pergunta à vontade, e a gente avança quando fizer sentido",
+        "Ao fim: prática (refatorar uma hierarquia que viola LSP em C#), quiz e prova"
+      ],
+      "checkpoint": "Confirme que o aluno está pronto pra começar e se topa o formato conversado",
+      "ref": "04-lsp/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "A definição: substituibilidade comportamental",
+      "pontos": [
+        "Barbara Liskov (1988): se S é subtipo de T, objetos de T podem ser trocados por objetos de S sem quebrar a corretude do programa",
+        "Em prático: quem depende da abstração (o supertipo) não pode ter surpresas ao receber um subtipo",
+        "O subtipo precisa HONRAR o contrato do supertipo — mesmas garantias, mesmo comportamento esperado",
+        "Não basta compilar: substituir tem que continuar CORRETO em tempo de execução",
+        "Ligação com OCP (Módulo 03): LSP é o que faz o polimorfismo do OCP funcionar de verdade; sem LSP, estender via subtipo introduz bugs"
+      ],
+      "checkpoint": "Pergunte o que significa 'sem surpresas para quem usa a abstração' na prática",
+      "ref": "04-lsp/teoria.md#1-a-definição-substituibilidade-comportamental"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "O clássico Retângulo/Quadrado em C#",
+      "pontos": [
+        "Na geometria, um quadrado É-UM retângulo — então parece natural fazer Square : Rectangle",
+        "Para manter os lados iguais, Square sobrescreve Width/Height: setar um também muda o outro",
+        "Isso QUEBRA quem espera o contrato do retângulo: r.Width = 5; r.Height = 4; Area deveria ser 20",
+        "Com um Square por baixo, setar Height=4 zera o Width para 4 → Area vira 16, não 20",
+        "A herança falha mesmo sendo 'verdade' na geometria: o problema é comportamental, não taxonômico",
+        "Lição central: 'é-um' no mundo real NÃO garante 'é substituível' no código"
+      ],
+      "checkpoint": "Peça pro aluno explicar por que Square : Rectangle quebra código que assume o contrato do retângulo",
+      "ref": "04-lsp/teoria.md#2-o-clássico-retânguloquadrado"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "Os contratos: pré-condições, pós-condições e invariantes",
+      "pontos": [
+        "Pré-condições NÃO podem ser fortalecidas no subtipo: ele não pode exigir MAIS do que o pai (ex.: recusar entradas que o pai aceitava)",
+        "Pós-condições NÃO podem ser enfraquecidas: o subtipo não pode entregar MENOS/pior que o pai (ex.: retornar null onde o pai nunca retornava)",
+        "Invariantes do supertipo devem ser preservadas pelo subtipo (o que o pai garante como sempre verdadeiro continua verdadeiro)",
+        "Regra da história: o subtipo não pode permitir mudanças de estado que o supertipo proíbe",
+        "No Retângulo/Quadrado é a invariante 'largura e altura são independentes' que o Square viola",
+        "Esses contratos são o teste objetivo de LSP: violou um deles, quebrou a substituibilidade"
+      ],
+      "checkpoint": "Pergunte a diferença entre fortalecer pré-condição e enfraquecer pós-condição, com um exemplo de cada",
+      "ref": "04-lsp/teoria.md#3-os-contratos-de-liskov"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Sinais de violação (smells): exceção, checagem de tipo, método esvaziado",
+      "pontos": [
+        "throw new NotImplementedException()/NotSupportedException em método herdado: o subtipo não honra o contrato (ex.: Penguin.Fly(), ReadOnlyList.Add())",
+        "Checagem de tipo no cliente (if (x is Penguin)) pra evitar chamar algo: o polimorfismo virou if/else disfarçado",
+        "Sobrescrita que 'esvazia' o método (corpo vazio ou no-op) quebrando o efeito que o pai prometia",
+        "Documentação do tipo 'não use este método nesta subclasse': se precisa avisar, o contrato já foi quebrado",
+        "Subtipo que retorna null onde o supertipo nunca retornava é enfraquecer a pós-condição na marra",
+        "Todos esses cheiros dizem a mesma coisa: o subtipo não é substituível pelo supertipo"
+      ],
+      "checkpoint": "Peça exemplos de smell de LSP que o aluno já viu em código real (exceção herdada, is/as, etc.)",
+      "ref": "04-lsp/teoria.md#4-sinais-de-violação-smells"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Herança x composição; 'é-um' honesto; dosagem",
+      "pontos": [
+        "Muitas violações de LSP somem quando você troca herança por composição ou por interfaces mais estreitas (liga com ISP)",
+        "'É-um' (herança) exige substituibilidade COMPORTAMENTAL; se ela não existe, prefira 'tem-um'/'comporta-se-como'",
+        "Retângulo/Quadrado: sem herança mútua — ou tipos imutáveis independentes, ou uma abstração Shape com Area()",
+        "Bird/Penguin: separe a capacidade (IFlyingBird) do tipo base; nem todo pássaro voa",
+        "Dosagem: LSP NÃO proíbe herança — exige que ela seja honesta; não caia no extremo de banir herança sempre",
+        "Evite hierarquias profundas e especulativas: herança 'só por reuso' costuma cobrar a fatura em LSP depois"
+      ],
+      "checkpoint": "Pergunte como reformular Bird/Penguin e Retângulo/Quadrado sem violar LSP, e quando herança ainda é OK",
+      "ref": "04-lsp/teoria.md#5-herança-x-composição-e-a-dosagem"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "Recap da teoria + checagem de entendimento",
+      "pontos": [
+        "Recapitular: substituibilidade comportamental; Retângulo/Quadrado; pré/pós-condições e invariantes; smells; herança x composição",
+        "Amarrar com OCP: LSP é o que sustenta o polimorfismo em que o OCP se apoia",
+        "Rodar mentalmente as perguntas de checagem da teoria antes de partir pra prática"
+      ],
+      "checkpoint": "Antes de seguir, pergunte: 'podemos passar para a prática de refatoração?'",
+      "ref": "04-lsp/teoria.md#checagem-de-entendimento"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Refatorar uma hierarquia que viola LSP",
+      "pontos": [
+        "Vou te mostrar uma hierarquia em C# que viola LSP (Retângulo/Quadrado ou Bird/Penguin)",
+        "Passo 1: você identifica o contrato do supertipo que o subtipo quebra (qual invariante/pós-condição)",
+        "Passo 2: escreve o teste-cliente que passa com o pai e falha com o filho (a prova da violação)",
+        "Passo 3: propõe a correção — repensar a hierarquia, compor, ou usar uma interface estreita",
+        "Passo 4: checar a dosagem — não jogar fora herança legítima, só a herança desonesta",
+        "Eu conduzo com dicas progressivas e comparo sua solução com a de referência"
+      ],
+      "acao": "Conduzir a refatoração no chat: apresentar o código, guiar a identificação da violação de contrato e revisar a proposta do aluno",
+      "checkpoint": "Feche a prática confirmando que agora todo subtipo substitui o supertipo sem surpresas",
+      "ref": "04-lsp/pratica.md#o-código-de-partida"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 engine/session.py start SOLID/apps/modulo-04/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "SOLID/apps/modulo-04/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 05 (ISP) após passar"
+      ],
+      "acao": "Rodar: python3 engine/session.py start SOLID/provas/modulo-04/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 05; se não, revise os pontos errados",
+      "ref": "SOLID/provas/modulo-04/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 04",
+      "pontos": [
+        "Recap do que dominou: substituibilidade comportamental, contratos (pré/pós/invariantes), smells de LSP, herança honesta",
+        "LSP é o alicerce do polimorfismo do OCP: sem ele, extensões via subtipo escondem bugs",
+        "Próximo: Módulo 05 — ISP (Segregação de Interfaces): interfaces enxutas, não forçar implementar o que não se usa"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 05 ou parar por aqui",
+      "ref": "SOLID/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

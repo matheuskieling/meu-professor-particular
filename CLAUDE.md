@@ -122,3 +122,4 @@ arquivos Markdown. Convenções:
 | # | Curso | Diretório | Status |
 |---|-------|-----------|--------|
 | 1 | AWS & Cloud (mega intensivo) | `AWS/` | ✅ Completo — 19 módulos + simulados CLF-C02/SAA-C03 |
+| 2 | SOLID (design OO, exemplos em C#) | `SOLID/` | ✅ Completo — 7 módulos (fundamentos + 5 princípios + capstone) |

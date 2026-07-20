@@ -1,0 +1,156 @@
+{
+  "modulo": "06",
+  "titulo": "DIP — Inversão de Dependência (dependa de abstrações)",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que vamos fazer neste módulo",
+      "pontos": [
+        "Objetivo: parar de grudar a regra de negócio (alto nível) nos detalhes concretos (banco, e-mail, disco) e inverter a seta de dependência para uma abstração",
+        "Formato: eu explico, você pergunta à vontade, e a gente avança quando fizer sentido",
+        "O vilão do módulo: o 'new SqlOrderRepository()' escondido dentro do OrderService — a regra de negócio refém do detalhe",
+        "Vamos desembaraçar três siglas que quase todo mundo mistura: DIP (o princípio), DI (a técnica) e IoC (o padrão amplo)",
+        "Ao fim: prática (inverter as dependências de um serviço e registrar no container do .NET), quiz e prova"
+      ],
+      "checkpoint": "Confirme que o aluno está pronto pra começar e topa o formato conversado",
+      "ref": "06-dip/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "A definição: inverter a seta da dependência",
+      "pontos": [
+        "DIP tem duas partes: (a) módulos de alto nível NÃO devem depender de módulos de baixo nível — ambos dependem de ABSTRAÇÕES; (b) abstrações não dependem de detalhes; detalhes dependem de abstrações",
+        "Alto nível = a política, a regra de negócio (o que importa, o motivo do sistema existir); baixo nível = os detalhes de mecanismo (SQL, SMTP, arquivo, relógio)",
+        "'Inversão' = normalmente a seta de dependência aponta do alto nível PARA o detalhe concreto; o DIP a INVERTE: agora ela aponta do detalhe PARA a abstração que o alto nível definiu",
+        "Analogia da tomada: a lâmpada não é soldada na fiação; ela pluga num soquete (a abstração). O soquete é o contrato; a fiação e a lâmpada dependem dele, não uma da outra",
+        "A régua do Módulo 01: DIP é a técnica direta para BAIXAR ACOPLAMENTO ao concreto — a raiz da fragilidade e da imobilidade"
+      ],
+      "checkpoint": "Pergunte se ficou clara a ideia de 'inverter a seta': quem passa a depender de quem depois do DIP?",
+      "ref": "06-dip/teoria.md#1-a-definicao-inverter-a-seta-da-dependencia"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "O problema: o 'new' do concreto dentro do alto nível (antes em C#)",
+      "pontos": [
+        "O cheiro clássico: OrderService/NotificationService que dá 'new SqlOrderRepository()' e 'new SmtpEmailSender()' lá dentro",
+        "A regra de negócio (o que importa) fica REFÉM do detalhe (o mecanismo): pra existir, o serviço precisa saber SQL e SMTP",
+        "Três dores concretas: (1) não dá pra testar sem banco/servidor de e-mail reais — impossível trocar por um mock; (2) trocar de banco/provedor obriga a EDITAR o alto nível; (3) o alto nível recompila junto com o detalhe",
+        "Isso é o smell '`new` espalhado' do Módulo 01, e o acoplamento a concreto na veia",
+        "Mostrar o 'antes' em C#: o construtor sem parâmetros que instancia as dependências por conta própria"
+      ],
+      "checkpoint": "Peça pro aluno listar por que esse OrderService é difícil de testar — e o que exatamente impede o mock",
+      "ref": "06-dip/teoria.md#2-o-problema-o-new-do-concreto-dentro-do-alto-nivel"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "A inversão: interface + injeção por construtor (depois em C#)",
+      "pontos": [
+        "A cura: definir IOrderRepository/IEmailSender e receber a dependência por CONSTRUTOR (constructor injection) — nunca dar 'new' no concreto dentro do serviço",
+        "Ponto crucial: a ABSTRAÇÃO PERTENCE AO ALTO NÍVEL. É a regra de negócio que dita o contrato do que ela precisa (Salvar um pedido, Enviar um e-mail); o detalhe (SqlOrderRepository) apenas IMPLEMENTA esse contrato",
+        "Por isso a seta inverte: antes OrderService -> SqlOrderRepository; depois SqlOrderRepository -> IOrderRepository <- OrderService (o detalhe passa a depender da abstração)",
+        "Ganhos: no teste, injeto um FakeOrderRepository; em produção, o SqlOrderRepository; trocar de banco = nova implementação, sem tocar no serviço (isso é OCP, Módulo 03, sustentado pelo DIP)",
+        "Mostrar o 'depois' em C#: construtor recebe as interfaces; o serviço só conversa com o contrato"
+      ],
+      "checkpoint": "Confirme que o aluno enxerga por que a interface 'mora' no alto nível e como isso inverte a direção da dependência",
+      "ref": "06-dip/teoria.md#3-a-inversao-interface-injecao-por-construtor"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Desembaraçar DIP x DI x IoC + o container do .NET",
+      "pontos": [
+        "DIP = o PRINCÍPIO de design (dependa de abstrações). É o 'o quê' e o 'porquê'",
+        "Injeção de Dependência (DI) = a TÉCNICA de entregar as dependências DE FORA (por construtor/propriedade/método), em vez de instanciá-las dentro. É o 'como' mais comum de cumprir o DIP",
+        "Inversão de Controle (IoC) = o padrão mais amplo, o 'não me chame, eu te chamo' (Hollywood Principle): você entrega o controle do fluxo/criação ao framework. DI é UMA forma de IoC",
+        "Container IoC/DI = a FERRAMENTA que resolve o grafo de objetos pra você (ex.: Microsoft.Extensions.DependencyInjection do .NET)",
+        "No .NET: services.AddScoped<IOrderRepository, SqlOrderRepository>(); e o construtor do OrderService recebe IOrderRepository automaticamente quando o container o cria",
+        "Tempos de vida (pincelada): Transient (nova instância a cada resolução), Scoped (uma por request/escopo), Singleton (uma pra toda a app)",
+        "Deixar claro: usar o container é DI; o VALOR real vem de você ter respeitado o DIP no design. Sem DIP, o container só instancia acoplamento mais rápido"
+      ],
+      "checkpoint": "Peça pro aluno explicar, com as próprias palavras, a diferença entre DIP, DI e IoC — e onde o container entra",
+      "ref": "06-dip/teoria.md#4-desembaracar-dip-x-di-x-ioc-e-o-container-do-net"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Dosagem: interface só nas fronteiras que variam ou precisam de teste",
+      "pontos": [
+        "O perigo: criar interface pra TUDO. Abstração tem custo — indireção, um arquivo a mais, navegação pior no código (pular pra 'ir para a implementação')",
+        "Onde DIP VALE a pena: nas FRONTEIRAS de I/O e efeitos colaterais que variam ou precisam ser isoladas pra teste — banco, rede, arquivo, relógio (DateTime.Now), e-mail, fila, provedor externo",
+        "Onde NÃO vale: tipos estáveis de domínio e objetos de valor (um Money, um Endereco, um Pedido puro) — abstrair um record de valor é over-engineering",
+        "A regra de ouro: 'uma interface com uma única implementação que nunca vai variar e não é I/O' costuma ser abstração especulativa (YAGNI, Módulo 01)",
+        "Fio com os outros: DIP sustenta OCP (extensão via nova implementação), usa abstrações que devem respeitar LSP (Módulo 04) e, com ISP (Módulo 05), mantém essas abstrações ENXUTAS"
+      ],
+      "checkpoint": "Peça pro aluno decidir: um serviço que faz cálculo puro de imposto (sem I/O) e nunca variou merece uma ITaxCalculator agora? E um que chama uma API de câmbio?",
+      "ref": "06-dip/teoria.md#5-dosagem-interface-so-nas-fronteiras-que-variam-ou-precisam-de-teste"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "Recap da teoria + checagem de entendimento",
+      "pontos": [
+        "Recapitular: a inversão da seta, o smell do 'new' concreto no alto nível, a cura (interface no alto nível + injeção por construtor)",
+        "Fixar o desembaraço DIP (princípio) x DI (técnica) x IoC (padrão amplo) x container (ferramenta)",
+        "Fixar a dosagem: abstrair as fronteiras que variam/precisam de teste (I/O), não os tipos de valor estáveis",
+        "Rodar mentalmente as 5 perguntas de checagem da teoria"
+      ],
+      "checkpoint": "Antes de seguir, pergunte: 'podemos passar para a prática de refatoração?'",
+      "ref": "06-dip/teoria.md#checagem-de-entendimento"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Inverter as dependências de um OrderService e registrar no container",
+      "pontos": [
+        "Vou apresentar um OrderService que dá 'new' num repositório e num sender concretos lá dentro (o smell do módulo)",
+        "Sua missão: extrair as abstrações NO LADO DO ALTO NÍVEL, injetá-las por construtor e registrar as implementações no container do .NET",
+        "Passo a passo: identificar as fronteiras de I/O, definir as interfaces (o contrato que o serviço precisa), trocar o 'new' por parâmetro de construtor, e ligar tudo no AddScoped/AddSingleton",
+        "Fechar discutindo a dosagem: quais dessas dependências mereciam abstração e por quê — e onde criar interface seria over-engineering"
+      ],
+      "acao": "Apresentar o código no chat, deixar o aluno propor a inversão, e conduzir/criticar passo a passo até a solução",
+      "checkpoint": "Confirme que o aluno eliminou o 'new' do concreto, injetou por construtor, sabe registrar no container e distingue DI de DIP",
+      "ref": "06-dip/pratica.md#o-codigo-para-refatorar"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 engine/session.py start SOLID/apps/modulo-06/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "SOLID/apps/modulo-06/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 07 (Capstone) após passar"
+      ],
+      "acao": "Rodar: python3 engine/session.py start SOLID/provas/modulo-06/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 07 (Capstone); se não, revise os pontos errados",
+      "ref": "SOLID/provas/modulo-06/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 06",
+      "pontos": [
+        "Recap do que dominou: inverter a seta pra abstração, matar o 'new' concreto no alto nível, injetar por construtor, e desembaraçar DIP/DI/IoC/container",
+        "Fixar a dosagem: DIP nas fronteiras que variam/precisam de teste (I/O), não em tudo",
+        "Você fechou os 5 princípios (SRP, OCP, LSP, ISP, DIP) — o DIP amarra o triângulo com OCP e LSP e enxuga com ISP",
+        "Próximo: Módulo 07 — Capstone, refatorar um sistema pequeno aplicando os 5 juntos, dosando e enxergando a ponte para Design Patterns"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 07 (Capstone) ou parar por aqui",
+      "ref": "SOLID/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

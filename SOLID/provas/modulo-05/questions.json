@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 05: ISP — Segregação de Interfaces",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Qual afirmação captura o Interface Segregation Principle?",
+      "opcoes": [
+        "Prefira sempre uma única interface genérica que atenda a todos os casos",
+        "Nenhum cliente deve ser forçado a depender de métodos que não usa; prefira interfaces por papel",
+        "Toda interface deve ter exatamente um método",
+        "Interfaces devem crescer conforme novos requisitos aparecem"
+      ],
+      "correta": 1,
+      "explicacao": "ISP prega interfaces enxutas, específicas ao papel do cliente, para ninguém depender do que não usa.",
+      "feedbacks": [
+        "Ao contrário: uma interface genérica de tudo é justamente a 'fat interface' que o ISP combate.",
+        "Exato: o núcleo do ISP é não forçar dependência em métodos não usados, via role interfaces.",
+        "Não. Uma interface por método é o EXTREMO errado (over-engineering); o critério é papel, não contagem.",
+        "Fazer a interface crescer a cada requisito é o caminho para a fat interface — o oposto do ISP."
+      ]
+    },
+    {
+      "pergunta": "No enunciado do ISP, o termo 'cliente' se refere a:",
+      "opcoes": [
+        "Apenas o cliente pagante do software",
+        "Quem depende da interface — tanto quem a chama quanto quem a implementa",
+        "Somente a classe base numa hierarquia de herança",
+        "O banco de dados que persiste os objetos"
+      ],
+      "correta": 1,
+      "explicacao": "Cliente = quem depende da interface: o consumidor que a chama e a classe que precisa implementá-la.",
+      "feedbacks": [
+        "Não é o cliente comercial; é um termo de design: quem depende da interface no código.",
+        "Correto: os dois lados são clientes — quem chama e quem implementa dependem do contrato.",
+        "Não se limita à classe base; qualquer código que dependa da interface é cliente dela.",
+        "Persistência não tem relação com o conceito de 'cliente' do ISP."
+      ]
+    },
+    {
+      "pergunta": "Analise:\n\ninterface IWorker { void Work(); void Eat(); }\nclass RobotWorker : IWorker {\n  public void Work() { }\n  public void Eat() => throw new NotSupportedException();\n}\n\nQual princípio está sendo violado e por quê?",
+      "opcoes": [
+        "OCP, porque IWorker não pode ser estendida",
+        "ISP, porque RobotWorker é forçado a depender de Eat(), que não faz parte do seu papel",
+        "DIP, porque RobotWorker depende de uma classe concreta",
+        "Nenhum: o robô apenas não implementa um método opcional"
+      ],
+      "correta": 1,
+      "explicacao": "A interface gorda IWorker força RobotWorker a ter Eat(); o stub que estoura é o sintoma do ISP violado.",
+      "feedbacks": [
+        "Não é OCP; o problema não é extensão, é o robô ser obrigado a implementar Eat().",
+        "Correto: ISP violado — o robô depende de Eat() que não exerce; o NotSupportedException denuncia isso.",
+        "Não há dependência a classe concreta aqui; o defeito é a interface gorda (ISP).",
+        "Não é opcional: a interface obriga o método, e o robô o 'implementa' com uma exceção — sintoma de ISP."
+      ]
+    },
+    {
+      "pergunta": "Por que os stubs 'throw new NotSupportedException()' de uma fat interface também quebram o LSP?",
+      "opcoes": [
+        "Porque tornam o código mais lento em runtime",
+        "Porque criam um subtipo que não substitui de fato o supertipo: há um método 'proibido' que estoura",
+        "Porque exceções não podem aparecer em implementações de interface",
+        "Porque forçam o uso de tipos genéricos"
+      ],
+      "correta": 1,
+      "explicacao": "Quem recebe a interface espera que todos os métodos funcionem; um método que estoura viola a substituibilidade de Liskov.",
+      "feedbacks": [
+        "Desempenho não é o ponto; o problema é o contrato mentiroso.",
+        "Isso: o subtipo promete o contrato mas explode num método — não substitui o supertipo (fere LSP).",
+        "Exceções são válidas em C#; o problema é prometer um comportamento e não cumpri-lo.",
+        "Genéricos não têm relação; a questão é o método que não honra o contrato."
+      ]
+    },
+    {
+      "pergunta": "Você tem IMultiFunctionDevice { Print(); Scan(); Fax(); }. Uma impressora simples só imprime. Qual refatoração respeita o ISP?",
+      "opcoes": [
+        "Manter a interface e deixar Scan()/Fax() lançando NotSupportedException na impressora simples",
+        "Segregar em IPrinter, IScanner, IFax; a simples implementa só IPrinter e a multifuncional as três",
+        "Fazer a impressora simples herdar da multifuncional",
+        "Criar IPrint, IScan, IFax, IPrintColor, IPrintDuplex e IScanDuplex para cobrir tudo"
+      ],
+      "correta": 1,
+      "explicacao": "Segregar por papel (IPrinter/IScanner/IFax) elimina os stubs falsos; em C# a multifuncional compõe as três.",
+      "feedbacks": [
+        "Manter os stubs é justamente o smell que estamos removendo — não resolve o ISP.",
+        "Correto: role interfaces por papel; a simples só IPrinter, a multifuncional compõe as três.",
+        "Herança não corrige a fat interface e ainda arrasta métodos indesejados para a simples.",
+        "Isso é over-engineering: pulverizar em variações que ninguém pediu. Segregue por papel real, não por precaução."
+      ]
+    },
+    {
+      "pergunta": "Uma função só precisa imprimir um recibo. Segundo o ISP, qual assinatura é a melhor?",
+      "opcoes": [
+        "void Emitir(IMultiFunctionDevice dev)",
+        "void Emitir(IPrinter printer)",
+        "void Emitir(object dispositivo)",
+        "void Emitir(MultifuncionalDeEscritorio maquina)"
+      ],
+      "correta": 1,
+      "explicacao": "O consumidor deve depender só da fatia que usa. Se só imprime, receba IPrinter, não a interface inteira nem a classe concreta.",
+      "feedbacks": [
+        "Depender da interface inteira acopla o consumidor a Scan()/Fax() que ele nem usa.",
+        "Correto: dependa só do papel que exerce; IPrinter isola a função de mudanças em fax/scanner.",
+        "'object' joga fora toda a tipagem e não expressa o papel necessário.",
+        "Depender da classe concreta acopla à implementação e fere também o DIP; peça a abstração mínima."
+      ]
+    },
+    {
+      "pergunta": "Como o ISP se relaciona com o SRP?",
+      "opcoes": [
+        "São contraditórios: um manda unir, o outro separar",
+        "ISP é o lado da interface do mesmo cuidado que o SRP tem no lado da classe: coesão / uma razão para mudar",
+        "ISP substitui o SRP em projetos orientados a interface",
+        "Não há relação: SRP é sobre classes e ISP é sobre exceções"
+      ],
+      "correta": 1,
+      "explicacao": "SRP separa a classe por razão de mudar; ISP separa a interface por cliente/papel. Ambos perseguem coesão.",
+      "feedbacks": [
+        "Não se contradizem; são complementares e ambos buscam coesão.",
+        "Isso: uma interface que serve a três clientes tem três razões para mudar — é o SRP do lado do contrato.",
+        "Um não substitui o outro; atuam em níveis diferentes (classe x interface) com o mesmo espírito.",
+        "Há relação direta: coesão; ISP não é 'sobre exceções' — a exceção é só o sintoma."
+      ]
+    },
+    {
+      "pergunta": "Como o ISP ajuda a PREVENIR violações de LSP?",
+      "opcoes": [
+        "Obrigando o uso de herança em vez de composição",
+        "Removendo a tentação do stub falso: se a classe não implementa o método, não há como ele 'estourar'",
+        "Proibindo interfaces com mais de dois métodos",
+        "Forçando toda classe a implementar todas as interfaces do sistema"
+      ],
+      "correta": 1,
+      "explicacao": "A fat interface empurra o NotSupportedException (que fere LSP). Segregar remove o método indesejado — e o risco.",
+      "feedbacks": [
+        "É o contrário: ISP favorece composição de interfaces pequenas, não herança.",
+        "Correto: sem o método imposto, não há stub que estoure — ISP corta a raiz da violação de LSP.",
+        "Não existe limite fixo de métodos; o critério é papel/cliente, não uma contagem.",
+        "Forçar todas as interfaces em toda classe é exatamente o oposto do ISP."
+      ]
+    },
+    {
+      "pergunta": "Qual destas é uma aplicação EXAGERADA (over-engineering) do ISP?",
+      "opcoes": [
+        "Separar IPrinter e IScanner porque há dispositivos que só imprimem",
+        "Criar IHasName, IHasEmail e IHasAge — uma interface por propriedade, sem descrever papel algum",
+        "Fazer o consumidor depender só do papel que usa",
+        "Manter unida uma interface cujos clientes usam todos os métodos"
+      ],
+      "correta": 1,
+      "explicacao": "Uma interface por método/propriedade não descreve papel e pulveriza o design. Segregue por papel real, não por assinatura.",
+      "feedbacks": [
+        "Isso é ISP bem aplicado: há clientes reais que usam só um dos papéis.",
+        "Correto: pulverizar em uma interface por propriedade é o extremo errado — não há papel, só assinaturas soltas.",
+        "Depender só do papel usado é o objetivo do ISP, não exagero.",
+        "Manter unida uma interface que todos usam por inteiro é coeso e correto — não é exagero."
+      ]
+    },
+    {
+      "pergunta": "Qual é o gatilho prático para decidir se uma interface deve ser segregada?",
+      "opcoes": [
+        "Se ela tiver mais de cinco métodos",
+        "Se existe algum cliente que só usa um pedaço dela",
+        "Se o nome começar com 'I'",
+        "Se ela for implementada por uma única classe"
+      ],
+      "correta": 1,
+      "explicacao": "O gatilho é a existência de um cliente que usa só parte da interface — esse pedaço quer virar interface própria.",
+      "feedbacks": [
+        "A contagem de métodos não é o critério; uma interface coesa de vários métodos pode estar certa.",
+        "Isso: 'existe cliente que usa só um pedaço?' — se sim, segregue; se não, ela não é gorda.",
+        "Convenção de nome não diz nada sobre segregação.",
+        "Ser implementada por uma classe só não é o critério; o critério é como os clientes a usam."
+      ]
+    },
+    {
+      "pergunta": "Um IRepositorio<T> tem Add, Update, Delete, GetById e GetAll. Um relatório de leitura só chama GetById e GetAll. Qual abordagem alinhada ao ISP faz sentido?",
+      "opcoes": [
+        "Nada a fazer; todo repositório precisa expor tudo",
+        "Extrair um IReadOnlyRepositorio<T> { GetById; GetAll; } do qual o relatório depende, mantendo o repositório completo para quem escreve",
+        "Criar uma interface separada para cada um dos cinco métodos",
+        "Fazer o relatório depender da classe concreta do repositório"
+      ],
+      "correta": 1,
+      "explicacao": "Há um cliente (o relatório) que só lê. Extrair um contrato de leitura isola-o das operações de escrita — ISP na prática.",
+      "feedbacks": [
+        "Há um cliente que só lê; forçá-lo a depender de Add/Update/Delete é exatamente o que o ISP evita.",
+        "Correto: um IReadOnlyRepositorio atende quem só lê, sem expô-lo à escrita — segregação por papel real.",
+        "Uma interface por método pulveriza sem descrever papel; leitura x escrita é a divisão que tem cliente real.",
+        "Depender da classe concreta acopla à implementação e fere o DIP; peça o papel de leitura."
+      ]
+    },
+    {
+      "pergunta": "Depois de segregar corretamente uma fat interface por papel, qual benefício concreto você espera?",
+      "opcoes": [
+        "O código passa a rodar mais rápido em runtime",
+        "Somem os stubs 'NotSupportedException', e mudar um papel não recompila/quebra quem não o usa",
+        "Todas as classes passam a implementar todas as interfaces",
+        "A necessidade de testes desaparece"
+      ],
+      "correta": 1,
+      "explicacao": "Segregar remove os stubs falsos (e o risco de LSP) e desacopla: quem não usa um papel não é afetado por mudanças nele.",
+      "feedbacks": [
+        "O ganho não é de velocidade de execução; é de manutenção e desacoplamento.",
+        "Isso: fim dos stubs falsos e menor acoplamento — mexer no fax não afeta quem só imprime.",
+        "É o oposto: cada classe passa a implementar só os papéis que exerce.",
+        "Testes continuam necessários; ficam é mais simples, com mocks menores."
+      ]
+    }
+  ]
+}

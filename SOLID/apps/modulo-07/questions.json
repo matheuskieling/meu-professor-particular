@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 07 — Capstone: SOLID na prática (os 5 juntos)",
+  "questoes": [
+    {
+      "pergunta": "Uma classe OrderProcessor calcula o total, salva no banco e envia e-mail de confirmação. Qual princípio ela viola primeiro, e qual o primeiro passo da refatoração?",
+      "opcoes": [
+        "OCP; trocar o switch por polimorfismo",
+        "SRP; separar cálculo, persistência e notificação em classes distintas",
+        "DIP; injetar tudo pelo construtor antes de mais nada",
+        "ISP; quebrar a interface em várias menores"
+      ],
+      "correta": 1,
+      "explicacao": "São três razões de mudar numa classe só = God class (SRP). Na ordem mental, separar por responsabilidade (SRP) vem primeiro: expõe as costuras que os outros passos vão tratar."
+    },
+    {
+      "pergunta": "No enunciado 'OCP só é seguro se LSP for respeitado', o que acontece se um subtipo violar LSP num ponto de extensão do OCP?",
+      "opcoes": [
+        "Nada, LSP e OCP são independentes",
+        "O código não compila",
+        "Trocar uma implementação por outra pode quebrar quem chama — o polimorfismo do OCP vira uma bomba-relógio",
+        "O OCP passa a exigir herança em vez de composição"
+      ],
+      "correta": 2,
+      "explicacao": "OCP usa polimorfismo pra estender sem modificar; se um subtipo mente sobre o contrato (estoura exceção, muda semântica), substituir implementações quebra o cliente. LSP é a garantia que torna o OCP confiável."
+    },
+    {
+      "pergunta": "Por que se diz que 'ISP é o SRP das interfaces'?",
+      "opcoes": [
+        "Porque ambos falam de herança",
+        "Porque os dois buscam coesão: SRP dá uma só razão de mudar à CLASSE; ISP dá um só papel à INTERFACE",
+        "Porque ISP substitui o SRP quando há interfaces",
+        "Porque os dois só se aplicam a classes abstratas"
+      ],
+      "correta": 1,
+      "explicacao": "É a mesma ideia de coesão em dois níveis: SRP na classe (uma razão de mudar), ISP no contrato (um papel, ninguém depende do que não usa)."
+    },
+    {
+      "pergunta": "Você trocou um 'switch (tipoDesconto)' por uma interface IDescontoStrategy com uma implementação por variante, injetada no cliente. Que Design Pattern é esse e quais princípios ele materializa?",
+      "opcoes": [
+        "Adapter; LSP e ISP",
+        "Decorator; apenas OCP",
+        "Strategy; OCP e DIP",
+        "Factory Method; apenas DIP"
+      ],
+      "correta": 2,
+      "explicacao": "Injetar o algoritmo por interface é o padrão Strategy — literalmente o 'depois' do switch do OCP, com a dependência invertida (DIP). Adicionar variante = nova classe, sem tocar no cliente."
+    },
+    {
+      "pergunta": "Qual a função do padrão Factory (Method / Abstract Factory) em relação aos princípios SOLID?",
+      "opcoes": [
+        "Adicionar comportamento envolvendo um objeto existente",
+        "Isolar o 'new' de concreto num único lugar, pra o resto do código depender só da abstração (DIP+OCP)",
+        "Encaixar uma interface incompatível na esperada",
+        "Fixar o esqueleto de um algoritmo com passos variáveis"
+      ],
+      "correta": 1,
+      "explicacao": "A Factory concentra a criação de concretos num ponto só, para que o restante dependa de abstrações (DIP) e novas variantes não forcem edições espalhadas (OCP). As outras opções descrevem Decorator, Adapter e Template Method."
+    },
+    {
+      "pergunta": "Um colega abre um PR criando uma interface ICalculadoraImposto com UMA única implementação, sem nenhuma segunda variante à vista, 'por precaução, é SOLID'. Qual a avaliação mais madura?",
+      "opcoes": [
+        "Aprovar: toda classe deve ter uma interface, é o correto",
+        "Provável over-engineering: interface com 1 implementação e nenhuma dor real é indireção inútil (YAGNI). Manter só se for testar por mock",
+        "Rejeitar: SOLID proíbe interfaces",
+        "Aprovar e pedir mais 3 interfaces para 'reforçar' o design"
+      ],
+      "correta": 1,
+      "explicacao": "SOLID é heurística, não lei. Abstração sem dor real (variação/teste) é dívida, não patrimônio. Uma interface com uma implementação só e nenhuma segunda no horizonte costuma ser indireção inútil — a exceção legítima é habilitar testes por mock."
+    },
+    {
+      "pergunta": "O que diz a 'Regra dos Três' na dosagem de SOLID?",
+      "opcoes": [
+        "Todo princípio deve ser aplicado no máximo três vezes por classe",
+        "Só abstraia na terceira repetição, quando a variação já é conhecida — antes disso, prefira duplicar e esperar",
+        "Toda interface deve ter no mínimo três métodos",
+        "Refatore a cada três commits"
+      ],
+      "correta": 1,
+      "explicacao": "Uma ocorrência é ocorrência; duas podem ser coincidência; três é padrão. Na terceira você já tem exemplos suficientes pra desenhar a abstração CERTA, em vez de adivinhar. Abstração errada é mais cara que duplicação."
+    },
+    {
+      "pergunta": "No código de partida, o método Processar faz 'new SmtpClient(...)' e 'new SqlConnection(...)' no meio da regra de negócio. Que princípio isso viola e qual o benefício direto de corrigir?",
+      "opcoes": [
+        "SRP; o código fica mais curto",
+        "LSP; os subtipos passam a ser substituíveis",
+        "DIP; ao inverter para abstrações injetadas, o código passa a ser testável (fakes) e desacoplado da fronteira concreta",
+        "ISP; a interface fica menor"
+      ],
+      "correta": 2,
+      "explicacao": "Fazer 'new' de concretos de fronteira (banco, e-mail) acopla a lógica à infraestrutura e impede testar. Inverter para INotificador/IPedidoRepository injetados (DIP) desacopla e, de brinde, torna a classe testável."
+    },
+    {
+      "pergunta": "Qual é a ORDEM mental de refatoração recomendada no capstone (e a natureza dela)?",
+      "opcoes": [
+        "DIP → ISP → LSP → OCP → SRP, e é uma receita rígida a seguir sempre",
+        "SRP → OCP → LSP → ISP → DIP: separar, estender, substituir, enxugar, inverter — um roteiro mental, não um trilho",
+        "Aplicar os cinco simultaneamente numa só edição",
+        "OCP → DIP e ignorar os demais"
+      ],
+      "correta": 1,
+      "explicacao": "Separar (SRP) expõe a variação (OCP), que vira uma abstração substituível (LSP) e enxuta (ISP) que se inverte e injeta (DIP). É um mapa mental que ajuda porque cada passo prepara o próximo — não uma sequência obrigatória."
+    },
+    {
+      "pergunta": "Qual afirmação captura MELHOR a lição final do curso sobre SOLID?",
+      "opcoes": [
+        "Todo código deve maximizar o número de interfaces e camadas",
+        "SOLID é lei: violar qualquer princípio é sempre um bug",
+        "SOLID é heurística a serviço da mudança: aplique por dor real (mudança/teste/duplicação); código simples e direto vence indireção desnecessária",
+        "Design Patterns tornam SOLID obsoleto"
+      ],
+      "correta": 2,
+      "explicacao": "Os princípios servem à mudança (menos acoplamento, mais coesão), mas são heurísticas. Abstração sem dor real é dívida. Julgamento > dogma — e os patterns são SOLID materializado, não um substituto."
+    }
+  ]
+}

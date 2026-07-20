@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 02 — SRP: Single Responsibility Principle",
+  "questoes": [
+    {
+      "pergunta": "Qual é a definição CORRETA do SRP segundo Uncle Bob?",
+      "opcoes": [
+        "Uma classe deve ter no máximo um método público",
+        "Uma classe deve ter apenas UMA razão para mudar",
+        "Uma classe deve fazer literalmente uma única coisa",
+        "Uma classe não deve depender de outras classes"
+      ],
+      "correta": 1,
+      "explicacao": "SRP = uma única razão para mudar. O slogan 'fazer uma coisa só' é impreciso; o critério real é quantos motivos diferentes fariam você editar a classe."
+    },
+    {
+      "pergunta": "No SRP, o que é uma 'responsabilidade'?",
+      "opcoes": [
+        "Cada método público da classe",
+        "Um ator: um grupo de stakeholders que pede um tipo de mudança",
+        "A quantidade de linhas de código da classe",
+        "O número de dependências injetadas no construtor"
+      ],
+      "correta": 1,
+      "explicacao": "Responsabilidade = um ator / eixo de mudança. É a fonte dos pedidos de mudança (financeiro, RH, DBA...), não a contagem de métodos."
+    },
+    {
+      "pergunta": "Uma classe Employee tem CalculatePay() (financeiro), ReportHours() (RH) e Save() (DBA). Por que isso viola o SRP?",
+      "opcoes": [
+        "Porque tem três métodos, e o ideal é um por classe",
+        "Porque responde a três atores diferentes — três razões para mudar",
+        "Porque nenhum método é privado",
+        "Porque não implementa nenhuma interface"
+      ],
+      "correta": 1,
+      "explicacao": "São três atores distintos (financeiro, RH, DBA), logo três razões para mudar. Não é a contagem de métodos que viola, é a diversidade de atores."
+    },
+    {
+      "pergunta": "Qual é o PERIGO CONCRETO de duas responsabilidades conviverem na mesma classe compartilhando código interno?",
+      "opcoes": [
+        "A classe fica com muitas linhas e demora a compilar",
+        "Uma mudança pedida por um ator pode quebrar o que outro ator depende",
+        "O garbage collector roda com mais frequência",
+        "A classe não pode mais ser instanciada"
+      ],
+      "correta": 1,
+      "explicacao": "Acoplamento acidental: atores que não se falam ficam amarrados por um método compartilhado. Mudar para um pode introduzir bug para o outro."
+    },
+    {
+      "pergunta": "Considere:\n\npublic class OrderProcessor {\n  public void Process(Order o) {\n    Validate(o);            // negócio\n    o.Total += o.Total*0.18m; // fisco\n    SaveToSql(o);           // DBA\n    SendEmail(o);           // comunicação\n  }\n}\n\nO que essa classe demonstra?",
+      "opcoes": [
+        "Bom uso do SRP: um método público só",
+        "Violação de SRP: quatro atores/razões para mudar numa classe só",
+        "Violação de OCP, mas SRP está ok",
+        "Nada de errado: coordenar é sempre correto"
+      ],
+      "correta": 1,
+      "explicacao": "Quatro atores (negócio, fisco, DBA, comunicação) = quatro razões para mudar. Ter um método público não salva: a classe acumula responsabilidades."
+    },
+    {
+      "pergunta": "Ao refatorar o OrderProcessor separando em OrderValidator, TaxCalculator, OrderRepository e EmailSender, qual deve ser o papel do coordenador (OrderService)?",
+      "opcoes": [
+        "Reimplementar as validações e o cálculo de imposto internamente",
+        "Orquestrar a ordem das chamadas às peças, sem conter as regras delas",
+        "Concentrar todo o SQL para centralizar o acesso a dados",
+        "Ser eliminado: coordenadores sempre violam o SRP"
+      ],
+      "correta": 1,
+      "explicacao": "O coordenador é FINO: decide a ordem e delega. Se ele voltar a conter regras/SQL, vira uma God class disfarçada."
+    },
+    {
+      "pergunta": "Qual destes é um SINTOMA típico de violação de SRP?",
+      "opcoes": [
+        "Uma classe com um único método público bem nomeado",
+        "Nome com 'And'/'Manager'/'Util' e mistura de regra de negócio, SQL e formatação",
+        "Uma classe que implementa uma interface",
+        "Uma classe imutável feita com record"
+      ],
+      "correta": 1,
+      "explicacao": "Nomes genéricos (Manager/Util) e mistura de níveis de abstração (negócio + SQL + formatação juntos) denunciam acúmulo de responsabilidades."
+    },
+    {
+      "pergunta": "SRP levado ao extremo, criando uma classe por método, produz:",
+      "opcoes": [
+        "O design ideal, sempre desejável",
+        "Explosão de micro-classes anêmicas que aumentam o acoplamento e dificultam navegar",
+        "Classes com coesão máxima e zero acoplamento",
+        "Código impossível de compilar"
+      ],
+      "correta": 1,
+      "explicacao": "Over-engineering: micro-classes anêmicas que sempre mudam juntas viram acoplamento entre arquivos. Uma razão para mudar não é 'um método por classe'."
+    },
+    {
+      "pergunta": "Um ReportSummaryCalculator calcula Total e Média do relatório. Total e média sempre mudam juntos (mesma definição de 'resumo'). O que o SRP recomenda?",
+      "opcoes": [
+        "Separar em TotalCalculator e AverageCalculator, um por método",
+        "Manter juntos: eles mudam pela MESMA razão (mesmo ator)",
+        "Mover ambos para dentro do coordenador",
+        "Transformar cada cálculo numa interface distinta"
+      ],
+      "correta": 1,
+      "explicacao": "SRP diz: não separe o que muda junto. Total e média mudam pela mesma razão → mesma classe. Separá-los seria estilhaçar (over-engineering)."
+    },
+    {
+      "pergunta": "Qual é a pergunta-bússola para decidir se você deve separar uma classe segundo o SRP?",
+      "opcoes": [
+        "Essa classe tem mais de 100 linhas?",
+        "Quantos atores diferentes pediriam mudanças nesta classe?",
+        "Essa classe tem mais de um método?",
+        "Essa classe usa herança?"
+      ],
+      "correta": 1,
+      "explicacao": "A fronteira é o ATOR, não a contagem de linhas ou de métodos. Um ator → mantenha junto; múltiplos atores → separe."
+    }
+  ]
+}

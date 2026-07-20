@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 02: SRP (Single Responsibility Principle)",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Um colega diz: 'SRP significa que uma classe deve fazer apenas uma coisa'. Qual é a correção mais precisa?",
+      "opcoes": [
+        "Está certo: uma classe deve ter um único método",
+        "SRP é sobre ter uma única RAZÃO para mudar, não sobre 'fazer uma coisa'",
+        "SRP é sobre ter poucas dependências no construtor",
+        "SRP proíbe classes com mais de uma propriedade"
+      ],
+      "correta": 1,
+      "explicacao": "'Fazer uma coisa' é impreciso. O critério do Uncle Bob é 'uma razão para mudar' — quantos motivos distintos fariam você editar a classe.",
+      "feedbacks": [
+        "Não; SRP não conta métodos. Uma classe coesa pode ter vários métodos que mudam pela mesma razão.",
+        "Exato: 'uma razão para mudar' é o critério real. 'Fazer uma coisa' é o slogan impreciso que engana.",
+        "Número de dependências é outra conversa (DIP/ISP). SRP fala de razões para mudar.",
+        "SRP não tem nada a ver com quantidade de propriedades; fala de responsabilidades/atores."
+      ]
+    },
+    {
+      "pergunta": "No SRP, o que melhor define uma 'razão para mudar'?",
+      "opcoes": [
+        "Um bug encontrado em produção",
+        "Um ator — um grupo de stakeholders que solicita um tipo de mudança",
+        "Uma nova versão do compilador C#",
+        "Uma refatoração automática da IDE"
+      ],
+      "correta": 1,
+      "explicacao": "Uncle Bob amarra 'razão para mudar' a um ator: a fonte dos pedidos (financeiro, RH, DBA, marketing...).",
+      "feedbacks": [
+        "Bug é consequência; a 'razão para mudar' do SRP é a origem do pedido de mudança (um ator).",
+        "Correto: cada ator é um eixo de mudança. Uma classe deve responder a um único ator.",
+        "Mudança de compilador não é uma responsabilidade de negócio; não é o que o SRP endereça.",
+        "Refatoração da IDE não muda a responsabilidade; o critério do SRP é o ator que pede a mudança."
+      ]
+    },
+    {
+      "pergunta": "public class Employee { decimal CalculatePay(); string ReportHours(); void Save(); } — pedidos vêm de financeiro, RH e DBA respectivamente. Por que isso viola o SRP?",
+      "opcoes": [
+        "Porque a classe tem exatamente três métodos",
+        "Porque responde a três atores distintos — três razões para mudar",
+        "Porque os métodos têm tipos de retorno diferentes",
+        "Porque falta uma interface IEmployee"
+      ],
+      "correta": 1,
+      "explicacao": "Três atores (financeiro, RH, DBA) = três razões para mudar. Não é a contagem de métodos, é a diversidade de atores.",
+      "feedbacks": [
+        "A contagem de métodos não é o critério; o problema é atender a três atores diferentes.",
+        "Isso: cada método serve a um ator distinto. Três fontes de mudança na mesma classe violam o SRP.",
+        "Tipos de retorno diferentes não têm relação com SRP. O problema são os atores.",
+        "Faltar interface é outro assunto; a violação aqui é a mistura de responsabilidades/atores."
+      ]
+    },
+    {
+      "pergunta": "Na classe Employee acima, CalculatePay() e ReportHours() compartilham um helper privado RegularHours(). Qual risco isso cria?",
+      "opcoes": [
+        "Nenhum: código reaproveitado é sempre bom",
+        "Uma mudança pedida pelo financeiro em RegularHours() pode quebrar o relatório do RH",
+        "O método privado deixa a classe mais lenta",
+        "O RH perde acesso ao método por ser privado"
+      ],
+      "correta": 1,
+      "explicacao": "Acoplamento acidental: dois atores amarrados por um método compartilhado. Mudar para um introduz bug para o outro — a dor clássica do SRP violado.",
+      "feedbacks": [
+        "Reuso entre RESPONSABILIDADES diferentes é justamente a armadilha: acopla atores que não se falam.",
+        "Correto: mudar RegularHours() para o financeiro pode alterar silenciosamente o que o RH esperava.",
+        "Não é questão de desempenho; é de acoplamento entre responsabilidades diferentes.",
+        "Visibilidade não é o ponto; o risco é a mudança de um ator afetar o outro pelo código comum."
+      ]
+    },
+    {
+      "pergunta": "Um OrderProcessor valida, calcula imposto, faz INSERT no SQL e envia e-mail no mesmo método. Além dos atores, qual OUTRO sintoma de SRP violado ele exibe?",
+      "opcoes": [
+        "Uso de record em vez de class",
+        "Mistura de níveis de abstração: regra de negócio, SQL cru e template de e-mail juntos",
+        "Excesso de comentários",
+        "Ausência de tratamento de exceções"
+      ],
+      "correta": 1,
+      "explicacao": "Misturar domínio (regra), infraestrutura (SQL) e apresentação (template) num método é sintoma clássico: a classe pula entre camadas mentais.",
+      "feedbacks": [
+        "record vs class é escolha de tipo, não sintoma de SRP.",
+        "Isso: níveis de abstração misturados (negócio + SQL + e-mail) denunciam acúmulo de responsabilidades.",
+        "Comentários não indicam violação de SRP; o sintoma é a mistura de abstrações e atores.",
+        "Falta de try/catch é outra preocupação; não é o que caracteriza a violação de SRP aqui."
+      ]
+    },
+    {
+      "pergunta": "Você separa o OrderProcessor em OrderValidator, TaxCalculator, OrderRepository e EmailSender, com um OrderService coordenando. Qual afirmação sobre o OrderService está CORRETA?",
+      "opcoes": [
+        "Ele deve reimplementar as validações para ter controle total",
+        "Ele deve ser FINO: encadear as chamadas às peças, sem conter as regras",
+        "Ele deve concentrar todo o SQL para centralizar dados",
+        "Ele é desnecessário: coordenadores sempre violam o SRP"
+      ],
+      "correta": 1,
+      "explicacao": "O coordenador decide a ordem e delega. Se contiver regras/SQL, volta a ser uma God class. Coordenar (fino) não viola SRP.",
+      "feedbacks": [
+        "Reimplementar regras no coordenador o transforma de volta numa God class — o oposto do objetivo.",
+        "Correto: o coordenador orquestra a ordem e delega; as regras vivem nas peças especializadas.",
+        "Concentrar SQL no coordenador reacumula responsabilidade de dados nele. Isso é o repositório.",
+        "Coordenar não viola SRP: 'orquestrar a ordem' é, em si, uma responsabilidade legítima e fina."
+      ]
+    },
+    {
+      "pergunta": "Qual destes nomes de classe é o MAIOR sinal de alerta para uma possível violação de SRP?",
+      "opcoes": [
+        "TaxCalculator",
+        "OrderValidationAndPersistenceManager",
+        "EmailSender",
+        "TransactionRepository"
+      ],
+      "correta": 1,
+      "explicacao": "Nome com 'And' + 'Manager' entrega que a classe acumula responsabilidades (validação E persistência). O nome não descreve UMA coisa.",
+      "feedbacks": [
+        "TaxCalculator descreve uma responsabilidade única e clara — não é o alerta.",
+        "Isso: 'And' e 'Manager' juntos gritam acúmulo de responsabilidades (validar + persistir).",
+        "EmailSender é focado numa única responsabilidade; nome saudável.",
+        "TransactionRepository nomeia um único papel (acesso a dados de transação); não é o alerta."
+      ]
+    },
+    {
+      "pergunta": "Um dev, animado com SRP, quebra um cálculo de resumo em TotalCalculator, AverageCalculator, CountCalculator e SummaryFormatter — e todos SEMPRE mudam juntos quando a definição de resumo muda. O que aconteceu?",
+      "opcoes": [
+        "Aplicou SRP perfeitamente: uma classe por operação",
+        "Over-engineering: estilhaçou o que muda pela mesma razão, aumentando o acoplamento",
+        "Corrigiu uma violação de OCP",
+        "Melhorou a coesão de cada classe individualmente"
+      ],
+      "correta": 1,
+      "explicacao": "Coisas que mudam pela mesma razão (mesmo ator) devem ficar juntas. Separá-las cria micro-classes anêmicas acopladas entre arquivos.",
+      "feedbacks": [
+        "SRP não é 'uma classe por operação'. Se mudam juntas, pertencem à mesma classe.",
+        "Exato: separar o que muda junto é over-engineering — vira acoplamento entre arquivos, não coesão.",
+        "Isso não tem relação com OCP; é uma má aplicação (excessiva) do próprio SRP.",
+        "Ao contrário: micro-classes anêmicas que mudam juntas têm coesão BAIXA, não alta."
+      ]
+    },
+    {
+      "pergunta": "Qual é a pergunta-bússola para decidir se você deve separar uma classe segundo o SRP?",
+      "opcoes": [
+        "A classe passa de 100 linhas?",
+        "Quantos atores diferentes pediriam mudanças nesta classe?",
+        "A classe tem mais de um método público?",
+        "A classe usa herança em algum ponto?"
+      ],
+      "correta": 1,
+      "explicacao": "A fronteira é o ATOR. Um ator → mantenha junto (mesmo com vários métodos); múltiplos atores → separe.",
+      "feedbacks": [
+        "Tamanho é um sinal fraco; uma classe grande e coesa (um ator) pode estar perfeitamente ok.",
+        "Correto: conte os ATORES. Essa é a bússola do SRP, não linhas nem métodos.",
+        "Ter vários métodos não viola SRP se todos mudam pela mesma razão (mesmo ator).",
+        "Herança não determina responsabilidade; a pergunta certa é sobre atores/razões para mudar."
+      ]
+    },
+    {
+      "pergunta": "Uma 'classe anêmica' (só dados, quase sem comportamento, com a lógica espalhada por fora) representa, em relação ao SRP:",
+      "opcoes": [
+        "O ideal do SRP: máxima separação de responsabilidades",
+        "Um risco: coesão BAIXA, geralmente fruto de over-separação",
+        "Uma violação de LSP",
+        "Um sinal de alto desempenho"
+      ],
+      "correta": 1,
+      "explicacao": "Anemia é coesão baixa: a lógica que deveria estar junta ficou dispersa. Costuma vir de aplicar SRP como 'um método por classe'.",
+      "feedbacks": [
+        "Não é o ideal: separar demais espalha a lógica e reduz a coesão — o oposto do que o SRP quer.",
+        "Isso: classe anêmica indica coesão baixa, frequentemente resultado de estilhaçar responsabilidades.",
+        "LSP é sobre substituição de subtipos; anemia não é uma violação de LSP.",
+        "Anemia não fala de desempenho; fala de organização (coesão) do código."
+      ]
+    },
+    {
+      "pergunta": "Você tem uma pequena classe de utilidade estável, que muda por um único motivo e há meses não é tocada. Um colega quer quebrá-la em três 'por SRP'. Qual é a resposta mais alinhada ao princípio?",
+      "opcoes": [
+        "Quebrar já: SRP é dogma, sempre mais classes é melhor",
+        "Manter junta: um único ator/razão para mudar não justifica separar (YAGNI)",
+        "Quebrar em três para reduzir o número de linhas",
+        "Transformar cada método numa interface separada"
+      ],
+      "correta": 1,
+      "explicacao": "SRP é sobre razões para mudar. Um único ator → uma classe. Separar 'por garantia' é over-engineering; separe quando uma segunda razão aparecer.",
+      "feedbacks": [
+        "SRP não é dogma de 'mais classes'; separar sem uma segunda razão para mudar piora o design.",
+        "Correto: um ator, uma razão para mudar → mantém junto. Separe quando um segundo ator surgir.",
+        "Reduzir linhas não é objetivo do SRP; o critério é a razão para mudar, não o tamanho.",
+        "Criar interfaces por método aqui é over-engineering; não há segundo ator que justifique."
+      ]
+    },
+    {
+      "pergunta": "Como o SRP se relaciona com a COESÃO e com os próximos princípios (OCP, ISP)?",
+      "opcoes": [
+        "SRP reduz coesão e não tem relação com OCP/ISP",
+        "SRP respeitado ≈ alta coesão, e separar por responsabilidade prepara o terreno para OCP e ISP",
+        "SRP é o mesmo que OCP, só muda o nome",
+        "SRP só se aplica a classes sem métodos"
+      ],
+      "correta": 1,
+      "explicacao": "Alta coesão é o outro lado do SRP. Classes com responsabilidade única são a base para estender via OCP e para interfaces enxutas via ISP.",
+      "feedbacks": [
+        "É o contrário: SRP AUMENTA a coesão, e é a base sobre a qual OCP e ISP se apoiam.",
+        "Isso: SRP bem-feito eleva a coesão e prepara o terreno para OCP (estender) e ISP (interfaces enxutas).",
+        "SRP e OCP são princípios distintos: um separa responsabilidades, o outro trata de extensão.",
+        "SRP se aplica a classes com comportamento; a ideia de 'sem métodos' não faz sentido aqui."
+      ]
+    }
+  ]
+}

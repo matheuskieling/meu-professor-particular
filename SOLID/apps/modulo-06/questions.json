@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 06 — DIP: Inversão de Dependência",
+  "questoes": [
+    {
+      "pergunta": "O DIP diz que módulos de alto nível e de baixo nível devem depender de quê?",
+      "opcoes": [
+        "O alto nível deve depender do baixo nível diretamente",
+        "Ambos devem depender de abstrações",
+        "O baixo nível deve depender do alto nível concreto",
+        "Cada um deve ser totalmente independente, sem contratos"
+      ],
+      "correta": 1,
+      "explicacao": "A primeira parte do DIP: alto e baixo nível NÃO dependem um do outro; ambos dependem de uma ABSTRAÇÃO."
+    },
+    {
+      "pergunta": "Na frase 'inversão de dependência', o que exatamente é invertido?",
+      "opcoes": [
+        "A ordem em que os métodos são chamados",
+        "A seta de dependência: o detalhe concreto passa a apontar para a abstração, em vez do alto nível apontar para o detalhe",
+        "A herança: a subclasse vira superclasse",
+        "A direção do fluxo de dados na aplicação"
+      ],
+      "correta": 1,
+      "explicacao": "Antes, a regra apontava para o detalhe concreto. Depois, o detalhe aponta para a abstração — a seta inverteu."
+    },
+    {
+      "pergunta": "Qual trecho é o CHEIRO clássico que o DIP ataca?",
+      "opcoes": [
+        "Uma interface com um único método",
+        "var repo = new SqlOrderRepository(); dentro de um serviço de regra de negócio",
+        "Um método que recebe um parâmetro por construtor",
+        "Uma classe marcada como sealed"
+      ],
+      "correta": 1,
+      "explicacao": "Dar 'new' numa classe CONCRETA de infraestrutura dentro do alto nível é o smell do 'new espalhado' — acoplamento a concreto."
+    },
+    {
+      "pergunta": "Por que um OrderService que dá 'new SqlOrderRepository()' lá dentro é difícil de testar?",
+      "opcoes": [
+        "Porque C# não permite testar classes com construtor",
+        "Porque a dependência concreta está cravada no método e não dá pra substituí-la por um mock/fake",
+        "Porque o SQL Server é mais rápido que os testes",
+        "Porque testes não podem chamar métodos públicos"
+      ],
+      "correta": 1,
+      "explicacao": "Com o 'new' cravado, você não consegue injetar um dublê. Precisaria de um banco real só pra testar a regra."
+    },
+    {
+      "pergunta": "No DIP bem aplicado, a QUEM pertence a abstração (a interface)?",
+      "opcoes": [
+        "Ao módulo de baixo nível (o detalhe), que expõe sua própria API",
+        "Ao módulo de alto nível, que dita o contrato do que precisa",
+        "Ao container de DI, que gera as interfaces automaticamente",
+        "A uma camada neutra que não conhece nem o alto nem o baixo nível"
+      ],
+      "correta": 1,
+      "explicacao": "A abstração expressa a NECESSIDADE do alto nível; o detalhe é que se encaixa nela. Por isso a seta inverte de verdade."
+    },
+    {
+      "pergunta": "Qual a diferença entre DIP e DI (Injeção de Dependência)?",
+      "opcoes": [
+        "São exatamente a mesma coisa, só nomes diferentes",
+        "DIP é o princípio de design (dependa de abstrações); DI é a técnica de entregar as dependências de fora",
+        "DI é o princípio; DIP é a ferramenta",
+        "DIP só existe em .NET; DI é universal"
+      ],
+      "correta": 1,
+      "explicacao": "DIP = o QUÊ/PORQUÊ (design). DI = o COMO (técnica de entrega, geralmente por construtor). Não são sinônimos."
+    },
+    {
+      "pergunta": "Você escreve OrderService(SqlOrderRepository repo) e injeta a classe concreta por construtor. Isso respeita o DIP?",
+      "opcoes": [
+        "Sim, porque usou injeção por construtor",
+        "Não: usou a técnica DI, mas ainda depende do CONCRETO — o DIP pede dependência da abstração",
+        "Sim, desde que registre no container",
+        "Não, porque injeção por construtor é proibida no DIP"
+      ],
+      "correta": 1,
+      "explicacao": "DI não implica DIP. Injetar o concreto é a técnica sem o princípio: você continua acoplado ao detalhe."
+    },
+    {
+      "pergunta": "O que é Inversão de Controle (IoC) em relação à DI?",
+      "opcoes": [
+        "IoC é um tipo específico de banco de dados",
+        "IoC é o padrão amplo ('não me chame, eu te chamo'); DI é uma forma de IoC",
+        "IoC é a mesma coisa que uma interface",
+        "DI é mais amplo que IoC"
+      ],
+      "correta": 1,
+      "explicacao": "IoC é o guarda-chuva (você entrega o controle ao framework). DI — inverter quem cria as dependências — é uma forma de IoC."
+    },
+    {
+      "pergunta": "Em services.AddScoped<IOrderRepository, SqlOrderRepository>();, o que o container faz?",
+      "opcoes": [
+        "Cria a interface IOrderRepository em tempo de compilação",
+        "Registra que, quando alguém pedir IOrderRepository, ele deve entregar um SqlOrderRepository — e injeta isso nos construtores",
+        "Impede que SqlOrderRepository seja instanciado",
+        "Converte o SQL em NoSQL automaticamente"
+      ],
+      "correta": 1,
+      "explicacao": "É o registro do mapeamento abstração → concreto. O container resolve o grafo e injeta a implementação nos construtores."
+    },
+    {
+      "pergunta": "Em qual caso criar uma interface é provavelmente OVER-ENGINEERING (viola a dosagem do DIP)?",
+      "opcoes": [
+        "Um repositório que acessa o banco de dados",
+        "Um gateway que chama uma API de pagamento externa",
+        "Um objeto de valor Money, estável e sem I/O, com um único uso",
+        "Um serviço de envio de e-mail via SMTP"
+      ],
+      "correta": 2,
+      "explicacao": "DIP vale nas fronteiras de I/O que variam/precisam de teste. Um tipo de valor estável sem I/O não precisa de abstração — seria ruído."
+    }
+  ]
+}

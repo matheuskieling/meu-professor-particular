@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA FINAL — Módulo 07: Capstone SOLID (os 5 juntos)",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Uma classe RelatorioService faz: consulta o banco (new SqlConnection), formata o HTML, gera o PDF e envia por e-mail (new SmtpClient). Quais princípios ela viola de forma mais evidente?",
+      "opcoes": [
+        "Apenas LSP",
+        "SRP (várias razões de mudar) e DIP (new de concretos de fronteira)",
+        "Apenas ISP",
+        "Nenhum: é uma classe coesa"
+      ],
+      "correta": 1,
+      "explicacao": "Consultar, formatar, gerar PDF e enviar são atores diferentes (SRP); e o new de SqlConnection/SmtpClient acopla à fronteira concreta (DIP).",
+      "feedbacks": [
+        "LSP é sobre substituição de subtipos; aqui não há hierarquia sendo violada — o problema é acúmulo de responsabilidades e acoplamento.",
+        "Correto: são múltiplas razões de mudar (SRP) somadas ao new de concretos de fronteira, que impede teste e desacoplamento (DIP).",
+        "ISP é sobre interface gorda que o cliente usa pela metade; não é o cheiro central aqui.",
+        "Ao contrário: a classe faz coisas demais e depende de concretos — está longe de coesa."
+      ]
+    },
+    {
+      "pergunta": "Você aplicou OCP trocando um switch por uma abstração polimórfica. Por que o LSP precisa ser respeitado para que essa refatoração seja segura?",
+      "opcoes": [
+        "Porque sem LSP o código não compila",
+        "Porque se um subtipo violar o contrato (estourar exceção, mudar semântica), trocar implementações quebra quem chama — anulando o ganho do OCP",
+        "Porque LSP obriga o uso de herança em vez de interfaces",
+        "LSP não tem relação com OCP"
+      ],
+      "correta": 1,
+      "explicacao": "OCP estende via polimorfismo; LSP garante que qualquer implementação é um substituto de verdade. Um subtipo que mente transforma o ponto de extensão numa bomba-relógio.",
+      "feedbacks": [
+        "Violar LSP costuma compilar perfeitamente — o erro aparece em runtime/comportamento, não na compilação.",
+        "Exato: o OCP confia que qualquer implementação serve no lugar da outra; LSP é a garantia disso. Sem ela, o polimorfismo do OCP quebra clientes.",
+        "LSP não obriga herança; vale para qualquer relação de subtipo (inclusive implementações de interface).",
+        "Têm relação direta: o polimorfismo que o OCP usa só é confiável se os subtipos honrarem o contrato (LSP)."
+      ]
+    },
+    {
+      "pergunta": "Dado 'IWorker { Work(); Eat(); }' e um RobotWorker que trabalha mas não come (Eat lança NotSupportedException). Qual a análise correta e a cura?",
+      "opcoes": [
+        "É violação de OCP; adicionar um switch resolve",
+        "É violação de ISP (fat interface forçando Eat) que também fere LSP (Eat estoura); a cura é segregar em IWorkable e IFeedable",
+        "É violação apenas de SRP; basta renomear a classe",
+        "É violação de DIP; basta injetar o RobotWorker"
+      ],
+      "correta": 1,
+      "explicacao": "A interface gorda força Eat em quem não come (ISP); o stub que estoura fere o contrato (LSP). Segregar por papel remove a tentação do throw falso.",
+      "feedbacks": [
+        "Não é OCP: não há um switch por tipo crescendo; o problema é interface forçando um método inaplicável.",
+        "Correto: ISP quebra a fat interface por papel (IWorkable/IFeedable) e, com isso, o método que estourava (violação de LSP) simplesmente deixa de existir.",
+        "Renomear não resolve nada; a classe é forçada a implementar Eat, que não é dela — é problema de interface (ISP), não de nome.",
+        "DIP é sobre depender de abstrações de fronteira; injetar o robô não elimina o método Eat que estoura."
+      ]
+    },
+    {
+      "pergunta": "Qual Design Pattern encaixa uma interface incompatível (ex.: uma lib de terceiro) na interface que seu código espera, e quais princípios ele materializa?",
+      "opcoes": [
+        "Decorator; OCP",
+        "Strategy; OCP e DIP",
+        "Adapter; LSP e ISP",
+        "Observer; DIP"
+      ],
+      "correta": 2,
+      "explicacao": "Adapter traduz uma interface incompatível para a esperada, preservando o contrato de quem chama (LSP) e expondo só o papel necessário (ISP).",
+      "feedbacks": [
+        "Decorator adiciona comportamento envolvendo o objeto (log/cache), não adapta uma interface incompatível.",
+        "Strategy injeta o algoritmo por interface — resolve variação, não incompatibilidade de contrato.",
+        "Correto: o Adapter encaixa a interface incompatível na que seu código espera, mantendo o contrato (LSP) e o papel enxuto (ISP).",
+        "Observer desacopla emissor de reagentes; não é sobre adaptar interfaces incompatíveis."
+      ]
+    },
+    {
+      "pergunta": "Um dev cria PagamentoFactory, RepositoryFactory e NotificadorFactory para objetos que têm uma implementação só e são construídos num único lugar (o Program.cs com DI). Como avaliar?",
+      "opcoes": [
+        "Excelente: fábricas sempre melhoram o design",
+        "Over-engineering: fábricas para objetos triviais, já resolvidos pelo container de DI, adicionam indireção sem pagar dor real (YAGNI)",
+        "Viola LSP e deve ser refeito com herança",
+        "Correto, desde que cada fábrica tenha ao menos 5 métodos"
+      ],
+      "correta": 1,
+      "explicacao": "O container de DI já resolve a construção. Fábricas para uma implementação só, sem variação real, são indireção que não se paga — dosagem manda evitar.",
+      "feedbacks": [
+        "Fábricas não são um bem em si; quando não resolvem uma dor real (variação/isolamento do new), viram peso morto.",
+        "Correto: o DIP já foi atendido pelo container; as fábricas triviais só somam indireção. YAGNI: crie a fábrica quando houver variação real de construção.",
+        "Não há questão de LSP aqui, e trocar por herança pioraria; o problema é indireção desnecessária.",
+        "Número de métodos não legitima a fábrica; o critério é resolver uma dor real de construção/variação."
+      ]
+    },
+    {
+      "pergunta": "Na ordem mental de refatoração do capstone, por que faz sentido começar por SRP antes de atacar o switch (OCP)?",
+      "opcoes": [
+        "Porque OCP é opcional e SRP é obrigatório",
+        "Porque separar responsabilidades (SRP) expõe as costuras e isola a variação, deixando claro ONDE aplicar o ponto de extensão do OCP",
+        "Porque SRP elimina a necessidade de OCP",
+        "Porque a ordem alfabética exige S antes de O"
+      ],
+      "correta": 1,
+      "explicacao": "Cada passo prepara o próximo: separar por ator revela onde a variação vive, tornando o ponto de extensão do OCP evidente. É roteiro mental, não regra absoluta.",
+      "feedbacks": [
+        "Nenhum dos dois é 'opcional'; ambos se aplicam por dor real. O ponto é preparação, não obrigatoriedade.",
+        "Correto: SRP separa e expõe as costuras; com a responsabilidade isolada, fica claro qual variação vira o ponto de extensão do OCP.",
+        "SRP não elimina o OCP: separar não faz o switch por tipo sumir; ele ainda precisa virar polimorfismo.",
+        "A justificativa não é alfabética — é que cada passo prepara o próximo; a ordem é um mapa, não um trilho rígido."
+      ]
+    },
+    {
+      "pergunta": "Sandi Metz: 'duplication is far cheaper than the wrong abstraction'. Qual a implicação prática correta?",
+      "opcoes": [
+        "Nunca elimine duplicação",
+        "Na dúvida, duplique e espere: apagar código repetido é trivial, mas desfazer uma abstração errada já com muitos usos é caro. Abstraia quando a variação for conhecida (Regra dos Três)",
+        "Abstraia sempre na primeira ocorrência",
+        "Duplicação é sempre melhor que abstração"
+      ],
+      "correta": 1,
+      "explicacao": "Uma abstração prematura é dívida: você paga a indireção antes de saber se precisa, e desfazê-la é caro. Espere ter exemplos suficientes (três) para desenhar a abstração certa.",
+      "feedbacks": [
+        "Não é 'nunca eliminar' — duplicação real e estável deve ser removida; a frase é sobre TIMING (não abstrair cedo demais).",
+        "Correto: é uma questão de custo e timing. Duplique enquanto a variação é incerta; abstraia quando ela ficar clara (Regra dos Três).",
+        "Abstrair na primeira ocorrência é justamente o erro que a frase alerta: você adivinha a abstração sem exemplos.",
+        "Nem sempre: duplicação estável e óbvia deve ser removida. A frase é sobre não abstrair PREMATURAMENTE, não sobre glorificar a duplicação."
+      ]
+    },
+    {
+      "pergunta": "Depois de refatorar o OrderProcessor, ele passou a receber ICalculadora, IPedidoRepository e INotificador no construtor e só orquestra as chamadas. Qual conjunto de ganhos isso traz?",
+      "opcoes": [
+        "Nenhum ganho real; só mais código",
+        "SRP (só coordena), DIP (depende de abstrações) e testabilidade (injeta fakes no lugar do banco/e-mail reais)",
+        "Viola ISP porque tem três dependências",
+        "Viola OCP porque usa interfaces"
+      ],
+      "correta": 1,
+      "explicacao": "Coordenar em vez de fazer é SRP; depender de abstrações injetadas é DIP; e a inversão habilita testar com fakes. Interfaces não violam OCP — são o mecanismo dele.",
+      "feedbacks": [
+        "Há ganhos concretos: coesão (SRP), desacoplamento (DIP) e testabilidade. Não é 'só mais código'.",
+        "Correto: a classe passou a coordenar (SRP), depender de abstrações injetadas (DIP) e ficou testável com fakes.",
+        "Ter três dependências não fere ISP; ISP é sobre interface gorda que o cliente usa pela metade, não sobre número de dependências.",
+        "Usar interfaces é o mecanismo do OCP/DIP, não uma violação. O OCP é favorecido, não ferido."
+      ]
+    },
+    {
+      "pergunta": "Qual pergunta de code review captura MELHOR a checagem de dosagem (evitar over-engineering)?",
+      "opcoes": [
+        "Este código tem interfaces suficientes?",
+        "Esta indireção resolve uma dor real (mudança/teste/duplicação) ou é dogma? A interface tem mais de uma implementação, atual ou à vista?",
+        "Cada classe implementa pelo menos uma interface?",
+        "O PR menciona a sigla SOLID?"
+      ],
+      "correta": 1,
+      "explicacao": "A dosagem se resume a: a abstração se paga? Interface com uma implementação só e nenhuma dor real é indireção inútil. Julgamento > dogma.",
+      "feedbacks": [
+        "'Interfaces suficientes' incentiva justamente o excesso; o critério é se a indireção se paga, não a quantidade.",
+        "Correto: a pergunta certa é sobre DOR real e sobre a interface ter (ou vir a ter) mais de uma implementação — não sobre quantidade de abstrações.",
+        "Forçar interface em toda classe é over-engineering; muitas classes coesas não precisam de abstração nenhuma.",
+        "Mencionar a sigla não é critério de qualidade; SOLID é heurística a serviço da mudança, não um selo."
+      ]
+    },
+    {
+      "pergunta": "O padrão Decorator (ex.: adicionar log e cache envolvendo um IRepository) materializa principalmente qual princípio?",
+      "opcoes": [
+        "SRP, porque divide a classe",
+        "OCP, porque adiciona comportamento envolvendo o objeto, sem modificar a classe original",
+        "LSP, porque cria uma nova hierarquia",
+        "ISP, porque reduz a interface"
+      ],
+      "correta": 1,
+      "explicacao": "O Decorator estende o comportamento (log, cache, retry) mantendo a mesma interface e sem tocar na classe decorada — isso é OCP em ação.",
+      "feedbacks": [
+        "O Decorator não divide a classe original; ele a envolve para adicionar comportamento — é sobre extensão (OCP).",
+        "Correto: envolver o objeto para adicionar comportamento sem alterar a classe original é a essência do OCP.",
+        "Ele até respeita LSP (mantém a interface), mas o objetivo central é estender sem modificar: OCP.",
+        "O Decorator não reduz a interface; ele preserva a mesma interface e agrega comportamento."
+      ]
+    },
+    {
+      "pergunta": "Um time debate: criar IGatewayPagamento agora, mesmo com um único gateway (Stripe) e nenhum outro planejado. O que a boa dosagem sugere?",
+      "opcoes": [
+        "Criar sempre: toda dependência externa deve virar interface, sem exceção",
+        "Depende: se a intenção é TESTAR o processador sem chamar a Stripe real, a abstração se paga (DIP a serviço do teste); só 'por precaução de futuro' sem essa dor, é YAGNI",
+        "Nunca criar interfaces para libs externas",
+        "Criar três interfaces para garantir extensibilidade"
+      ],
+      "correta": 1,
+      "explicacao": "A abstração de uma dependência de fronteira se justifica por dor real — testabilidade é uma dor legítima (você injeta um fake). Abstrair só pelo futuro imaginado, sem testar e sem segundo gateway, é YAGNI.",
+      "feedbacks": [
+        "'Sempre, sem exceção' é dogma; a régua é a dor real, não uma regra cega.",
+        "Correto: testabilidade é uma dor legítima que justifica inverter a dependência (DIP); sem essa dor e sem segundo gateway, é abstração prematura (YAGNI).",
+        "'Nunca' também é dogma; abstrair a fronteira é ótimo quando habilita teste ou troca real.",
+        "Multiplicar interfaces por precaução é exatamente o over-engineering que a dosagem evita."
+      ]
+    },
+    {
+      "pergunta": "Qual afirmação resume corretamente a relação entre SOLID e Design Patterns e a lição final do curso?",
+      "opcoes": [
+        "Patterns substituem SOLID; aprender patterns dispensa entender os princípios",
+        "Muitos patterns GoF são SOLID 'materializado' (soluções nomeadas para respeitar um princípio); entenda o princípio e o pattern vira óbvio — sempre dosando por dor real",
+        "SOLID e patterns não têm relação",
+        "Aplicar todos os patterns de uma vez garante um bom design"
+      ],
+      "correta": 1,
+      "explicacao": "Strategy (OCP/DIP), Factory (DIP/OCP), Adapter (LSP/ISP), Decorator (OCP)... são princípios com nome. Entender o princípio dispensa decorar catálogo — e tudo ainda sujeito à dosagem.",
+      "feedbacks": [
+        "É o contrário: patterns pressupõem os princípios; decorá-los sem entender o porquê leva a aplicá-los onde não cabem.",
+        "Correto: os patterns são SOLID com nome. Domine o princípio e o pattern se explica sozinho — sempre aplicado por dor real, não por dogma.",
+        "Têm relação direta: vários patterns existem justamente para respeitar um princípio SOLID.",
+        "Empilhar patterns não garante bom design — costuma gerar over-engineering. O critério continua sendo a dor real."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,153 @@
+{
+  "modulo": "05",
+  "titulo": "ISP — Segregação de Interfaces (Interface Segregation Principle)",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que vamos fazer neste módulo",
+      "pontos": [
+        "Objetivo: aprender a desenhar interfaces enxutas, específicas ao papel do cliente, em vez de interfaces 'gordas' e genéricas",
+        "Formato: eu explico, você pergunta à vontade, e a gente avança quando fizer sentido",
+        "O vilão do módulo: a 'fat interface' — uma interface grande que várias classes implementam mas cada uma só usa um pedaço",
+        "Ao fim: prática (segregar uma interface gorda em role interfaces), quiz e prova"
+      ],
+      "checkpoint": "Confirme que o aluno está pronto pra começar e topa o formato conversado",
+      "ref": "05-isp/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "A definição: não depender do que você não usa",
+      "pontos": [
+        "ISP (Uncle Bob): nenhum cliente deve ser forçado a depender de métodos que não usa",
+        "Traduzindo: interfaces devem ser pequenas e específicas ao PAPEL de quem as consome — 'role interfaces', não abstrações genéricas de tudo",
+        "O 'cliente' aqui é quem depende da interface: tanto quem a CHAMA quanto quem a IMPLEMENTA",
+        "A régua do Módulo 01: interface enxuta = menos acoplamento; quem depende dela não é arrastado por mudanças que não lhe dizem respeito",
+        "ISP é o lado da INTERFACE do mesmo cuidado que o SRP tem no lado da CLASSE: uma responsabilidade, uma razão de mudar"
+      ],
+      "checkpoint": "Pergunte se ficou clara a ideia de 'cliente forçado a depender do que não usa' — e quem é o 'cliente'",
+      "ref": "05-isp/teoria.md#1-a-definicao-nao-depender-do-que-voce-nao-usa"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "O smell central: a 'fat interface'",
+      "pontos": [
+        "O cheiro clássico: uma interface grande (IMultiFunctionDevice { Print(); Scan(); Fax(); }) que várias classes implementam, mas cada uma só usa parte",
+        "A impressora simples é forçada a implementar Scan() e Fax() que ela não faz — acaba com throw new NotSupportedException()",
+        "Esse stub falso é veneno duplo: mente sobre o contrato (fere LSP: um método 'proibido' que estoura) e infla a classe com código morto",
+        "Outro exemplo: interface IWorker { Work(); Eat(); } e um RobotWorker que trabalha mas não come — Eat() vira lixo/exception",
+        "Sintoma: implementações cheias de 'não suportado', mocks de teste inchados, e recompilação de quem nem usa o método que mudou"
+      ],
+      "checkpoint": "Peça pro aluno apontar, no IMultiFunctionDevice, qual cliente é forçado a depender do que não usa — e por que o NotSupportedException é um sintoma, não a cura",
+      "ref": "05-isp/teoria.md#2-o-smell-central-a-fat-interface"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "A solução: segregar em role interfaces (antes/depois em C#)",
+      "pontos": [
+        "A cura: quebrar a interface gorda em interfaces pequenas por papel — IPrinter { Print(); }, IScanner { Scan(); }, IFax { Fax(); }",
+        "Antes: SimplePrinter : IMultiFunctionDevice implementa Print() de verdade e joga NotSupportedException em Scan()/Fax()",
+        "Depois: SimplePrinter : IPrinter (só o que faz); a multifuncional implementa IPrinter, IScanner, IFax — em C# uma classe implementa várias interfaces",
+        "O cliente depende só da fatia que precisa: um método que só imprime recebe IPrinter, não a interface inteira",
+        "Resultado: some o stub falso, some o risco de LSP, e mudar Fax() não recompila nem quebra quem só imprime"
+      ],
+      "checkpoint": "Confirme que o aluno enxerga: a interface gorda virou N interfaces por papel; a multifuncional compõe várias, a simples só uma",
+      "ref": "05-isp/teoria.md#3-a-solucao-segregar-em-role-interfaces"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Relação com SRP e LSP; composição de interfaces",
+      "pontos": [
+        "ISP e SRP são primos: SRP separa a CLASSE por razão de mudar; ISP separa a INTERFACE por cliente/papel — os dois buscam coesão",
+        "ISP e LSP: a fat interface EMPURRA a violação de LSP (métodos não suportados que estouram); segregar remove a tentação do stub falso",
+        "Em C# a composição é natural: class MultiDevice : IPrinter, IScanner, IFax {...} — várias interfaces pequenas somam sem herança gorda",
+        "O consumidor declara só o papel que precisa (void EmitirRecibo(IPrinter p)) e fica imune a mudanças em IScanner/IFax",
+        "Isso encaixa com DIP (Módulo 06): depender de uma abstração pequena e certeira, não de uma genérica que carrega peso morto"
+      ],
+      "checkpoint": "Pergunte como ISP se conecta com SRP (coesão) e com LSP (some o método 'proibido' que estoura)",
+      "ref": "05-isp/teoria.md#4-relacao-com-srp-e-lsp-e-composicao-de-interfaces"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Dosagem: segregar por papel, não por método",
+      "pontos": [
+        "O extremo errado: UMA interface por método sempre — isso pulveriza o design, multiplica arquivos e não descreve papel nenhum",
+        "O gatilho certo do ISP: 'existe algum cliente que só usa um PEDAÇO desta interface?' Se sim, esse pedaço quer virar uma interface própria",
+        "Se TODOS os clientes usam a interface inteira, ela NÃO é gorda — deixá-la unida é coeso, quebrar seria over-engineering",
+        "Segregue por PAPEL/cliente real (IPrinter, IScanner), não mecanicamente por assinatura de método",
+        "Julgamento > dogma: ISP resolve dor real (stub falso, recompilação, mock inchado); sem essa dor, não invente a segregação"
+      ],
+      "checkpoint": "Peça o critério em uma frase: quando SEGREGAR e quando NÃO (existe cliente que só usa um pedaço?)",
+      "ref": "05-isp/teoria.md#5-dosagem-segregar-por-papel-nao-por-metodo"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "Recap da teoria + checagem de entendimento",
+      "pontos": [
+        "Recapitular: definição (não depender do que não usa), o smell (fat interface + NotSupportedException), a cura (role interfaces)",
+        "Relembrar as pontes: ISP é o SRP das interfaces e evita as violações de LSP causadas por métodos não suportados",
+        "Fixar a dosagem: segregar por papel real, não por método; se todos usam tudo, não é gorda",
+        "Rodar mentalmente as ~5 perguntas de checagem da teoria antes de partir pra prática"
+      ],
+      "checkpoint": "Antes de seguir, pergunte: 'podemos passar para a prática de refatoração?'",
+      "ref": "05-isp/teoria.md#checagem-de-entendimento"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Refatorar uma interface gorda em role interfaces",
+      "pontos": [
+        "Ponto de partida: uma interface gorda (ex.: IRepositorio ou IMultiFunctionDevice) com implementações que estouram NotSupportedException nos métodos que não usam",
+        "Passo 1: identificar os CLIENTES e quais métodos cada um realmente usa (mapear papéis)",
+        "Passo 2: quebrar a interface em role interfaces por papel; a implementação rica compõe várias, a pobre só a sua",
+        "Passo 3: trocar as assinaturas dos consumidores para depender só da fatia que precisam",
+        "Fechar reconhecendo que o NotSupportedException sumiu (e com ele o risco de LSP)"
+      ],
+      "acao": "Conduzir a refatoração no chat: apresentar o código com o cheiro, dar dicas progressivas e comparar com a solução de referência",
+      "checkpoint": "Confirme que o aluno separou por papel (sem pulverizar em uma interface por método) antes de fechar",
+      "ref": "05-isp/pratica.md#o-codigo-de-partida"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 engine/session.py start SOLID/apps/modulo-05/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "SOLID/apps/modulo-05/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 06 após passar"
+      ],
+      "acao": "Rodar: python3 engine/session.py start SOLID/provas/modulo-05/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 06; se não, revise os pontos errados",
+      "ref": "SOLID/provas/modulo-05/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 05",
+      "pontos": [
+        "Recap do que dominou: reconhecer a fat interface, segregar em role interfaces e dosar sem pulverizar",
+        "Amarrar as pontes: ISP como SRP das interfaces e antídoto contra LSP quebrado por métodos não suportados",
+        "Próximo: Módulo 06 — DIP (Inversão de Dependência): depender de abstrações e a DI do .NET"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 06 ou parar por aqui",
+      "ref": "SOLID/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

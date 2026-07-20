@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 03 — OCP (Aberto/Fechado)",
+  "questoes": [
+    {
+      "pergunta": "O que o Open/Closed Principle (OCP) prega?",
+      "opcoes": [
+        "Toda classe deve ter métodos públicos abertos e campos privados fechados",
+        "Entidades devem ser abertas para extensão, mas fechadas para modificação",
+        "Todo código deve estar aberto para qualquer um modificar livremente",
+        "Classes fechadas nunca podem ser estendidas por herança"
+      ],
+      "correta": 1,
+      "explicacao": "OCP: você adiciona comportamento novo criando código novo (extensão), sem editar o código existente e testado (modificação)."
+    },
+    {
+      "pergunta": "Um AreaCalculator tem um switch(shape.Type) e ganha um case novo a cada forma geométrica adicionada. Qual princípio isso viola?",
+      "opcoes": [
+        "SRP — responsabilidade única",
+        "OCP — pois estender (nova forma) exige MODIFICAR a classe existente",
+        "LSP — substituição de Liskov",
+        "Nenhum: switch é sempre a solução ideal"
+      ],
+      "correta": 1,
+      "explicacao": "O switch por tipo é o smell clássico de OCP: cada tipo novo obriga a editar a mesma classe, com risco de regressão."
+    },
+    {
+      "pergunta": "Qual é a refatoração canônica para eliminar um switch que decide comportamento por tipo?",
+      "opcoes": [
+        "Trocar o switch por uma cadeia de if-else equivalente",
+        "Extrair uma abstração (interface/classe abstrata) e mover cada caso para sua própria implementação, usando polimorfismo",
+        "Mover o switch para dentro de um método estático utilitário",
+        "Adicionar mais um parâmetro booleano ao método"
+      ],
+      "correta": 1,
+      "explicacao": "Polimorfismo faz o 'switch' em runtime: cada tipo implementa seu próprio comportamento, e adicionar um tipo vira criar uma classe nova."
+    },
+    {
+      "pergunta": "Depois de refatorar Shape para polimorfismo (cada forma implementa Area()), o que é preciso fazer para adicionar um Triangle?",
+      "opcoes": [
+        "Editar o enum, a classe Shape e o switch do calculador",
+        "Criar uma classe Triangle que implementa Area(); nada mais precisa ser tocado",
+        "Reescrever todas as formas existentes",
+        "Adicionar um case novo no calculador"
+      ],
+      "correta": 1,
+      "explicacao": "Aberto para extensão (nova classe), fechado para modificação (Circle, Rectangle e o chamador ficam intactos). É OCP na prática."
+    },
+    {
+      "pergunta": "O padrão Strategy é a materialização mais comum de OCP porque:",
+      "opcoes": [
+        "Elimina a necessidade de qualquer interface no sistema",
+        "Encapsula 'o que varia' atrás de uma interface injetável; comportamento novo = nova implementação registrada",
+        "Faz todo o código rodar mais rápido",
+        "Substitui o polimorfismo por reflexão em runtime"
+      ],
+      "correta": 1,
+      "explicacao": "Strategy isola o eixo de variação numa interface (ex.: IDiscountPolicy) e injeta a implementação; adicionar comportamento não toca em quem usa."
+    },
+    {
+      "pergunta": "O que é um 'ponto de variação' no contexto de OCP?",
+      "opcoes": [
+        "Qualquer linha de código que pode conter um bug",
+        "O eixo específico ao longo do qual você antecipa mudança e decide fechar contra modificação",
+        "Um ponto de interrupção usado no debug",
+        "A regra de que todo código deve estar fechado contra toda e qualquer mudança"
+      ],
+      "correta": 1,
+      "explicacao": "Você não pode estar fechado contra TODA mudança. Escolhe o eixo que realmente varia (ex.: transportadora) e abstrai só ele."
+    },
+    {
+      "pergunta": "Aplicar OCP cedo demais, criando uma interface e hierarquia para algo que nunca variou, é um exemplo de:",
+      "opcoes": [
+        "Boa prática que sempre compensa",
+        "Over-engineering / abstração especulativa (YAGNI)",
+        "Violação de SRP",
+        "Uso correto da Rule of Three"
+      ],
+      "correta": 1,
+      "explicacao": "Abstração para uma variação que não existe é YAGNI: mais indireção e arquivos, zero benefício. Pior que um if simples."
+    },
+    {
+      "pergunta": "O que a 'Rule of Three' recomenda sobre quando aplicar OCP?",
+      "opcoes": [
+        "Crie sempre pelo menos três interfaces por classe",
+        "Faça simples na 1ª vez; abstraia quando o padrão de variação emerge (por volta da 3ª ocorrência)",
+        "Nunca abstraia antes de ter três desenvolvedores no time",
+        "Refatore todo código a cada três dias"
+      ],
+      "correta": 1,
+      "explicacao": "Na 3ª variação o eixo de mudança já está evidente — aí a abstração é baseada em evidência, não em especulação."
+    },
+    {
+      "pergunta": "Um relatório exporta APENAS em PDF, sempre exportou, e não há pedido para outro formato. Criar uma interface IExporter com uma única implementação PdfExporter agora é:",
+      "opcoes": [
+        "Excelente: sempre bom prevenir",
+        "Provavelmente over-engineering (YAGNI); um método concreto ExportPdf() é mais simples e suficiente",
+        "Uma violação de LSP",
+        "Obrigatório pelo OCP em qualquer caso"
+      ],
+      "correta": 1,
+      "explicacao": "Sem variação real, a abstração só adiciona indireção. OCP serve à mudança barata; aqui não há mudança para baratear."
+    },
+    {
+      "pergunta": "OCP costuma se apoiar em quais outros princípios/mecanismos?",
+      "opcoes": [
+        "Apenas em campos privados",
+        "Polimorfismo (ligado a LSP) e abstrações injetadas (ligado a DIP)",
+        "Somente em métodos estáticos",
+        "Em desativar o compilador de otimizações"
+      ],
+      "correta": 1,
+      "explicacao": "Estender via polimorfismo exige subtipos substituíveis (LSP), e depender de abstrações injetadas é DIP. OCP amarra os dois."
+    }
+  ]
+}

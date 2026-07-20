@@ -1,0 +1,155 @@
+{
+  "modulo": "07",
+  "titulo": "Capstone — SOLID na prática (os 5 juntos)",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que vamos fazer neste módulo final",
+      "pontos": [
+        "Este módulo NÃO introduz um princípio novo: ele COSTURA os cinco (SRP, OCP, LSP, ISP, DIP) num raciocínio só",
+        "Mudança de papel: até aqui você viu cada princípio isolado; agora vamos ver como eles se reforçam na prática",
+        "Formato: eu explico, você pergunta à vontade, e a gente avança quando fizer sentido",
+        "A prática é a MAIOR do curso: um mini-sistema em C# com vários cheiros de uma vez, refatorado aplicando os 5 em ordem",
+        "Ao fim: a ponte para Design Patterns e — o mais importante — a DOSAGEM (SOLID é heurística, não lei); depois quiz, prova e formatura do curso"
+      ],
+      "checkpoint": "Confirme que o aluno lembra dos 5 princípios (peça uma frase de cada) e topa fechar o curso costurando tudo",
+      "ref": "07-capstone/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "A teia: como os 5 princípios se reforçam",
+      "pontos": [
+        "SOLID não é uma lista de 5 regras soltas; é uma TEIA onde um puxa o outro",
+        "SRP separa responsabilidades por razão de mudar → naturalmente gera classes coesas e pequenas",
+        "ISP é o SRP das INTERFACES: mesma ideia de coesão, aplicada ao contrato em vez da classe",
+        "OCP (estender sem modificar) precisa de polimorfismo — e polimorfismo só é SEGURO se LSP for respeitado (subtipo honra o contrato)",
+        "DIP fornece as ABSTRAÇÕES das quais OCP e ISP dependem: você estende/injeta contra uma interface, não contra um concreto",
+        "Na prática você quase nunca aplica um princípio isolado: separar por SRP costuma expor um ponto de OCP, que pede uma abstração (DIP) enxuta (ISP) e substituível (LSP)",
+        "Tabela mental smell→princípio: God class→SRP; switch/if por tipo que cresce→OCP; subtipo que estoura/mente→LSP; fat interface→ISP; new de concreto no meio da lógica→DIP"
+      ],
+      "checkpoint": "Peça pro aluno ligar dois pares: por que OCP depende de LSP, e por que ISP é 'o SRP das interfaces'",
+      "ref": "07-capstone/teoria.md#1-a-teia-como-os-5-principios-se-reforcam"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "A ordem mental de refatoração (roteiro, não receita)",
+      "pontos": [
+        "Não é uma sequência rígida — é um roteiro mental pra atacar um código bagunçado sem se perder",
+        "1) SRP: identifique responsabilidades/ATORES e separe (quem pede mudança em quê?) — quebra a God class",
+        "2) OCP: veja ONDE há variação (o switch/if por tipo) e crie um ponto de extensão via abstração/polimorfismo",
+        "3) LSP: garanta que cada subtipo/implementação honra o contrato — nada de método que estoura ou muda a semântica",
+        "4) ISP: enxugue as interfaces por PAPEL — cada cliente depende só da fatia que usa",
+        "5) DIP: inverta as dependências de fronteira (I/O, banco, e-mail) pra abstrações e INJETE (construtor)",
+        "A ordem ajuda porque cada passo prepara o próximo: separar (SRP) revela a variação (OCP), que pede abstração substituível (LSP) e enxuta (ISP) injetada (DIP)"
+      ],
+      "checkpoint": "Peça pro aluno recitar a ordem com uma palavra-chave por passo (separar, estender, substituir, enxugar, inverter)",
+      "ref": "07-capstone/teoria.md#2-a-ordem-mental-de-refatoracao"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "A ponte para Design Patterns: SOLID materializado",
+      "pontos": [
+        "Muitos padrões GoF são SOLID 'com nome': soluções nomeadas e reconhecíveis pra respeitar um princípio",
+        "Strategy = OCP+DIP: injeta o algoritmo por interface; adicionar variante não mexe no cliente (é literalmente o 'depois' do switch do OCP)",
+        "Factory Method / Abstract Factory = DIP+OCP: isolam o 'new' de concreto num único lugar, pra o resto depender da abstração",
+        "Adapter = LSP+ISP: encaixa uma interface incompatível na que seu código espera, sem quebrar o contrato de quem chama",
+        "Decorator = OCP: adiciona comportamento envolvendo o objeto, estendendo sem modificar a classe original",
+        "Template Method (esqueleto fixo, passos variáveis) e Observer (desacoplar quem avisa de quem reage) também caem no OCP/DIP",
+        "Moral: não decore os 23 padrões; entenda o PRINCÍPIO por trás — o padrão vira óbvio. Design Patterns é o próximo curso natural"
+      ],
+      "checkpoint": "Pergunte qual princípio Strategy materializa e por que Factory existe (isolar o new)",
+      "ref": "07-capstone/teoria.md#3-a-ponte-para-design-patterns"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Dosagem final: SOLID é heurística, não lei",
+      "pontos": [
+        "O ponto mais importante do curso: código simples e direto quase sempre vence código 'SOLID' cheio de indireção",
+        "Aplique um princípio quando a DOR aparece: duplicação real, mudança que dói, necessidade de testar — não preventivamente",
+        "YAGNI (You Aren't Gonna Need It): não crie o ponto de extensão pra uma variação que talvez nunca exista",
+        "Regra dos Três: só abstraia na TERCEIRA repetição; uma abstração prematura é DÍVIDA, não patrimônio (você paga a indireção antes de saber se precisa)",
+        "Abstração errada é mais cara que duplicação: desfazer uma interface mal desenhada custa mais do que apagar código repetido",
+        "Checklist honesto do PR: 'estou aplicando por dor real (mudança/teste/duplicação) ou por dogma?'; 'essa interface tem 1 só implementação e nenhuma à vista?'; 'consigo explicar a indireção sem dizer só SOLID?'",
+        "Sinais de over-engineering: interfaces com uma implementação só, fábricas pra objetos triviais, camadas que só repassam chamada"
+      ],
+      "checkpoint": "Peça o critério em uma frase: quando aplicar um princípio (dor real) e quando NÃO (YAGNI/Regra dos Três)",
+      "ref": "07-capstone/teoria.md#4-dosagem-final-solid-e-heuristica-nao-lei"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Recap do curso inteiro + checklist de code review",
+      "pontos": [
+        "Recap dos 5: SRP (uma razão de mudar), OCP (estender sem modificar), LSP (subtipo substitui de verdade), ISP (interface por papel), DIP (depender de abstrações)",
+        "A grande lição: os princípios servem à MUDANÇA — reduzir acoplamento e aumentar coesão pra o código resistir ao tempo",
+        "Checklist de code review à luz de SOLID: perguntas que você passa a fazer num PR (esta classe tem mais de uma razão de mudar? esse switch vai crescer? esse subtipo honra o contrato? alguém depende de método que não usa? isso faz new de concreto de fronteira?)",
+        "E o contrapeso sempre junto: 'isso resolve uma dor real ou é dogma?' — SOLID sem dosagem vira over-engineering",
+        "Rodar mentalmente as ~5 perguntas de checagem da teoria antes de partir pra prática final"
+      ],
+      "checkpoint": "Antes de seguir, aplique a checagem de entendimento; se sólido, pergunte: 'podemos passar para a prática (a maior do curso)?'",
+      "ref": "07-capstone/teoria.md#checagem-de-entendimento"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Refatoração integradora: os 5 princípios num mini-sistema",
+      "pontos": [
+        "Ponto de partida: um OrderProcessor 'God class' com VÁRIOS cheiros de uma vez — calcula, faz new de concreto (gateway, SMTP, DB), tem switch por tipo de cliente/pagamento e implementa uma interface gorda",
+        "Passo 1 (SRP): separar as responsabilidades por ator — cálculo, persistência, notificação, pagamento — cada uma na sua classe",
+        "Passo 2 (OCP): trocar o switch por tipo (desconto/pagamento) por polimorfismo — uma abstração com implementações por variante (Strategy)",
+        "Passo 3 (LSP): garantir que cada estratégia/implementação honra o contrato — sem estourar exceção nem mudar a semântica esperada",
+        "Passo 4 (ISP): enxugar as interfaces por papel — quem só notifica depende de INotificador, não do mundo inteiro",
+        "Passo 5 (DIP): inverter as dependências de fronteira (gateway, e-mail, repo) pra abstrações e INJETAR no construtor — pronto pra DI do .NET e pra teste",
+        "Fechar com a DOSAGEM: mostrar onde PARAR — não criar fábrica pra objeto trivial, não abstrair o que tem uma implementação só; o resultado é injetável e extensível SEM excesso de indireção"
+      ],
+      "acao": "Conduzir a refatoração no chat, um princípio por vez: apresentar o código com os cheiros, dar dicas progressivas, aplicar SRP→OCP→LSP→ISP→DIP e comparar com a solução de referência — sempre questionando a dosagem",
+      "checkpoint": "Confirme que o aluno aplicou os 5 na ordem E soube onde PARAR (reconheceu ao menos um ponto onde abstrair seria over-engineering) antes de fechar",
+      "ref": "07-capstone/pratica.md#o-codigo-de-partida"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões INTEGRADORAS)",
+        "Estilo: dado um trecho, qual(is) princípio(s) viola e qual a refatoração; distinguir aplicação legítima de over-engineering; ligar pattern↔princípio",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 engine/session.py start SOLID/apps/modulo-07/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e mapeie cada erro ao princípio a revisar",
+      "ref": "SOLID/apps/modulo-07/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova final do curso",
+      "pontos": [
+        "Avaliação final (12 questões integradoras, feedback por alternativa) — o exame de formatura do curso",
+        "Cobre os 5 princípios em cenários cruzados, a ponte para patterns e a dosagem (over-engineering)",
+        "Aprovação 70%"
+      ],
+      "acao": "Rodar: python3 engine/session.py start SOLID/provas/modulo-07/questions.json --id prova",
+      "checkpoint": "Se passou: formatura! Se não, revise os princípios dos erros e refaça",
+      "ref": "SOLID/provas/modulo-07/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "🎓 Formatura — fechamento do curso de SOLID",
+      "pontos": [
+        "CELEBRAR: o aluno percorreu os 5 princípios do fundamento à aplicação e costurou tudo numa refatoração real",
+        "Recap da jornada: fundamentos de design → SRP → OCP → LSP → ISP → DIP → capstone integrador",
+        "A lição que fica: SOLID é ferramenta a serviço da MUDANÇA, aplicada por dor real — critério, não dogma",
+        "Próximo passo natural: um curso de Design Patterns (Strategy, Factory, Adapter, Decorator, Observer... SOLID materializado)",
+        "Hábito que fica: revisar PRs à luz do checklist SOLID + sempre perguntar 'dor real ou dogma?'; continuar praticando refatoração no dia a dia"
+      ],
+      "checkpoint": "Parabenize de verdade pela conclusão do curso, pergunte como foi a experiência e se quer emendar Design Patterns",
+      "ref": "SOLID/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

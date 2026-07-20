@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 04: LSP — Substituição de Liskov",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Qual é a essência prática do Princípio da Substituição de Liskov?",
+      "opcoes": [
+        "Uma classe deve ter uma única razão para mudar",
+        "Onde o programa usa um supertipo, deve poder receber qualquer subtipo sem quebrar a corretude",
+        "Ninguém deve depender de métodos que não usa",
+        "Dependa de abstrações, não de implementações concretas"
+      ],
+      "correta": 1,
+      "explicacao": "LSP: subtipos devem ser substituíveis pelos supertipos sem quebrar o comportamento esperado.",
+      "feedbacks": [
+        "Isso é SRP (Responsabilidade Única), não LSP.",
+        "Correto: substituibilidade comportamental — trocar o pai pelo filho mantém a corretude.",
+        "Isso descreve o ISP (Segregação de Interfaces), não o LSP.",
+        "Isso é o DIP (Inversão de Dependência), não o LSP."
+      ]
+    },
+    {
+      "pergunta": "No exemplo Retângulo/Quadrado, por que fazer `Square : Rectangle` viola LSP?",
+      "opcoes": [
+        "Porque um quadrado não é geometricamente um retângulo",
+        "Porque o Square quebra a invariante do Rectangle de que largura e altura mudam de forma independente",
+        "Porque classes em C# não podem ser herdadas",
+        "Porque Area deveria ser um método e não uma propriedade"
+      ],
+      "correta": 1,
+      "explicacao": "O Rectangle carrega a invariante implícita 'Width e Height são independentes'. O Square a quebra ao igualar os lados.",
+      "feedbacks": [
+        "Geometricamente um quadrado é um retângulo — o problema não é a taxonomia, é o comportamento.",
+        "Exato: a invariante 'largura e altura independentes' é violada pelo Square, então ele não substitui o Rectangle.",
+        "Classes em C# podem ser herdadas normalmente; não é isso.",
+        "Ser propriedade ou método não muda a violação de LSP; o problema é a invariante quebrada."
+      ]
+    },
+    {
+      "pergunta": "Um teste-cliente faz `r.Width = 5; r.Height = 4;` e checa `Area == 20`. Passando um Square que iguala os lados, o resultado é:",
+      "opcoes": [
+        "20 — Square se comporta igual a Rectangle",
+        "16 — setar Height=4 também mudou Width para 4",
+        "9 — soma dos lados",
+        "Erro de compilação"
+      ],
+      "correta": 1,
+      "explicacao": "No Square, o setter de Height também seta Width; Area vira 4*4 = 16. O programa quebra só por trocar o tipo.",
+      "feedbacks": [
+        "Não: o Square não se comporta igual — igualar os lados muda o resultado.",
+        "Correto: 4*4 = 16. Esse teste passa com Rectangle e falha com Square: é a prova da violação de LSP.",
+        "Area é largura vezes altura, não a soma dos lados.",
+        "Compila sem problema (Square é um Rectangle para o compilador); a quebra é em tempo de execução."
+      ]
+    },
+    {
+      "pergunta": "Sobre pré-condições, o que caracteriza uma violação de LSP num subtipo?",
+      "opcoes": [
+        "O subtipo aceita mais entradas que o supertipo",
+        "O subtipo FORTALECE a pré-condição, exigindo mais do que o supertipo exigia",
+        "O subtipo mantém a mesma pré-condição",
+        "O subtipo executa mais rápido"
+      ],
+      "correta": 1,
+      "explicacao": "Pré-condições não podem ser fortalecidas: o filho não pode exigir mais que o pai (ex.: recusar entradas que o pai aceitava).",
+      "feedbacks": [
+        "Aceitar mais (ser mais permissivo) é PERMITIDO — não viola LSP.",
+        "Correto: exigir mais do que o pai (fortalecer a pré) quebra quem chamava com entradas que o pai aceitava.",
+        "Manter a mesma pré-condição é perfeitamente válido.",
+        "Velocidade não faz parte do contrato de LSP aqui."
+      ]
+    },
+    {
+      "pergunta": "Um repositório-base garante que `Find(id)` nunca retorna null. Uma subclasse sobrescreve e passa a retornar null quando não acha em cache. Que regra de LSP foi violada?",
+      "opcoes": [
+        "Fortaleceu uma pré-condição",
+        "Enfraqueceu uma pós-condição",
+        "Nenhuma — retornar null é sempre aceitável",
+        "Violou o SRP"
+      ],
+      "correta": 1,
+      "explicacao": "Pós-condições não podem ser enfraquecidas. Se o pai garante 'nunca null' e o filho retorna null, o cliente que confiava nisso quebra.",
+      "feedbacks": [
+        "Pré-condição é sobre a ENTRADA exigida; aqui o problema é a SAÍDA garantida.",
+        "Correto: o pai prometia 'nunca null'; o filho entrega menos garantia — pós-condição enfraquecida.",
+        "Não é aceitável aqui: o contrato do pai era 'nunca null', e o cliente contava com isso.",
+        "SRP é sobre razões para mudar; aqui o problema é a substituibilidade (LSP)."
+      ]
+    },
+    {
+      "pergunta": "Ver `throw new NotSupportedException()` num método herdado (ex.: `Penguin.Fly()` ou `ReadOnlyList.Add()`) é sinal de quê?",
+      "opcoes": [
+        "Bom tratamento de erros",
+        "Violação de LSP: o subtipo não consegue honrar o contrato do supertipo",
+        "Aplicação correta do OCP",
+        "Uma otimização de memória"
+      ],
+      "correta": 1,
+      "explicacao": "Lançar em método herdado que o pai prometia executar é o smell clássico de LSP: o subtipo não substitui o supertipo.",
+      "feedbacks": [
+        "Não é tratamento de erro legítimo — é o subtipo se recusando a cumprir um contrato que herdou.",
+        "Correto: quem usa o supertipo e chama o método explode ao receber esse subtipo. LSP violado.",
+        "OCP é sobre estender sem modificar; isso aqui é justamente uma extensão que quebra o contrato.",
+        "Não tem relação com memória; é uma quebra de substituibilidade comportamental."
+      ]
+    },
+    {
+      "pergunta": "No código cliente aparece `if (shape is Square) { ... } else { ... }` para tratar um subtipo de forma diferente e evitar um bug. O que isso sugere?",
+      "opcoes": [
+        "Bom uso de pattern matching, sem problemas",
+        "Um smell de LSP: se o cliente precisa checar o tipo concreto para não quebrar, a abstração não é substituível",
+        "Aplicação correta do DIP",
+        "Que faltou marcar a classe como sealed"
+      ],
+      "correta": 1,
+      "explicacao": "Precisar de checagem de tipo (is/as) no cliente para evitar quebra é sintoma de que o subtipo não substitui o supertipo.",
+      "feedbacks": [
+        "Pattern matching não é errado por si, mas usá-lo para CONTORNAR um subtipo que quebra o contrato é smell de LSP.",
+        "Correto: o polimorfismo virou if/else disfarçado — a abstração não é realmente substituível.",
+        "DIP é sobre depender de abstrações; aqui o problema é a substituibilidade dos subtipos.",
+        "sealed não conserta a violação de contrato; o problema é comportamental."
+      ]
+    },
+    {
+      "pergunta": "Você tem `Bird` com `Fly()` e um `Penguin` que não voa. Qual refatoração respeita o LSP?",
+      "opcoes": [
+        "Manter Fly() em Bird e fazer Penguin.Fly() lançar exceção, com um comentário",
+        "Mover Fly() para uma interface estreita (IFlyingBird) que só pássaros que voam implementam",
+        "Fazer Penguin herdar de uma classe Fish",
+        "Remover o método Eat() de Bird"
+      ],
+      "correta": 1,
+      "explicacao": "Separar a capacidade de voar numa interface (IFlyingBird) faz o código que voa depender dela; um Penguin nunca chega lá. Liga com ISP.",
+      "feedbacks": [
+        "Comentário não conserta LSP: se você precisa avisar 'não use este método aqui', o contrato já foi quebrado.",
+        "Correto: interface estreita separa 'voar' do tipo base; só quem voa a implementa. Sem exceção, sem is/as.",
+        "Um pinguim não é um peixe; forçar outra herança errada não resolve nada.",
+        "Remover Eat() não tem relação — todos os pássaros comem; o problema é Fly()."
+      ]
+    },
+    {
+      "pergunta": "Qual é a relação correta entre LSP e OCP?",
+      "opcoes": [
+        "São princípios que se contradizem; escolha um",
+        "LSP sustenta o polimorfismo em que o OCP se apoia; sem LSP, estender por subtipo introduz bugs",
+        "OCP torna o LSP desnecessário",
+        "LSP só vale para interfaces e OCP só para classes abstratas"
+      ],
+      "correta": 1,
+      "explicacao": "O OCP estende trocando implementações por trás de uma abstração; o LSP garante que cada subtipo é realmente substituível.",
+      "feedbacks": [
+        "Não se contradizem — se complementam.",
+        "Correto: sem substituibilidade (LSP), cada nova implementação do OCP pode esconder um bug.",
+        "Ao contrário: OCP DEPENDE de LSP para que as extensões via subtipo sejam seguras.",
+        "Ambos valem para qualquer forma de abstração/subtipagem; a distinção interface x classe é irrelevante aqui."
+      ]
+    },
+    {
+      "pergunta": "Uma subclasse herda de um tipo tratado como imutável e introduz um setter que muda o estado por baixo. Qual regra de contrato isso fere?",
+      "opcoes": [
+        "A regra da história (não permitir mudanças de estado que o supertipo proíbe)",
+        "A regra de que subtipos devem ser mais lentos",
+        "A regra de que interfaces devem ser pequenas",
+        "Nenhuma — subclasses podem sempre adicionar setters"
+      ],
+      "correta": 0,
+      "explicacao": "A regra da história: o subtipo não pode permitir mudanças de estado que o supertipo proíbe (ex.: tornar mutável o que era imutável).",
+      "feedbacks": [
+        "Correto: introduzir mutação onde o pai garantia imutabilidade 'reescreve a história' e surpreende o cliente do supertipo.",
+        "Não existe regra sobre velocidade em LSP.",
+        "Tamanho de interface é ISP, não a questão aqui.",
+        "Não é sempre permitido: se o pai é imutável e o cliente conta com isso, adicionar mutação viola LSP."
+      ]
+    },
+    {
+      "pergunta": "Um `Shipment` tem contrato 'CalculateCost() sempre retorna custo >= 0'. Um subtipo de retirada na loja retorna -1 como código de 'sem frete'. Como corrigir respeitando LSP com a MENOR mudança?",
+      "opcoes": [
+        "Fazer o cliente checar `if (custo == -1)` antes de somar",
+        "Fazer o subtipo retornar 0m, honrando a pós-condição 'custo válido >= 0'",
+        "Fazer o subtipo lançar NotSupportedException em vez de retornar -1",
+        "Remover o método CalculateCost() da classe base"
+      ],
+      "correta": 1,
+      "explicacao": "0 é um custo válido (>= 0), então retornar 0 honra o contrato sem forçar o cliente a tratar casos especiais.",
+      "feedbacks": [
+        "Isso empurra a violação para o cliente (que passa a precisar de checagem especial) — o oposto de LSP.",
+        "Correto: retornar 0 respeita 'custo válido >= 0' com a menor mudança; o cliente soma normalmente.",
+        "Trocar -1 por exceção só troca um smell de LSP por outro; ambos quebram o contrato.",
+        "Remover o método da base derruba a abstração inteira — exagero e não resolve o problema."
+      ]
+    },
+    {
+      "pergunta": "Sobre a DOSAGEM de LSP, qual conclusão é correta?",
+      "opcoes": [
+        "LSP prova que herança é sempre ruim; componha em todos os casos",
+        "LSP não proíbe herança — exige que ela seja honesta; herança em que o filho realmente substitui o pai é legítima",
+        "LSP recomenda criar hierarquias profundas por precaução",
+        "LSP só se aplica quando você usa interfaces"
+      ],
+      "correta": 1,
+      "explicacao": "LSP não bane herança; exige substituibilidade real. Herança honesta é ótima; o exagero é banir herança sempre ou criar hierarquias especulativas.",
+      "feedbacks": [
+        "Extremo demais: herança legítima (com substituibilidade real) é uma ferramenta boa.",
+        "Correto: a pergunta-bússola é 'todo lugar que aceita o pai funciona com este filho?'. Se sim, herança é honesta.",
+        "Ao contrário: hierarquias profundas e especulativas costumam cobrar a fatura em LSP depois.",
+        "LSP vale para qualquer subtipagem — herança de classes ou implementação de interfaces."
+      ]
+    }
+  ]
+}

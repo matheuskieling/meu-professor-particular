@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 05 — ISP: Segregação de Interfaces",
+  "questoes": [
+    {
+      "pergunta": "Qual enunciado resume o Interface Segregation Principle (ISP)?",
+      "opcoes": [
+        "Toda classe deve implementar o máximo de interfaces possível",
+        "Nenhum cliente deve ser forçado a depender de métodos que não usa",
+        "Uma interface deve conter todos os métodos que qualquer implementador possa precisar",
+        "Interfaces devem ser sempre maiores que as classes que as implementam"
+      ],
+      "correta": 1,
+      "explicacao": "ISP: nenhum cliente deve depender de métodos que não usa. Interfaces devem ser pequenas e específicas ao papel do cliente (role interfaces)."
+    },
+    {
+      "pergunta": "No ISP, quem é o 'cliente' de uma interface?",
+      "opcoes": [
+        "Apenas o usuário final da aplicação",
+        "Somente quem chama os métodos da interface",
+        "Tanto quem chama a interface quanto quem a implementa",
+        "Apenas a classe que herda de outra classe"
+      ],
+      "correta": 2,
+      "explicacao": "Cliente é quem depende da interface: tanto o consumidor que a chama quanto a classe que é obrigada a implementar todos os seus métodos."
+    },
+    {
+      "pergunta": "Dado o código abaixo, qual princípio está sendo violado?\n\ninterface IMultiFunctionDevice { void Print(); void Scan(); void Fax(); }\nclass SimplePrinter : IMultiFunctionDevice {\n  public void Print() { /* imprime */ }\n  public void Scan() => throw new NotSupportedException();\n  public void Fax()  => throw new NotSupportedException();\n}",
+      "opcoes": [
+        "SRP, porque a classe tem um único método útil",
+        "ISP, porque a impressora simples é forçada a depender de Scan()/Fax() que não usa",
+        "OCP, porque a interface está fechada para extensão",
+        "Nenhum: lançar NotSupportedException é a forma correta de sinalizar métodos ausentes"
+      ],
+      "correta": 1,
+      "explicacao": "É ISP: a interface gorda força SimplePrinter a implementar Scan() e Fax(). Os stubs com NotSupportedException são o sintoma clássico."
+    },
+    {
+      "pergunta": "O que é uma 'fat interface' (interface gorda)?",
+      "opcoes": [
+        "Uma interface com muitos comentários de documentação",
+        "Uma interface grande que várias classes implementam, mas cada uma só usa parte dos métodos",
+        "Uma interface que só tem um método",
+        "Uma interface implementada por uma única classe"
+      ],
+      "correta": 1,
+      "explicacao": "Fat interface = interface ampla implementada por várias classes que usam só um pedaço, forçando stubs e acoplamento desnecessário."
+    },
+    {
+      "pergunta": "Por que um 'throw new NotSupportedException()' num método de interface também fere o LSP?",
+      "opcoes": [
+        "Porque exceções são sempre proibidas em C#",
+        "Porque cria um subtipo que não substitui o supertipo: tem um método 'proibido' que estoura em runtime",
+        "Porque NotSupportedException é mais lenta que outras exceções",
+        "Porque força o uso de herança em vez de composição"
+      ],
+      "correta": 1,
+      "explicacao": "A classe promete o contrato da interface mas estoura ao chamar o método. Isso quebra a substituibilidade de Liskov: o subtipo não honra o supertipo."
+    },
+    {
+      "pergunta": "Qual é a segregação correta para IMultiFunctionDevice { Print(); Scan(); Fax(); }?",
+      "opcoes": [
+        "Manter uma interface só e usar herança para os casos especiais",
+        "Criar IPrinter, IScanner e IFax; a multifuncional implementa as três, a impressora simples só IPrinter",
+        "Criar uma interface por classe concreta existente",
+        "Transformar todos os métodos em estáticos para evitar a interface"
+      ],
+      "correta": 1,
+      "explicacao": "Segrega-se por papel: IPrinter/IScanner/IFax. Em C# a multifuncional implementa as três; a simples implementa só IPrinter."
+    },
+    {
+      "pergunta": "Como o ISP se relaciona com o SRP?",
+      "opcoes": [
+        "São o mesmo princípio com nomes diferentes",
+        "ISP é o lado da interface do mesmo cuidado que o SRP tem no lado da classe: coesão / uma razão para mudar",
+        "ISP contradiz o SRP: um manda juntar, o outro separar",
+        "ISP só se aplica a classes abstratas, o SRP só a interfaces"
+      ],
+      "correta": 1,
+      "explicacao": "São primos: SRP separa a classe por razão de mudar; ISP separa a interface por cliente/papel. Ambos buscam coesão."
+    },
+    {
+      "pergunta": "Qual é o EXTREMO errado (over-engineering) ao aplicar o ISP?",
+      "opcoes": [
+        "Criar uma interface por papel real do domínio",
+        "Criar mecanicamente uma interface por método, sempre, sem descrever papel algum",
+        "Deixar uma classe implementar várias interfaces pequenas",
+        "Fazer o consumidor depender só da fatia que usa"
+      ],
+      "correta": 1,
+      "explicacao": "Pulverizar em uma interface por método pulveriza o design e não descreve papel nenhum. Segregue por papel/cliente real, não por assinatura."
+    },
+    {
+      "pergunta": "Qual pergunta é o gatilho para decidir segregar uma interface?",
+      "opcoes": [
+        "A interface tem mais de três métodos?",
+        "Existe algum cliente que só usa um pedaço desta interface?",
+        "A interface é implementada por mais de uma classe?",
+        "O nome da interface começa com 'I'?"
+      ],
+      "correta": 1,
+      "explicacao": "O gatilho é: existe cliente que usa só um pedaço? Se sim, esse pedaço quer virar uma interface própria. Se todos usam tudo, não é gorda."
+    },
+    {
+      "pergunta": "Uma interface IValidador tem 5 métodos e TODOS os seus 3 implementadores usam os 5, e todos os consumidores chamam os 5. Segundo o ISP, o que fazer?",
+      "opcoes": [
+        "Quebrar em 5 interfaces de um método cada, por precaução",
+        "Deixar como está: se todos usam tudo, ela não é gorda; quebrá-la seria over-engineering",
+        "Transformar em classe abstrata obrigatoriamente",
+        "Adicionar mais métodos para justificar a existência da interface"
+      ],
+      "correta": 1,
+      "explicacao": "ISP resolve dor real (stub falso, recompilação, mock inchado). Se todos usam a interface inteira, ela é coesa — dividir seria over-engineering."
+    }
+  ]
+}

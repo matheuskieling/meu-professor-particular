@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 06: DIP (Inversão de Dependência)",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Qual afirmação captura CORRETAMENTE as duas partes do DIP?",
+      "opcoes": [
+        "Alto nível depende de baixo nível; e detalhes dependem de outros detalhes",
+        "Alto e baixo nível dependem de abstrações; e detalhes dependem de abstrações (não o contrário)",
+        "Abstrações dependem de detalhes; e o alto nível instancia o baixo nível",
+        "Tudo deve ser concreto para evitar indireção"
+      ],
+      "correta": 1,
+      "explicacao": "As duas partes: (a) alto/baixo nível dependem de abstrações; (b) detalhes dependem de abstrações, não abstrações de detalhes.",
+      "feedbacks": [
+        "É justamente o design ANTES do DIP — a regra pendurada no detalhe. O DIP existe pra corrigir isso.",
+        "Correto: ambos os lados dependem da abstração, e é o detalhe que se encaixa nela — não o contrário.",
+        "Está invertido: no DIP são os detalhes que dependem das abstrações, e o alto nível não instancia o baixo nível.",
+        "Tornar tudo concreto é o oposto do DIP — maximiza o acoplamento ao detalhe."
+      ]
+    },
+    {
+      "pergunta": "No contexto do DIP, o que caracteriza um módulo de 'alto nível'?",
+      "opcoes": [
+        "O código de acesso a banco e rede",
+        "A regra de negócio / política — o motivo de o sistema existir",
+        "Qualquer classe marcada como public",
+        "A camada de logging e infraestrutura"
+      ],
+      "correta": 1,
+      "explicacao": "Alto nível = a política (regra de negócio). Baixo nível = os detalhes de mecanismo (SQL, SMTP, disco).",
+      "feedbacks": [
+        "Banco e rede são exatamente o BAIXO nível (detalhes de mecanismo), não o alto.",
+        "Isso: alto nível é a regra de negócio, o que dá sentido ao sistema. O baixo nível são os detalhes.",
+        "Visibilidade (public/private) não tem relação com alto/baixo nível — isso é sobre política x detalhe.",
+        "Logging e infraestrutura são baixo nível (mecanismo), não a política de negócio."
+      ]
+    },
+    {
+      "pergunta": "Um serviço faz 'var sender = new SmtpEmailSender(...)' dentro do método. Qual smell é esse e qual princípio corrige?",
+      "opcoes": [
+        "Interface gorda; corrigida por ISP",
+        "'new' espalhado / acoplamento a concreto; corrigido por DIP",
+        "Herança que quebra contrato; corrigida por LSP",
+        "Classe God; corrigida por SRP"
+      ],
+      "correta": 1,
+      "explicacao": "Instanciar um concreto de infraestrutura dentro da regra é o smell do 'new espalhado' — DIP inverte isso para uma abstração.",
+      "feedbacks": [
+        "Interface gorda é sobre métodos demais numa interface (ISP), não sobre instanciar um concreto.",
+        "Correto: 'new' de um concreto de I/O dentro da regra é o smell do DIP. A cura é depender de uma abstração injetada.",
+        "LSP é sobre subtipos substituíveis; aqui não há herança quebrando contrato, e sim acoplamento a concreto.",
+        "Classe God é baixa coesão (faz tudo). Aqui o problema é o acoplamento ao detalhe concreto — DIP, não SRP."
+      ]
+    },
+    {
+      "pergunta": "Por que a injeção por CONSTRUTOR é a forma preferida de DI?",
+      "opcoes": [
+        "Porque é a única forma que o container do .NET suporta",
+        "Porque torna a dependência obrigatória e explícita na assinatura da classe",
+        "Porque é mais rápida em tempo de execução",
+        "Porque dispensa criar interfaces"
+      ],
+      "correta": 1,
+      "explicacao": "O construtor documenta as dependências reais (explícitas) e garante que a classe não seja criada sem elas (obrigatórias).",
+      "feedbacks": [
+        "O container também suporta injeção por propriedade/método; construtor é preferido por design, não por exclusividade.",
+        "Isso: as dependências ficam explícitas no construtor e obrigatórias — você não instancia a classe pela metade.",
+        "A vantagem é de design (clareza e obrigatoriedade), não de performance.",
+        "Injeção por construtor não dispensa a abstração — pelo contrário, você injeta a interface por ali."
+      ]
+    },
+    {
+      "pergunta": "Um dev 'extrai uma interface' a partir de SqlOrderRepository copiando suas assinaturas e a deixa no pacote de infraestrutura, ao lado do concreto. Isso inverteu a dependência de verdade?",
+      "opcoes": [
+        "Sim, qualquer interface já é uma inversão",
+        "Não de verdade: a abstração ficou modelada pelo detalhe e no pacote errado — deveria pertencer ao alto nível e expressar a necessidade dele",
+        "Sim, desde que registre no container",
+        "Não, porque interfaces não podem ficar no mesmo pacote de classes"
+      ],
+      "correta": 1,
+      "explicacao": "A inversão real exige que a abstração PERTENÇA ao alto nível e expresse sua necessidade — não que espelhe a API do concreto.",
+      "feedbacks": [
+        "Nem toda interface inverte a seta. Se ela serve ao detalhe, você só adicionou indireção sem inverter nada.",
+        "Correto: o contrato precisa nascer da necessidade do alto nível. Espelhar o concreto e deixá-lo na infra não inverte de fato.",
+        "Registrar no container é DI (técnica); não conserta uma abstração que foi modelada pelo detalhe.",
+        "O problema não é uma regra de pacote arbitrária — é a QUEM a abstração pertence e o que ela expressa."
+      ]
+    },
+    {
+      "pergunta": "Qual afirmação sobre DIP, DI e IoC está CORRETA?",
+      "opcoes": [
+        "DIP é a ferramenta, DI é o padrão amplo e IoC é o princípio",
+        "DIP é o princípio, DI é a técnica de entregar dependências, e IoC é o padrão amplo do qual a DI faz parte",
+        "Os três são sinônimos exatos",
+        "IoC é uma técnica de DIP que só existe com container"
+      ],
+      "correta": 1,
+      "explicacao": "DIP (princípio) ⊃ objetivo; DI (técnica) ⊂ IoC (padrão amplo). O container é apenas a ferramenta que automatiza a DI.",
+      "feedbacks": [
+        "Está tudo trocado: DIP é o princípio (não a ferramenta), e IoC é o padrão amplo (não o princípio).",
+        "Correto: DIP é o design, DI é o como (entrega de fora), e IoC é o guarda-chuva que contém a DI.",
+        "Não são sinônimos — misturá-los é o erro conceitual mais comum do tema.",
+        "IoC não precisa de container e não é uma técnica de DIP; é o padrão amplo ('não me chame, eu te chamo')."
+      ]
+    },
+    {
+      "pergunta": "Você injeta a classe CONCRETA por construtor: NotificationService(SmtpEmailSender sender). Sobre DI e DIP:",
+      "opcoes": [
+        "Respeitou DI e DIP",
+        "Usou a técnica DI, mas NÃO respeitou o DIP — ainda depende do concreto",
+        "Não usou DI nem respeitou DIP",
+        "Respeitou DIP mas não usou DI"
+      ],
+      "correta": 1,
+      "explicacao": "DI não implica DIP. Injetar o concreto é entrega de fora (DI) mas mantém o acoplamento ao detalhe (fere o DIP).",
+      "feedbacks": [
+        "Só metade: houve DI, mas depender de SmtpEmailSender concreto viola o DIP.",
+        "Correto: a técnica está lá (injeção por construtor), mas o design continua acoplado ao concreto — falta a abstração.",
+        "DI houve sim — a dependência foi entregue de fora. O que falta é o DIP.",
+        "É o oposto: usou DI (entregou de fora), mas NÃO respeitou o DIP (depende do concreto)."
+      ]
+    },
+    {
+      "pergunta": "No .NET, o que a linha services.AddScoped<IOrderRepository, SqlOrderRepository>() faz?",
+      "opcoes": [
+        "Cria a interface em runtime",
+        "Registra o mapeamento abstração → implementação, com uma instância por escopo (ex.: por request)",
+        "Garante que só exista uma instância para toda a aplicação",
+        "Impede que o SqlOrderRepository seja injetado"
+      ],
+      "correta": 1,
+      "explicacao": "Registra IOrderRepository → SqlOrderRepository com lifetime Scoped: uma instância por escopo (tipicamente, por request web).",
+      "feedbacks": [
+        "A interface já existe em código; o container só a mapeia para uma implementação.",
+        "Correto: é o registro do par abstração→concreto, com lifetime Scoped (uma instância por escopo/request).",
+        "'Uma para toda a app' é Singleton. Scoped é uma por escopo (request).",
+        "Ao contrário: essa linha é exatamente o que faz o SqlOrderRepository ser injetado quando pedirem IOrderRepository."
+      ]
+    },
+    {
+      "pergunta": "Um serviço precisa de uma instância NOVA a cada vez que é resolvido, pois não guarda estado. Qual lifetime é o mais indicado?",
+      "opcoes": [
+        "Singleton",
+        "Transient",
+        "Scoped",
+        "Nenhum: não é possível controlar isso no container"
+      ],
+      "correta": 1,
+      "explicacao": "Transient cria uma nova instância a cada resolução — adequado a serviços leves e sem estado.",
+      "feedbacks": [
+        "Singleton reaproveita UMA instância para toda a app — o oposto de 'nova a cada vez'.",
+        "Correto: Transient devolve uma instância nova a cada resolução.",
+        "Scoped reaproveita a instância dentro do mesmo escopo (request) — não é 'nova a cada vez'.",
+        "O container controla isso justamente pelos lifetimes (Transient/Scoped/Singleton)."
+      ]
+    },
+    {
+      "pergunta": "Em qual destes casos aplicar DIP (criar uma interface) é MAIS justificado?",
+      "opcoes": [
+        "Um record Money, objeto de valor estável, usado em um só lugar",
+        "Um gateway que chama uma API de pagamento externa por HTTP",
+        "Uma enum de status de pedido",
+        "Uma classe utilitária de formatação de string pura"
+      ],
+      "correta": 1,
+      "explicacao": "Fronteira de I/O (rede) que varia e precisa ser isolada para teste: o caso canônico onde o DIP paga o custo da abstração.",
+      "feedbacks": [
+        "Um objeto de valor estável sem I/O não é fronteira volátil — abstraí-lo seria over-engineering.",
+        "Correto: chamada HTTP a serviço externo é I/O volátil e difícil de testar — abstrair aqui compensa.",
+        "Uma enum é um tipo de dado estável; não há o que inverter nem testar isoladamente.",
+        "Formatação pura de string é determinística e testável direto — não precisa de abstração de fronteira."
+      ]
+    },
+    {
+      "pergunta": "Um time cria uma IFoo com uma única implementação Foo, sem I/O, que nunca variou 'por via das dúvidas'. Qual é o diagnóstico?",
+      "opcoes": [
+        "Ótima prática: sempre programe contra interfaces",
+        "Over-engineering / abstração especulativa (YAGNI): adiciona indireção sem benefício real",
+        "Violação de LSP",
+        "Violação de SRP"
+      ],
+      "correta": 1,
+      "explicacao": "Interface com implementador único, sem variação e sem I/O é o caso clássico de abstração especulativa — YAGNI.",
+      "feedbacks": [
+        "'Sempre programe contra interfaces' é dogma; DIP é dosagem — abstraia fronteiras que variam/precisam de teste.",
+        "Correto: sem variação e sem I/O, a interface só custa indireção. É o YAGNI/over-engineering do Módulo 01.",
+        "LSP é sobre subtipos substituíveis; aqui não há hierarquia quebrando contrato.",
+        "SRP é sobre razões de mudança/coesão; o problema aqui é indireção sem necessidade, não responsabilidade demais."
+      ]
+    },
+    {
+      "pergunta": "Como o DIP se relaciona com o OCP (Aberto/Fechado)?",
+      "opcoes": [
+        "São opostos: aplicar um viola o outro",
+        "O DIP sustenta o OCP: como a regra depende da abstração, dá pra estender com uma nova implementação sem editar a regra",
+        "O OCP substitui o DIP em .NET",
+        "Não há relação alguma entre eles"
+      ],
+      "correta": 1,
+      "explicacao": "Estender via nova implementação sem tocar no alto nível (OCP) só é possível porque o alto nível depende da abstração (DIP).",
+      "feedbacks": [
+        "Ao contrário: eles se reforçam. O DIP é a base que torna a extensão do OCP possível.",
+        "Correto: o DIP fornece a abstração da qual a regra depende; por isso você adiciona implementações sem editar a regra (OCP).",
+        "O OCP não substitui o DIP; um se apoia no outro. E isso independe da linguagem.",
+        "Há relação forte: sem depender de abstração (DIP), não dá pra estender sem modificar (OCP)."
+      ]
+    }
+  ]
+}

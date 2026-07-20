@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 04 — LSP: Substituição de Liskov",
+  "questoes": [
+    {
+      "pergunta": "Qual afirmação resume melhor o Princípio da Substituição de Liskov (LSP)?",
+      "opcoes": [
+        "Toda classe deve ter apenas uma razão para mudar",
+        "Se S é subtipo de T, objetos de T podem ser substituídos por objetos de S sem quebrar a corretude do programa",
+        "Interfaces devem ser pequenas para ninguém depender do que não usa",
+        "Módulos de alto nível não devem depender de módulos de baixo nível"
+      ],
+      "correta": 1,
+      "explicacao": "LSP: um subtipo deve poder substituir o supertipo sem quebrar a corretude — quem usa a abstração não pode ter surpresas. As outras opções descrevem SRP, ISP e DIP."
+    },
+    {
+      "pergunta": "Por que `Square : Rectangle` viola LSP, mesmo sendo verdade que um quadrado 'é' um retângulo?",
+      "opcoes": [
+        "Porque quadrado e retângulo têm nomes diferentes",
+        "Porque o Square quebra a invariante implícita do Rectangle de que largura e altura são independentes",
+        "Porque herança é sempre proibida em C#",
+        "Porque o Rectangle deveria ser uma interface e não uma classe"
+      ],
+      "correta": 1,
+      "explicacao": "O Rectangle promete que setar Width não muda Height. O Square, ao igualar os lados, quebra essa invariante — então não substitui o Rectangle sem surpresas. LSP é comportamental, não taxonômico."
+    },
+    {
+      "pergunta": "Um cliente escreve `r.Width = 5; r.Height = 4;` e espera `Area == 20`. Com um Square (que iguala os lados) no lugar do Rectangle, o que acontece?",
+      "opcoes": [
+        "Area continua 20, pois Square é um Rectangle",
+        "Area vira 16, porque setar Height=4 também zerou a largura para 4",
+        "O código não compila",
+        "Lança NullReferenceException"
+      ],
+      "correta": 1,
+      "explicacao": "No Square, setar Height=4 também seta Width=4, então Area = 4*4 = 16, não 20. O programa quebrou só por trocar o supertipo pelo subtipo: violação de LSP."
+    },
+    {
+      "pergunta": "Sobre pré-condições no LSP, o que um subtipo NÃO pode fazer?",
+      "opcoes": [
+        "Aceitar mais entradas que o supertipo",
+        "Fortalecer a pré-condição, exigindo mais do que o supertipo exigia",
+        "Ter a mesma pré-condição do supertipo",
+        "Ser mais permissivo na entrada"
+      ],
+      "correta": 1,
+      "explicacao": "Pré-condições não podem ser fortalecidas: o subtipo não pode exigir MAIS do que o pai. Se o pai aceitava qualquer int e o filho passa a recusar negativos, quebra quem chamava com negativo."
+    },
+    {
+      "pergunta": "Uma pós-condição diz o que o método garante ao terminar. Qual é uma violação de LSP relacionada a pós-condições?",
+      "opcoes": [
+        "O subtipo retorna exatamente o que o supertipo retornava",
+        "O subtipo entrega garantias mais fortes que o supertipo",
+        "O subtipo retorna null onde o supertipo nunca retornava null",
+        "O subtipo é mais rápido que o supertipo"
+      ],
+      "correta": 2,
+      "explicacao": "Pós-condições não podem ser enfraquecidas. Se o pai nunca retorna null e o filho passa a retornar, o cliente que confiava na garantia quebra. Entregar MAIS/melhor é permitido; entregar menos, não."
+    },
+    {
+      "pergunta": "`class Penguin : Bird` com `public override void Fly() => throw new NotSupportedException();`. Que smell é esse?",
+      "opcoes": [
+        "Um smell de SRP: a classe tem responsabilidades demais",
+        "Um smell de LSP: o subtipo não honra o contrato do supertipo (lança onde o pai prometia executar)",
+        "Um smell de DIP: depende de implementação concreta",
+        "Não é smell nenhum, é a forma correta de modelar"
+      ],
+      "correta": 1,
+      "explicacao": "Lançar NotSupportedException/NotImplementedException em método herdado é o smell clássico de LSP: o subtipo não consegue cumprir o contrato. Quem tem um Bird e chama Fly() explode com um Penguin."
+    },
+    {
+      "pergunta": "No código cliente aparece `if (bird is Penguin) continue; else bird.Fly();`. O que isso indica?",
+      "opcoes": [
+        "Bom uso de polimorfismo",
+        "Uma violação de LSP: o cliente precisa checar o tipo concreto para evitar chamar algo — o polimorfismo virou if/else disfarçado",
+        "Uma aplicação correta do OCP",
+        "Uma otimização de performance recomendada"
+      ],
+      "correta": 1,
+      "explicacao": "Se o cliente precisa saber o tipo concreto (is/as) para não quebrar, a abstração não é substituível. Isso é smell de LSP e também derruba o polimorfismo que o OCP depende."
+    },
+    {
+      "pergunta": "Como reformular Bird/Penguin para não violar LSP?",
+      "opcoes": [
+        "Fazer Penguin lançar exceção em Fly(), mas documentar bem",
+        "Separar a capacidade de voar numa interface estreita (ex.: IFlyingBird) que só os pássaros que voam implementam",
+        "Remover a classe Penguin do sistema",
+        "Fazer Bird herdar de Penguin"
+      ],
+      "correta": 1,
+      "explicacao": "Tirar Fly() da base Bird e colocá-lo numa interface IFlyingBird resolve: o código que faz voar depende de IFlyingBird e um Penguin (que não a implementa) nunca chega lá. Isso liga com ISP."
+    },
+    {
+      "pergunta": "Qual a relação entre LSP e o OCP (Aberto/Fechado)?",
+      "opcoes": [
+        "São o mesmo princípio com nomes diferentes",
+        "LSP é o que faz o polimorfismo do OCP funcionar de verdade; sem LSP, estender via subtipo introduz bugs",
+        "LSP contradiz o OCP e você deve escolher um",
+        "OCP só se aplica a interfaces e LSP só a classes"
+      ],
+      "correta": 1,
+      "explicacao": "O OCP estende comportamento trocando implementações por trás de uma abstração. O LSP garante que cada nova implementação/subtipo é substituível — sem isso, cada extensão pode introduzir um bug silencioso."
+    },
+    {
+      "pergunta": "Qual afirmação sobre a DOSAGEM de LSP está correta?",
+      "opcoes": [
+        "LSP proíbe herança; sempre use composição",
+        "LSP não proíbe herança — exige que ela seja honesta (o subtipo realmente substitui o supertipo); herança legítima é ótima",
+        "LSP recomenda hierarquias profundas e especulativas por precaução",
+        "LSP só vale para código de teste, não para produção"
+      ],
+      "correta": 1,
+      "explicacao": "LSP não bane herança; exige substituibilidade real. Se o filho honra o contrato do pai em todo contexto, herança é legítima e útil. Cair no extremo de 'nunca herdar' é exagero."
+    }
+  ]
+}

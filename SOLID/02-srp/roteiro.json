@@ -1,0 +1,158 @@
+{
+  "modulo": "02",
+  "titulo": "SRP — Single Responsibility Principle (Responsabilidade Única)",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que vamos fazer neste módulo",
+      "pontos": [
+        "Objetivo: dominar o S do SOLID — a Responsabilidade Única — e saber DOSAR sem estilhaçar",
+        "Aviso importante: o smell popular 'faz só uma coisa' é impreciso; o SRP é sobre razões para mudar",
+        "Formato: eu explico, você pergunta à vontade, e a gente avança quando fizer sentido",
+        "Ao fim: prática (refatorar uma God class em C#), quiz e prova"
+      ],
+      "checkpoint": "Confirme que o aluno está pronto pra começar e se topa o formato conversado",
+      "ref": "02-srp/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "A definição correta: uma única razão para mudar",
+      "pontos": [
+        "Uncle Bob: 'uma classe deve ter apenas UMA razão para mudar'",
+        "Cuidado: NÃO é 'a classe deve fazer só uma coisa' — essa versão popular é imprecisa e engana",
+        "'Razão para mudar' é o que importa: quantos motivos DIFERENTES fariam você editar esta classe?",
+        "SRP é sobre organizar o código em torno de quem pede as mudanças, não sobre contar métodos",
+        "Ligação com o Módulo 01: SRP é a ferramenta que ataca o acoplamento e eleva a coesão"
+      ],
+      "checkpoint": "Pergunte por que 'faz só uma coisa' é uma formulação enganosa do SRP",
+      "ref": "02-srp/teoria.md#1-a-definição-correta-uma-única-razão-para-mudar"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "Responsabilidade = ator (eixo de mudança). O exemplo Employee",
+      "pontos": [
+        "Reformulação de Uncle Bob: 'reunir o que muda pela mesma razão; separar o que muda por razões diferentes'",
+        "Razão para mudar = um ATOR: um grupo de stakeholders que pede aquele tipo de mudança",
+        "Exemplo clássico: classe Employee com CalculatePay() (financeiro), ReportHours() (RH) e Save() (DBA)",
+        "Três atores, três razões para mudar → viola o SRP",
+        "O perigo: uma mudança pedida pelo financeiro pode QUEBRAR o que o RH depende, se compartilham um método interno",
+        "Isso é acoplamento acidental: responsabilidades diferentes entrelaçadas na mesma classe"
+      ],
+      "checkpoint": "Peça pro aluno identificar os atores da classe Employee e por que isso é perigoso",
+      "ref": "02-srp/teoria.md#2-responsabilidade-é-um-ator-um-eixo-de-mudança"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "O 'antes': uma God class em C#",
+      "pontos": [
+        "Exemplo: OrderProcessor que valida o pedido, calcula imposto, persiste no banco (SQL) e envia e-mail",
+        "Quatro responsabilidades, quatro atores: regras de negócio, fisco, DBA, infra de e-mail",
+        "Sintomas visíveis: mistura de níveis de abstração (regra de negócio + SQL + template de e-mail juntos)",
+        "Nome-cheiro: sufixos 'Manager', 'Processor', 'Util', 'Helper', ou 'And' no nome, denunciam acúmulo",
+        "Dor de testar: pra testar a validação você acaba precisando de banco e servidor de e-mail",
+        "Fragilidade: mudar a regra de imposto arrisca quebrar o envio de e-mail no mesmo arquivo"
+      ],
+      "checkpoint": "Pergunte quais atores/razões-para-mudar o aluno enxerga no OrderProcessor",
+      "ref": "02-srp/teoria.md#3-o-antes-uma-god-class-em-c"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "O 'depois': separar por ator + coordenador fino",
+      "pontos": [
+        "Extrair uma classe por responsabilidade: OrderValidator, TaxCalculator, OrderRepository, EmailSender",
+        "Cada uma agora tem UMA razão para mudar (um ator dono)",
+        "Um coordenador FINO (OrderProcessor/OrderService) orquestra as peças, sem conter as regras",
+        "O coordenador depende das peças por injeção; ele decide a ordem, não os detalhes",
+        "Ganhos: testar cada peça isolada (TaxCalculator sem banco), trocar o SQL sem tocar na regra",
+        "Alta coesão restaurada: cada classe fala de um assunto só"
+      ],
+      "checkpoint": "Confirme que o coordenador coordena mas NÃO reimplementa as regras das peças",
+      "ref": "02-srp/teoria.md#4-o-depois-separar-por-ator-mais-um-coordenador-fino"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Dosagem: não estilhaçar, anemia e o mesmo ator que muda junto",
+      "pontos": [
+        "SRP levado ao extremo vira explosão de micro-classes anêmicas e código difícil de navegar",
+        "Uma razão para mudar NÃO é 'um método por classe' — isso é uma leitura ingênua e nociva",
+        "Se duas coisas SEMPRE mudam juntas (mesmo ator), separá-las só aumenta acoplamento entre arquivos",
+        "Regra prática: separe por ATOR, não por verbo. Quem pede a mudança define a fronteira",
+        "Classe anêmica: só getters/setters, com a lógica espalhada — coesão baixa, não alta",
+        "O julgamento é o conteúdo: agrupe o que muda pela mesma razão; separe o que muda por razões distintas",
+        "SRP bem-feito prepara o terreno para OCP e ISP (os próximos módulos)"
+      ],
+      "checkpoint": "Pergunte quando separar é over-engineering e como o ator serve de bússola",
+      "ref": "02-srp/teoria.md#5-dosagem-o-outro-lado-do-srp"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "Recap da teoria + checagem de entendimento",
+      "pontos": [
+        "Recapitular: uma razão para mudar; responsabilidade = ator; antes/depois; coordenador fino; dosagem",
+        "Amarrar coesão (Módulo 01) com SRP: alta coesão ≈ SRP respeitado",
+        "Rodar mentalmente as perguntas de checagem da teoria antes de partir pra prática"
+      ],
+      "checkpoint": "Antes de seguir, pergunte: 'podemos passar para a prática de refatoração?'",
+      "ref": "02-srp/teoria.md#checagem-de-entendimento"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Refatorar uma God class por atores",
+      "pontos": [
+        "Vou te mostrar uma God class em C# (um ReportService que busca dados, formata e envia)",
+        "Passo 1: você identifica as razões-para-mudar / atores presentes na classe",
+        "Passo 2: propõe uma classe por responsabilidade, com nomes que revelem o ator",
+        "Passo 3: define um coordenador fino que orquestra as peças por injeção",
+        "Passo 4: checar a dosagem — não criar micro-classes que sempre mudam juntas",
+        "Eu conduzo com dicas progressivas e comparo sua solução com a de referência"
+      ],
+      "acao": "Conduzir a refatoração no chat: apresentar o código, guiar a separação por atores e revisar a proposta do aluno",
+      "checkpoint": "Feche a prática confirmando que cada classe tem uma razão para mudar e que a dosagem ficou sã",
+      "ref": "02-srp/pratica.md#o-código-de-partida"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz da aula",
+      "pontos": [
+        "Fixar o conteúdo com o quiz interativo (10 questões)",
+        "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+      ],
+      "acao": "Rodar: python3 engine/session.py start SOLID/apps/modulo-02/questions.json",
+      "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+      "ref": "SOLID/apps/modulo-02/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do módulo",
+      "pontos": [
+        "Avaliação de fim de módulo (12 questões, feedback por alternativa)",
+        "Aprovação 70%; só seguir pro Módulo 03 (OCP) após passar"
+      ],
+      "acao": "Rodar: python3 engine/session.py start SOLID/provas/modulo-02/questions.json --id prova",
+      "checkpoint": "Se passou, proponha o Módulo 03; se não, revise os pontos errados",
+      "ref": "SOLID/provas/modulo-02/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento do Módulo 02",
+      "pontos": [
+        "Recap do que dominou: uma razão para mudar, separar por ator, coordenador fino, dosagem sem anemia",
+        "SRP é a base: bem aplicado, facilita OCP e ISP nos próximos módulos",
+        "Próximo: Módulo 03 — OCP (Aberto/Fechado): estender comportamento sem editar código existente"
+      ],
+      "checkpoint": "Pergunte se quer emendar o Módulo 03 ou parar por aqui",
+      "ref": "SOLID/CLAUDE.md#plano-completo-do-curso"
+    }
+  ]
+}

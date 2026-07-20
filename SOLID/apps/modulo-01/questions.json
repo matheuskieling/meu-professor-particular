@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 01 — Fundamentos de Design & por que SOLID existe",
+  "questoes": [
+    {
+      "pergunta": "Qual é a métrica que melhor define se um design de software é 'bom'?",
+      "opcoes": [
+        "Quão rápido o código foi escrito na primeira versão",
+        "Quão barato e seguro é MUDAR o código depois",
+        "Quantas linhas de código a solução tem",
+        "Quantos design patterns foram usados"
+      ],
+      "correta": 1,
+      "explicacao": "Código é lido e mudado muito mais do que escrito. Design bom = mudança barata; o custo real está na manutenção, não na primeira versão."
+    },
+    {
+      "pergunta": "Você muda o cálculo de frete e, sem relação aparente, o relatório de vendas passa a dar número errado. Que sintoma de design podre é esse?",
+      "opcoes": [
+        "Rigidez",
+        "Fragilidade",
+        "Imobilidade",
+        "Viscosidade"
+      ],
+      "correta": 1,
+      "explicacao": "Fragilidade = mudar AQUI quebra ALI, em pontos inesperados. Costuma vir de acoplamento alto/estado compartilhado escondido."
+    },
+    {
+      "pergunta": "Num sistema, adicionar um caso 'do jeito certo' exige criar uma classe e registrá-la, mas dá pra 'resolver' jogando mais um if no método gigante — e é isso que todo mundo faz. Que sintoma é esse?",
+      "opcoes": [
+        "Imobilidade",
+        "Fragilidade",
+        "Viscosidade",
+        "Coesão"
+      ],
+      "correta": 2,
+      "explicacao": "Viscosidade: o design premia a gambiarra sobre o caminho certo. Fazer certo é mais difícil que fazer errado, então o design piora sozinho."
+    },
+    {
+      "pergunta": "Sobre acoplamento e coesão, o que queremos?",
+      "opcoes": [
+        "Acoplamento alto e coesão baixa",
+        "Acoplamento baixo e coesão alta",
+        "Ambos altos",
+        "Ambos baixos"
+      ],
+      "correta": 1,
+      "explicacao": "Baixo acoplamento (partes independentes, como LEGO) e alta coesão (cada unidade focada numa ideia). Essa é a régua-mestra de todo o SOLID."
+    },
+    {
+      "pergunta": "Uma classe `Cliente` tem: `CalcularDesconto()`, `SalvarNoBanco()`, `GerarHtmlDoPerfil()` e `EnviarEmailBoasVindas()`. Qual smell é esse e qual princípio o ataca?",
+      "opcoes": [
+        "Interface gorda → ISP",
+        "Classe God / baixa coesão → SRP",
+        "Herança quebrada → LSP",
+        "switch sobre tipo → OCP"
+      ],
+      "correta": 1,
+      "explicacao": "A classe mistura negócio, persistência, apresentação e infraestrutura — quatro razões de mudar. É uma classe God (baixa coesão), atacada pelo SRP."
+    },
+    {
+      "pergunta": "O trecho `decimal Frete(Pedido p) => p.Tipo switch { \"normal\" => ..., \"expresso\" => ..., _ => throw ... };` cresce a cada novo tipo. Qual princípio isso viola?",
+      "opcoes": [
+        "SRP",
+        "OCP",
+        "LSP",
+        "DIP"
+      ],
+      "correta": 1,
+      "explicacao": "Um switch sobre tipo obriga a EDITAR código que já funciona a cada caso novo. O OCP (Open/Closed) troca isso por polimorfismo: aberto a extensão, fechado a modificação."
+    },
+    {
+      "pergunta": "Dentro de um método você vê `var email = new SmtpEmailSender(...)` e `var conn = new SqlConnection(...)`. Que problema esse `new` espalhado indica, e qual princípio o corrige?",
+      "opcoes": [
+        "Baixa coesão → SRP",
+        "Alto acoplamento a concreto → DIP",
+        "Interface gorda → ISP",
+        "Nenhum, é código normal"
+      ],
+      "correta": 1,
+      "explicacao": "Instanciar dependências concretas com `new` dentro da classe cria acoplamento forte (não dá pra testar/trocar). O DIP inverte isso: dependa de abstrações injetadas."
+    },
+    {
+      "pergunta": "Quem consolidou os princípios SOLID e quem cunhou o acrônimo?",
+      "opcoes": [
+        "A Microsoft consolidou e a Sun cunhou o acrônimo",
+        "Robert C. Martin (Uncle Bob) consolidou; Michael Feathers cunhou o acrônimo",
+        "Barbara Liskov consolidou e cunhou o acrônimo",
+        "Foram inventados juntos pela comunidade Java em 2010"
+      ],
+      "correta": 1,
+      "explicacao": "Uncle Bob consolidou os cinco princípios (reunindo ideias de vários autores); Michael Feathers reordenou as iniciais no acrônimo SOLID."
+    },
+    {
+      "pergunta": "Qual a associação CORRETA entre letra do SOLID e o que ela significa?",
+      "opcoes": [
+        "L = Least Privilege",
+        "I = Interface Segregation (não depender de métodos que não usa)",
+        "D = Data Isolation",
+        "O = Object Cohesion"
+      ],
+      "correta": 1,
+      "explicacao": "S=Single Responsibility, O=Open/Closed, L=Liskov Substitution, I=Interface Segregation, D=Dependency Inversion. O I é sobre não depender de métodos que você não usa."
+    },
+    {
+      "pergunta": "Você cria `ICliente` com um único implementador `Cliente`, e monta fábricas e estratégias 'por via das dúvidas' num código que muda uma vez por ano. Como se chama esse erro?",
+      "opcoes": [
+        "Boa aplicação de DIP",
+        "Over-engineering — falta de dosagem / violação do YAGNI",
+        "Alta coesão",
+        "Baixo acoplamento saudável"
+      ],
+      "correta": 1,
+      "explicacao": "Princípios são heurísticas a serviço da mudança barata, não leis. Abstração especulativa sem dor real é over-engineering — o antídoto é YAGNI ('You Aren't Gonna Need It')."
+    }
+  ]
+}

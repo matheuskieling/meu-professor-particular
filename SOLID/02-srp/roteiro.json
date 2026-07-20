@@ -7,10 +7,11 @@
       "fase": "teoria",
       "titulo": "Abertura — o que vamos fazer neste módulo",
       "pontos": [
+        "Linguagem dos exemplos: leia SOLID/.sessions/preferencias.json e conduza o código na linguagem salva (se ainda não houver, pergunte e grave); os arquivos usam C# como referência-base — traduza ao vivo",
         "Objetivo: dominar o S do SOLID — a Responsabilidade Única — e saber DOSAR sem estilhaçar",
         "Aviso importante: o smell popular 'faz só uma coisa' é impreciso; o SRP é sobre razões para mudar",
         "Formato: eu explico, você pergunta à vontade, e a gente avança quando fizer sentido",
-        "Ao fim: prática (refatorar uma God class em C#), quiz e prova"
+        "Ao fim: prática (refatorar uma God class), quiz e prova"
       ],
       "checkpoint": "Confirme que o aluno está pronto pra começar e se topa o formato conversado",
       "ref": "02-srp/teoria.md"
@@ -47,7 +48,7 @@
     {
       "id": "t3",
       "fase": "teoria",
-      "titulo": "O 'antes': uma God class em C#",
+      "titulo": "O 'antes': uma God class",
       "pontos": [
         "Exemplo: OrderProcessor que valida o pedido, calcula imposto, persiste no banco (SQL) e envia e-mail",
         "Quatro responsabilidades, quatro atores: regras de negócio, fisco, DBA, infra de e-mail",
@@ -107,7 +108,7 @@
       "fase": "pratica",
       "titulo": "Refatorar uma God class por atores",
       "pontos": [
-        "Vou te mostrar uma God class em C# (um ReportService que busca dados, formata e envia)",
+        "Vou te mostrar uma God class (um ReportService que busca dados, formata e envia)",
         "Passo 1: você identifica as razões-para-mudar / atores presentes na classe",
         "Passo 2: propõe uma classe por responsabilidade, com nomes que revelem o ator",
         "Passo 3: define um coordenador fino que orquestra as peças por injeção",

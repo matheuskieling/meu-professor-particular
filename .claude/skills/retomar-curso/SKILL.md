@@ -45,6 +45,22 @@ Com o `<CURSO>` (diretório) e o `<ID>` da sessão em mãos:
 Leia também, rapidamente, o `<CURSO>/CLAUDE.md` (plano/estado do curso) para contextualizar — sem
 despejar nada disso pro aluno.
 
+## 2.5 Preferência de linguagem (só p/ cursos dependentes de linguagem)
+
+Alguns cursos são **agnósticos de linguagem** e escolhem a linguagem dos **exemplos** conforme o
+gosto do aluno (o `<CURSO>/CLAUDE.md` declara isso — ver a convenção no `CLAUDE.md` da raiz). Se for o
+caso deste curso:
+
+- Leia `<CURSO>/.sessions/preferencias.json`.
+  - **Existe** (`{"linguagem": "..."}`) → conduza **todos os exemplos/código nessa linguagem** (traduza
+    ao vivo a partir da referência-base dos arquivos). Mencione ao aluno, em uma linha, que está
+    usando essa linguagem e que ele pode trocar quando quiser (se pedir, reescreva o arquivo).
+  - **Não existe** (curso novo ou sessão antiga anterior a esta convenção) → **pergunte** em qual
+    linguagem ele quer os exemplos (C#, Java, TypeScript, Python, Go, Kotlin, PHP...) e **grave** a
+    escolha: `mkdir -p <CURSO>/.sessions` e escreva `<CURSO>/.sessions/preferencias.json` com
+    `{"linguagem": "<escolhida>"}`.
+- Se o curso **não** declara dependência de linguagem, ignore esta etapa.
+
 ## 3. Dar um breve resumo (obrigatório e curto)
 
 Antes de retomar o conteúdo, escreva um resumo **curto** (3–5 linhas) com:

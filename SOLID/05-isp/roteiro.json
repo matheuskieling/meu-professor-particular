@@ -7,6 +7,7 @@
       "fase": "teoria",
       "titulo": "Abertura — o que vamos fazer neste módulo",
       "pontos": [
+        "Linguagem dos exemplos: leia SOLID/.sessions/preferencias.json e conduza o código na linguagem salva (se ainda não houver, pergunte e grave); os arquivos usam C# como referência-base — traduza ao vivo",
         "Objetivo: aprender a desenhar interfaces enxutas, específicas ao papel do cliente, em vez de interfaces 'gordas' e genéricas",
         "Formato: eu explico, você pergunta à vontade, e a gente avança quando fizer sentido",
         "O vilão do módulo: a 'fat interface' — uma interface grande que várias classes implementam mas cada uma só usa um pedaço",
@@ -46,11 +47,11 @@
     {
       "id": "t3",
       "fase": "teoria",
-      "titulo": "A solução: segregar em role interfaces (antes/depois em C#)",
+      "titulo": "A solução: segregar em role interfaces (antes/depois)",
       "pontos": [
         "A cura: quebrar a interface gorda em interfaces pequenas por papel — IPrinter { Print(); }, IScanner { Scan(); }, IFax { Fax(); }",
         "Antes: SimplePrinter : IMultiFunctionDevice implementa Print() de verdade e joga NotSupportedException em Scan()/Fax()",
-        "Depois: SimplePrinter : IPrinter (só o que faz); a multifuncional implementa IPrinter, IScanner, IFax — em C# uma classe implementa várias interfaces",
+        "Depois: SimplePrinter implementa só IPrinter (o que faz); a multifuncional implementa IPrinter, IScanner, IFax — uma classe pode implementar várias interfaces",
         "O cliente depende só da fatia que precisa: um método que só imprime recebe IPrinter, não a interface inteira",
         "Resultado: some o stub falso, some o risco de LSP, e mudar Fax() não recompila nem quebra quem só imprime"
       ],
@@ -144,7 +145,7 @@
       "pontos": [
         "Recap do que dominou: reconhecer a fat interface, segregar em role interfaces e dosar sem pulverizar",
         "Amarrar as pontes: ISP como SRP das interfaces e antídoto contra LSP quebrado por métodos não suportados",
-        "Próximo: Módulo 06 — DIP (Inversão de Dependência): depender de abstrações e a DI do .NET"
+        "Próximo: Módulo 06 — DIP (Inversão de Dependência): depender de abstrações e a injeção de dependência"
       ],
       "checkpoint": "Pergunte se quer emendar o Módulo 06 ou parar por aqui",
       "ref": "SOLID/CLAUDE.md#plano-completo-do-curso"

@@ -7,12 +7,13 @@
       "fase": "teoria",
       "titulo": "Abertura — o que vamos fazer neste módulo",
       "pontos": [
+        "PRIMEIRO: escolher a linguagem dos exemplos. SOLID é agnóstico de linguagem; os exemplos são só o 'sotaque'. Leia SOLID/.sessions/preferencias.json — se não existir, pergunte em qual linguagem o aluno quer os exemplos (C#, Java, TypeScript, Python, Go, Kotlin, PHP...) e grave {\"linguagem\": \"...\"} nesse arquivo. Daí em diante, conduza TODO código na linguagem escolhida (os arquivos usam C# como referência-base — traduza ao vivo)",
         "Objetivo: dar o VOCABULÁRIO que os outros 5 princípios vão usar",
         "Formato: eu explico, você pergunta à vontade, e a gente avança quando fizer sentido",
         "Este módulo é diagnóstico: aprender a RECONHECER design ruim antes de curar",
         "Ao fim: prática (nomear os smells de um código), quiz e prova"
       ],
-      "checkpoint": "Confirme que o aluno está pronto pra começar e topa o formato conversado",
+      "checkpoint": "Primeiro defina a linguagem dos exemplos (pergunte e salve em preferencias.json se ainda não houver). Depois confirme que o aluno está pronto pra começar e topa o formato conversado",
       "ref": "01-fundamentos/teoria.md"
     },
     {

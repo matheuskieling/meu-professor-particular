@@ -7,6 +7,7 @@
       "fase": "teoria",
       "titulo": "Abertura — o que vamos fazer neste módulo",
       "pontos": [
+        "Linguagem dos exemplos: leia SOLID/.sessions/preferencias.json e conduza o código na linguagem salva (se ainda não houver, pergunte e grave); os arquivos usam C# como referência-base — traduza ao vivo",
         "Objetivo: aprender a adicionar comportamento novo SEM editar código já testado e em produção",
         "Formato: eu explico, você pergunta à vontade, e a gente avança quando fizer sentido",
         "O vilão do módulo: o switch/if-else que cresce em cima de um 'tipo' a cada requisito novo",
@@ -46,7 +47,7 @@
     {
       "id": "t3",
       "fase": "teoria",
-      "titulo": "A solução: polimorfismo e abstração (antes/depois em C#)",
+      "titulo": "A solução: polimorfismo e abstração (antes/depois)",
       "pontos": [
         "A cura: mover o comportamento pra dentro de cada tipo, atrás de uma abstração",
         "Antes: switch(shape.Type) decide a área; o tipo é um dado burro (enum) e o cálculo mora fora",

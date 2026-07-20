@@ -7,11 +7,12 @@
       "fase": "teoria",
       "titulo": "Abertura — o que vamos fazer neste módulo",
       "pontos": [
+        "Linguagem dos exemplos: leia SOLID/.sessions/preferencias.json e conduza o código na linguagem salva (se ainda não houver, pergunte e grave); os arquivos usam C# como referência-base — traduza ao vivo. Neste módulo, mapeie o container de DI para o ecossistema da linguagem escolhida (container do .NET, Spring, NestJS, injeção manual...)",
         "Objetivo: parar de grudar a regra de negócio (alto nível) nos detalhes concretos (banco, e-mail, disco) e inverter a seta de dependência para uma abstração",
         "Formato: eu explico, você pergunta à vontade, e a gente avança quando fizer sentido",
         "O vilão do módulo: o 'new SqlOrderRepository()' escondido dentro do OrderService — a regra de negócio refém do detalhe",
         "Vamos desembaraçar três siglas que quase todo mundo mistura: DIP (o princípio), DI (a técnica) e IoC (o padrão amplo)",
-        "Ao fim: prática (inverter as dependências de um serviço e registrar no container do .NET), quiz e prova"
+        "Ao fim: prática (inverter as dependências de um serviço e registrar no container de DI da linguagem escolhida), quiz e prova"
       ],
       "checkpoint": "Confirme que o aluno está pronto pra começar e topa o formato conversado",
       "ref": "06-dip/teoria.md"
@@ -33,13 +34,13 @@
     {
       "id": "t2",
       "fase": "teoria",
-      "titulo": "O problema: o 'new' do concreto dentro do alto nível (antes em C#)",
+      "titulo": "O problema: o 'new' do concreto dentro do alto nível (o 'antes')",
       "pontos": [
         "O cheiro clássico: OrderService/NotificationService que dá 'new SqlOrderRepository()' e 'new SmtpEmailSender()' lá dentro",
         "A regra de negócio (o que importa) fica REFÉM do detalhe (o mecanismo): pra existir, o serviço precisa saber SQL e SMTP",
         "Três dores concretas: (1) não dá pra testar sem banco/servidor de e-mail reais — impossível trocar por um mock; (2) trocar de banco/provedor obriga a EDITAR o alto nível; (3) o alto nível recompila junto com o detalhe",
         "Isso é o smell '`new` espalhado' do Módulo 01, e o acoplamento a concreto na veia",
-        "Mostrar o 'antes' em C#: o construtor sem parâmetros que instancia as dependências por conta própria"
+        "Mostrar o 'antes': o construtor sem parâmetros que instancia as dependências por conta própria"
       ],
       "checkpoint": "Peça pro aluno listar por que esse OrderService é difícil de testar — e o que exatamente impede o mock",
       "ref": "06-dip/teoria.md#2-o-problema-o-new-do-concreto-dentro-do-alto-nivel"
@@ -47,13 +48,13 @@
     {
       "id": "t3",
       "fase": "teoria",
-      "titulo": "A inversão: interface + injeção por construtor (depois em C#)",
+      "titulo": "A inversão: interface + injeção por construtor (o 'depois')",
       "pontos": [
         "A cura: definir IOrderRepository/IEmailSender e receber a dependência por CONSTRUTOR (constructor injection) — nunca dar 'new' no concreto dentro do serviço",
         "Ponto crucial: a ABSTRAÇÃO PERTENCE AO ALTO NÍVEL. É a regra de negócio que dita o contrato do que ela precisa (Salvar um pedido, Enviar um e-mail); o detalhe (SqlOrderRepository) apenas IMPLEMENTA esse contrato",
         "Por isso a seta inverte: antes OrderService -> SqlOrderRepository; depois SqlOrderRepository -> IOrderRepository <- OrderService (o detalhe passa a depender da abstração)",
         "Ganhos: no teste, injeto um FakeOrderRepository; em produção, o SqlOrderRepository; trocar de banco = nova implementação, sem tocar no serviço (isso é OCP, Módulo 03, sustentado pelo DIP)",
-        "Mostrar o 'depois' em C#: construtor recebe as interfaces; o serviço só conversa com o contrato"
+        "Mostrar o 'depois': construtor recebe as interfaces; o serviço só conversa com o contrato"
       ],
       "checkpoint": "Confirme que o aluno enxerga por que a interface 'mora' no alto nível e como isso inverte a direção da dependência",
       "ref": "06-dip/teoria.md#3-a-inversao-interface-injecao-por-construtor"
@@ -61,13 +62,13 @@
     {
       "id": "t4",
       "fase": "teoria",
-      "titulo": "Desembaraçar DIP x DI x IoC + o container do .NET",
+      "titulo": "Desembaraçar DIP x DI x IoC + o container de DI",
       "pontos": [
         "DIP = o PRINCÍPIO de design (dependa de abstrações). É o 'o quê' e o 'porquê'",
         "Injeção de Dependência (DI) = a TÉCNICA de entregar as dependências DE FORA (por construtor/propriedade/método), em vez de instanciá-las dentro. É o 'como' mais comum de cumprir o DIP",
         "Inversão de Controle (IoC) = o padrão mais amplo, o 'não me chame, eu te chamo' (Hollywood Principle): você entrega o controle do fluxo/criação ao framework. DI é UMA forma de IoC",
-        "Container IoC/DI = a FERRAMENTA que resolve o grafo de objetos pra você (ex.: Microsoft.Extensions.DependencyInjection do .NET)",
-        "No .NET: services.AddScoped<IOrderRepository, SqlOrderRepository>(); e o construtor do OrderService recebe IOrderRepository automaticamente quando o container o cria",
+        "Container IoC/DI = a FERRAMENTA que resolve o grafo de objetos pra você (varia por linguagem: Microsoft.Extensions.DependencyInjection no .NET, Spring no Java, NestJS/tsyringe no TS, injeção manual/simples em Go/Python...) — use o da linguagem escolhida pelo aluno",
+        "Exemplo de registro (adapte à linguagem): no .NET seria services.AddScoped<IOrderRepository, SqlOrderRepository>(); e o construtor do OrderService recebe IOrderRepository automaticamente quando o container o cria. Mostre o equivalente na linguagem do aluno",
         "Tempos de vida (pincelada): Transient (nova instância a cada resolução), Scoped (uma por request/escopo), Singleton (uma pra toda a app)",
         "Deixar claro: usar o container é DI; o VALOR real vem de você ter respeitado o DIP no design. Sem DIP, o container só instancia acoplamento mais rápido"
       ],
@@ -107,8 +108,8 @@
       "titulo": "Inverter as dependências de um OrderService e registrar no container",
       "pontos": [
         "Vou apresentar um OrderService que dá 'new' num repositório e num sender concretos lá dentro (o smell do módulo)",
-        "Sua missão: extrair as abstrações NO LADO DO ALTO NÍVEL, injetá-las por construtor e registrar as implementações no container do .NET",
-        "Passo a passo: identificar as fronteiras de I/O, definir as interfaces (o contrato que o serviço precisa), trocar o 'new' por parâmetro de construtor, e ligar tudo no AddScoped/AddSingleton",
+        "Sua missão: extrair as abstrações NO LADO DO ALTO NÍVEL, injetá-las por construtor e registrar as implementações no container de DI da linguagem escolhida",
+        "Passo a passo: identificar as fronteiras de I/O, definir as interfaces (o contrato que o serviço precisa), trocar o 'new' por parâmetro de construtor, e ligar tudo no registro de DI (ex.: AddScoped/AddSingleton no .NET; o equivalente na linguagem do aluno)",
         "Fechar discutindo a dosagem: quais dessas dependências mereciam abstração e por quê — e onde criar interface seria over-engineering"
       ],
       "acao": "Apresentar o código no chat, deixar o aluno propor a inversão, e conduzir/criticar passo a passo até a solução",

@@ -7,10 +7,11 @@
       "fase": "teoria",
       "titulo": "Abertura — o que vamos fazer neste módulo final",
       "pontos": [
+        "Linguagem dos exemplos: leia SOLID/.sessions/preferencias.json e conduza o código na linguagem salva (se ainda não houver, pergunte e grave); os arquivos usam C# como referência-base — traduza ao vivo",
         "Este módulo NÃO introduz um princípio novo: ele COSTURA os cinco (SRP, OCP, LSP, ISP, DIP) num raciocínio só",
         "Mudança de papel: até aqui você viu cada princípio isolado; agora vamos ver como eles se reforçam na prática",
         "Formato: eu explico, você pergunta à vontade, e a gente avança quando fizer sentido",
-        "A prática é a MAIOR do curso: um mini-sistema em C# com vários cheiros de uma vez, refatorado aplicando os 5 em ordem",
+        "A prática é a MAIOR do curso: um mini-sistema com vários cheiros de uma vez, refatorado aplicando os 5 em ordem",
         "Ao fim: a ponte para Design Patterns e — o mais importante — a DOSAGEM (SOLID é heurística, não lei); depois quiz, prova e formatura do curso"
       ],
       "checkpoint": "Confirme que o aluno lembra dos 5 princípios (peça uma frase de cada) e topa fechar o curso costurando tudo",
@@ -104,7 +105,7 @@
         "Passo 2 (OCP): trocar o switch por tipo (desconto/pagamento) por polimorfismo — uma abstração com implementações por variante (Strategy)",
         "Passo 3 (LSP): garantir que cada estratégia/implementação honra o contrato — sem estourar exceção nem mudar a semântica esperada",
         "Passo 4 (ISP): enxugar as interfaces por papel — quem só notifica depende de INotificador, não do mundo inteiro",
-        "Passo 5 (DIP): inverter as dependências de fronteira (gateway, e-mail, repo) pra abstrações e INJETAR no construtor — pronto pra DI do .NET e pra teste",
+        "Passo 5 (DIP): inverter as dependências de fronteira (gateway, e-mail, repo) pra abstrações e INJETAR no construtor — pronto pra injeção de dependência e pra teste",
         "Fechar com a DOSAGEM: mostrar onde PARAR — não criar fábrica pra objeto trivial, não abstrair o que tem uma implementação só; o resultado é injetável e extensível SEM excesso de indireção"
       ],
       "acao": "Conduzir a refatoração no chat, um princípio por vez: apresentar o código com os cheiros, dar dicas progressivas, aplicar SRP→OCP→LSP→ISP→DIP e comparar com a solução de referência — sempre questionando a dosagem",

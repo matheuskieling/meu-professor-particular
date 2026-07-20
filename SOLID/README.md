@@ -6,7 +6,13 @@ código que envelhece bem de código que quebra a cada mudança. Como o de AWS, 
 explica aos poucos, tira suas dúvidas na hora e avança no seu ritmo.
 
 É um curso **menor e mais denso** (7 módulos), **sem custos** e **sem certificação** — SOLID não tem
-exame oficial. Os exemplos são todos em **C#/.NET**.
+exame oficial.
+
+**Você escolhe a linguagem dos exemplos.** SOLID é sobre *design*, não sobre sintaxe — então, no
+começo, o agente pergunta em qual linguagem você quer os exemplos (C#, Java, TypeScript, Python, Go,
+Kotlin, PHP...) e conduz tudo nela. A escolha fica salva (`SOLID/.sessions/preferencias.json`) e vale
+pelo curso inteiro; é só pedir pra trocar quando quiser. Os arquivos de estudo solo (`.md`) trazem os
+exemplos em **C#** como referência-base.
 
 ---
 
@@ -23,7 +29,7 @@ exagerar** (SOLID mal aplicado vira over-engineering, e o curso ensina a dosar).
 | 03 | **O**CP | Estender comportamento sem editar o que já funciona |
 | 04 | **L**SP | Hierarquias em que o filho realmente substitui o pai |
 | 05 | **I**SP | Interfaces enxutas, sem obrigar ninguém a implementar o que não usa |
-| 06 | **D**IP | Depender de abstrações + a injeção de dependência do .NET |
+| 06 | **D**IP | Depender de abstrações + a injeção de dependência (container do .NET, Spring, NestJS... conforme sua linguagem) |
 | 07 | Capstone | Refatorar um sistema aplicando os 5 juntos e ver a ponte para Design Patterns |
 
 ---
@@ -44,7 +50,8 @@ paramos** pra você retomar depois.
 
 ### 📖 Jeito 2 — Estudar sozinho (offline)
 Todo o conteúdo também está em arquivos:
-- `NN-nome/teoria.md` — o texto teórico, com exemplos "antes/depois" em C#.
+- `NN-nome/teoria.md` — o texto teórico, com exemplos "antes/depois" em C# (a linguagem-base; na aula
+  guiada o agente traduz pra sua linguagem).
 - `NN-nome/pratica.md` — o exercício de refatoração (código de partida + solução comentada).
 - `apps/modulo-NN/quiz.py` — o quiz pra responder pelo teclado.
 - `provas/modulo-NN/prova.py` — a prova do módulo.
@@ -54,7 +61,7 @@ Todo o conteúdo também está em arquivos:
 ## O fluxo de um módulo
 
 ```
-  1. TEORIA    → o "porquê" do princípio + exemplo antes/depois em C#
+  1. TEORIA    → o "porquê" do princípio + exemplo antes/depois na sua linguagem
         ↓          o agente explica e pergunta "posso continuar?"
   2. PRÁTICA   → refatorar um trecho com o cheiro do módulo (conduzido no chat)
         ↓

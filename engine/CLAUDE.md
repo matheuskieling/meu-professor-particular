@@ -67,6 +67,13 @@ python3 engine/reset.py         --curso AWS
 
 ## Como adicionar um curso novo (sem recriar drivers)
 
+0. **Antes de escrever qualquer arquivo**, converse com o aluno: proponha o **currículo** para ele
+   aprovar e **decida a questão da linguagem**. Pergunte-se: *o tema é agnóstico de linguagem* (design
+   patterns, algoritmos, arquitetura, SOLID — os exemplos poderiam ser em qualquer linguagem OO)? Se
+   **sim**, diga isso ao aluno em uma frase, **avise que o curso deixará cada aluno escolher a
+   linguagem dos exemplos ao estudar**, e **pergunte em qual linguagem-base** você deve escrever os
+   exemplos nos arquivos (ofereça a preferência conhecida do aluno como padrão — ex.: C# p/ dev .NET).
+   Se o tema for de **infra** (tipo AWS) ou *sobre uma linguagem específica*, não há essa pergunta.
 1. Crie o diretório do curso na raiz (ex.: `Design-Patterns/`) com um `CLAUDE.md` e um `README.md`.
 2. Crie os módulos `NN-nome/` com `roteiro.json` + `teoria.md` + `pratica.md`.
 3. Crie os bancos: `apps/modulo-NN/questions.json` (quiz) e `provas/modulo-NN/questions.json` (prova).

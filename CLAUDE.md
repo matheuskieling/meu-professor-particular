@@ -67,8 +67,12 @@ Os **drivers vivem só em `engine/`** e são **agnósticos de curso** — descob
 do conteúdo ou por `--curso <dir>`/autodetecção. Um **curso novo é só conteúdo** (roteiros + bancos):
 não se copia nem se recria driver nenhum. Passo a passo técnico de "como criar um curso" em
 `engine/CLAUDE.md`; o guia voltado ao aluno (o que pedir ao agente) está em `README.md` na seção
-"Criar seus próprios cursos". Ao montar um curso novo, proponha o currículo para o aluno aprovar
-antes de escrever os módulos.
+"Criar seus próprios cursos". Ao montar um curso novo, **antes de escrever os módulos**: (a) proponha
+o **currículo** para o aluno aprovar; e (b) se o tema for **agnóstico de linguagem** (design patterns,
+algoritmos, arquitetura, SOLID...), **avise o aluno** que o curso vai deixá-lo **escolher a linguagem
+dos exemplos ao estudar** e **pergunte em qual linguagem-base** escrever os exemplos nos arquivos
+(sugira a preferência conhecida do aluno como padrão). Ver a convenção completa em "Cursos que
+dependem de linguagem" abaixo.
 
 ### Os dois modos de cada módulo
 

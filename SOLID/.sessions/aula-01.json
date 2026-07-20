@@ -1,0 +1,182 @@
+{
+  "roteiro_path": "/home/mkieling/dev/courses/SOLID/01-fundamentos/roteiro.json",
+  "roteiro": {
+    "modulo": "01",
+    "titulo": "Fundamentos de Design & por que SOLID existe",
+    "beats": [
+      {
+        "id": "intro",
+        "fase": "teoria",
+        "titulo": "Abertura — o que vamos fazer neste módulo",
+        "pontos": [
+          "Objetivo: dar o VOCABULÁRIO que os outros 5 princípios vão usar",
+          "Formato: eu explico, você pergunta à vontade, e a gente avança quando fizer sentido",
+          "Este módulo é diagnóstico: aprender a RECONHECER design ruim antes de curar",
+          "Ao fim: prática (nomear os smells de um código), quiz e prova"
+        ],
+        "checkpoint": "Confirme que o aluno está pronto pra começar e topa o formato conversado",
+        "ref": "01-fundamentos/teoria.md"
+      },
+      {
+        "id": "t1",
+        "fase": "teoria",
+        "titulo": "O que é design de software e por que importa",
+        "pontos": [
+          "Design = como o código é organizado por dentro, não o que ele faz por fora",
+          "Código é LIDO e MUDADO muito mais do que é escrito — otimize pra mudança",
+          "Design bom = mudança barata; design ruim = cada mudança dói e assusta",
+          "O custo real de um sistema está na manutenção, não na primeira versão",
+          "SOLID é sobre baixar o custo de mudar, não sobre 'código bonito'"
+        ],
+        "checkpoint": "Pergunte se ficou claro por que 'barato de mudar' é a métrica que importa",
+        "ref": "01-fundamentos/teoria.md#1-o-que-é-design-de-software-e-por-que-ele-importa"
+      },
+      {
+        "id": "t2",
+        "fase": "teoria",
+        "titulo": "Os 4 sintomas do design podre",
+        "pontos": [
+          "Uncle Bob nomeou os 'cheiros' de um design apodrecendo",
+          "Rigidez: difícil mudar, um ajuste vira efeito cascata em vários lugares",
+          "Fragilidade: você muda AQUI e quebra ALI, em pontos aparentemente sem relação",
+          "Imobilidade: dá pra reaproveitar, mas o custo de desgrudar é alto demais",
+          "Viscosidade: fazer a gambiarra é mais fácil que fazer certo — o design empurra pro errado"
+        ],
+        "checkpoint": "Peça um exemplo prático de rigidez OU fragilidade que o aluno já viu",
+        "ref": "01-fundamentos/teoria.md#2-os-quatro-sintomas-do-design-podre"
+      },
+      {
+        "id": "t3",
+        "fase": "teoria",
+        "titulo": "Acoplamento x Coesão",
+        "pontos": [
+          "Acoplamento: quão dependentes as partes são umas das outras — queremos BAIXO",
+          "Coesão: quão focada uma unidade é numa única ideia — queremos ALTA",
+          "Analogia: peças de LEGO (baixo acoplamento) vs. um bloco de cimento (alto)",
+          "Alto acoplamento causa fragilidade; baixa coesão causa a classe God",
+          "SOLID inteiro é, no fundo, uma caixa de ferramentas pra baixar acoplamento e subir coesão"
+        ],
+        "checkpoint": "Confirme que o aluno distingue os dois: dependência (acopl.) x foco (coesão)",
+        "ref": "01-fundamentos/teoria.md#3-acoplamento-x-coesão"
+      },
+      {
+        "id": "t4",
+        "fase": "teoria",
+        "titulo": "Code smells que anunciam violação de SOLID",
+        "pontos": [
+          "Smell não é bug: é um sinal na superfície de um problema de design embaixo",
+          "Classe God, método gigante, switch/if em cima de tipo, flag booleana de comportamento",
+          "new espalhado (dependência concreta grudada), interface gorda, herança que quebra expectativa",
+          "Cada smell tem um princípio 'natural' que o ataca — prenúncio dos próximos módulos",
+          "Reconhecer o smell é 80% do trabalho; a refatoração vem depois"
+        ],
+        "checkpoint": "Pergunte se o aluno consegue citar 2 smells e chuta qual princípio atacaria cada",
+        "ref": "01-fundamentos/teoria.md#4-code-smells-que-anunciam-violação-de-solid"
+      },
+      {
+        "id": "t5",
+        "fase": "teoria",
+        "titulo": "De onde vem SOLID + visão dos 5 + dosagem",
+        "pontos": [
+          "Robert C. Martin (Uncle Bob) consolidou os princípios; Michael Feathers cunhou o acrônimo",
+          "S/O/L/I/D em uma linha cada: SRP, OCP, LSP, ISP, DIP (visão de mapa, sem aprofundar)",
+          "Cada letra ataca um smell específico — os próximos 5 módulos abrem uma por vez",
+          "Princípios são HEURÍSTICAS, não leis: servem ao objetivo (mudança barata), não ao contrário",
+          "Over-engineering (abstrair cedo demais, YAGNI) é tão ruim quanto código rígido — dosagem"
+        ],
+        "checkpoint": "Peça pro aluno recitar o que cada letra do SOLID significa (só o nome)",
+        "ref": "01-fundamentos/teoria.md#5-de-onde-vem-solid-visão-dos-5-e-dosagem"
+      },
+      {
+        "id": "t6",
+        "fase": "teoria",
+        "titulo": "Recap da teoria + checagem de entendimento",
+        "pontos": [
+          "Recapitular: design importa, os 4 sintomas, acoplamento x coesão, smells, mapa do SOLID",
+          "Rodar mentalmente as 5 perguntas de checagem da teoria",
+          "Fixar a régua: baixo acoplamento + alta coesão + dosagem"
+        ],
+        "checkpoint": "Antes de seguir, pergunte: 'podemos passar para a prática de diagnóstico?'",
+        "ref": "01-fundamentos/teoria.md#checagem-de-entendimento"
+      },
+      {
+        "id": "p1",
+        "fase": "pratica",
+        "titulo": "Diagnosticar uma God class acoplada",
+        "pontos": [
+          "Vou apresentar um trecho de C# — uma classe que faz de tudo e depende de tudo",
+          "Sua missão: NOMEAR os smells e os sintomas, sem ainda refatorar a fundo",
+          "Foco em diagnóstico: qual smell, qual sintoma (rigidez/fragilidade/etc.), qual princípio futuro",
+          "É o exame antes do tratamento — aprender a enxergar o problema"
+        ],
+        "acao": "Apresentar o código no chat, deixar o aluno listar os smells, e revisar/completar junto o diagnóstico",
+        "checkpoint": "Confirme que o aluno nomeou os principais smells e mapeou pelo menos 2 pra sintomas/princípios",
+        "ref": "01-fundamentos/pratica.md#o-codigo-para-diagnosticar"
+      },
+      {
+        "id": "q1",
+        "fase": "quiz",
+        "titulo": "Quiz da aula",
+        "pontos": [
+          "Fixar o conteúdo com o quiz interativo (10 questões)",
+          "Eu conduzo as perguntas no chat e tiro dúvidas a cada uma"
+        ],
+        "acao": "Rodar: python3 engine/session.py start SOLID/apps/modulo-01/questions.json",
+        "checkpoint": "Ao terminar, comente o resultado e o que revisar",
+        "ref": "SOLID/apps/modulo-01/questions.json"
+      },
+      {
+        "id": "prova",
+        "fase": "prova",
+        "titulo": "Prova do módulo",
+        "pontos": [
+          "Avaliação de fim de módulo (12 questões, feedback por alternativa)",
+          "Aprovação 70%; só seguir pro Módulo 02 (SRP) após passar"
+        ],
+        "acao": "Rodar: python3 engine/session.py start SOLID/provas/modulo-01/questions.json --id prova",
+        "checkpoint": "Se passou, proponha o Módulo 02 (SRP); se não, revise os pontos errados",
+        "ref": "SOLID/provas/modulo-01/questions.json"
+      },
+      {
+        "id": "fim",
+        "fase": "fechamento",
+        "titulo": "Fechamento do Módulo 01",
+        "pontos": [
+          "Recap do que dominou: vocabulário de design, sintomas, acoplamento/coesão, smells, mapa do SOLID",
+          "Você agora sabe DIAGNOSTICAR — os próximos módulos ensinam a CURAR",
+          "Próximo: Módulo 02 — SRP (Responsabilidade Única), que ataca a classe God"
+        ],
+        "checkpoint": "Pergunte se quer emendar o Módulo 02 (SRP) ou parar por aqui",
+        "ref": "SOLID/CLAUDE.md#plano-completo-do-curso"
+      }
+    ]
+  },
+  "pos": 5,
+  "marco_sessao": 0,
+  "status": {
+    "intro": "visto",
+    "t1": "visto",
+    "t2": "visto",
+    "t3": "visto",
+    "t4": "visto",
+    "t5": "pendente",
+    "t6": "pendente",
+    "p1": "pendente",
+    "q1": "pendente",
+    "prova": "pendente",
+    "fim": "pendente"
+  },
+  "notes": [
+    {
+      "beat": "t2",
+      "ts": "2026-07-20T18:19:24+00:00",
+      "text": "Exemplos reais do aluno: RIGIDEZ = adicionar 1 campo obriga mexer em request/response/command/SQL/service/repository. FRAGILIDADE = AppSettings.cs estático global quebra testes em paralelo. Retomar esses casos em SRP/OCP (rigidez) e DIP (o estático global)."
+    },
+    {
+      "beat": "t4",
+      "ts": "2026-07-20T18:33:17+00:00",
+      "text": "Aprofundamento pedido pelo aluno em OCP: 'pra onde vai o switch?'. Mostrei antes/depois em C# (ICalculadoraFrete), resolvedor por Dictionary e registro via DI (AddSingleton + IEnumerable injetado). Ponto-chave que ele pegou: switch de COMPORTAMENTO some; sobra no máximo 1 ponto de registro = adicionar linha (extensão) em vez de editar case (modificação)."
+    }
+  ],
+  "iniciado_em": "2026-07-20T18:03:00+00:00"
+}

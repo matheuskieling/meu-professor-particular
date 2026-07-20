@@ -7,6 +7,7 @@ por vez, tira dúvidas, aplica quizzes e provas, e **salva onde você parou** pr
 | # | Curso | Status |
 |---|-------|--------|
 | 1 | [AWS & Cloud — mega intensivo](AWS/README.md) | ✅ Completo — 19 módulos + simulados CLF-C02/SAA-C03 |
+| 2 | [SOLID — design OO (exemplos em C#)](SOLID/README.md) | ✅ Completo — 7 módulos (fundamentos + 5 princípios + capstone) |
 
 ## 🚀 Começando (5 minutos)
 
@@ -90,7 +91,8 @@ contribuir o curso de volta. Passo a passo técnico em [`engine/CLAUDE.md`](engi
 ├── .claude/skills/      ← skills do Claude Code (/retomar-curso, /revisar)
 ├── engine/              ← motor compartilhado por TODOS os cursos (drivers Python)
 │   └── CLAUDE.md        ← como o motor funciona + como criar um curso novo
-└── AWS/                 ← Curso 1 (só conteúdo; README próprio com o passo a passo)
+├── AWS/                 ← Curso 1 (só conteúdo; README próprio com o passo a passo)
+└── SOLID/               ← Curso 2 (só conteúdo; README próprio com o passo a passo)
 ```
 
 > Cada curso é um diretório na raiz, só com **conteúdo** (roteiros + bancos). O `engine/` serve

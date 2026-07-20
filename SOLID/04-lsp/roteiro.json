@@ -7,11 +7,12 @@
       "fase": "teoria",
       "titulo": "Abertura — o que vamos fazer neste módulo",
       "pontos": [
+        "Linguagem dos exemplos: leia SOLID/.sessions/preferencias.json e conduza o código na linguagem salva (se ainda não houver, pergunte e grave); os arquivos usam C# como referência-base — traduza ao vivo",
         "Objetivo: dominar o L do SOLID — a Substituição de Liskov — e saber quando a herança é honesta",
         "Ideia-chave: um subtipo deve poder substituir o supertipo SEM surpresas para quem usa a abstração",
         "Aviso importante: LSP é sobre COMPORTAMENTO (contrato), não sobre a taxonomia do mundo real",
         "Formato: eu explico, você pergunta à vontade, e a gente avança quando fizer sentido",
-        "Ao fim: prática (refatorar uma hierarquia que viola LSP em C#), quiz e prova"
+        "Ao fim: prática (refatorar uma hierarquia que viola LSP), quiz e prova"
       ],
       "checkpoint": "Confirme que o aluno está pronto pra começar e se topa o formato conversado",
       "ref": "04-lsp/teoria.md"
@@ -33,7 +34,7 @@
     {
       "id": "t2",
       "fase": "teoria",
-      "titulo": "O clássico Retângulo/Quadrado em C#",
+      "titulo": "O clássico Retângulo/Quadrado",
       "pontos": [
         "Na geometria, um quadrado É-UM retângulo — então parece natural fazer Square : Rectangle",
         "Para manter os lados iguais, Square sobrescreve Width/Height: setar um também muda o outro",
@@ -107,7 +108,7 @@
       "fase": "pratica",
       "titulo": "Refatorar uma hierarquia que viola LSP",
       "pontos": [
-        "Vou te mostrar uma hierarquia em C# que viola LSP (Retângulo/Quadrado ou Bird/Penguin)",
+        "Vou te mostrar uma hierarquia que viola LSP (Retângulo/Quadrado ou Bird/Penguin)",
         "Passo 1: você identifica o contrato do supertipo que o subtipo quebra (qual invariante/pós-condição)",
         "Passo 2: escreve o teste-cliente que passa com o pai e falha com o filho (a prova da violação)",
         "Passo 3: propõe a correção — repensar a hierarquia, compor, ou usar uma interface estreita",

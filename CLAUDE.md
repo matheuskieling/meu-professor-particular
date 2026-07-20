@@ -89,6 +89,25 @@ commitar arquivos de `.sessions/` nela. Para recomeçar, `python3 engine/reset.p
 **quiz** da aula (fixar) · **prova** do módulo (avaliar, 70%) · extras de certificação quando houver.
 Cada curso detalha isso no seu próprio `CLAUDE.md` (ver `AWS/CLAUDE.md` como referência viva).
 
+### Cursos que dependem de linguagem — preferência salva (convenção da plataforma)
+
+Alguns cursos ensinam algo **agnóstico de linguagem** (design, algoritmos, padrões), mas precisam de
+uma linguagem só para os **exemplos** — e essa escolha é **gosto do aluno**, não característica do
+curso. Regra da plataforma para esses cursos:
+
+- **Declara-se** no `CLAUDE.md` do curso que ele é *dependente de linguagem* (com a linguagem de
+  **referência-base** em que os arquivos estão escritos).
+- No **início** (beat `intro` do 1º módulo), o agente **pergunta a linguagem preferida** e salva em
+  `<Curso>/.sessions/preferencias.json` → `{ "linguagem": "<nome>" }`. É versionado como o resto do
+  progresso (viaja no fork/branch; some no `reset`).
+- Em **toda retomada**, o agente **lê** esse arquivo e **conduz os exemplos na linguagem salva**
+  (traduzindo ao vivo a partir da referência-base). Se o aluno pedir pra trocar, reescreve o arquivo.
+- Os arquivos de conteúdo (`teoria.md`, `pratica.md`, `questions.json`) ficam numa **única
+  linguagem-base** — a adaptação é **ao vivo**, na fala do agente; quem estuda solo lê a base.
+
+Cursos **não** dependentes de linguagem (ex.: infra como AWS, ou um curso que é *sobre* uma linguagem
+específica) simplesmente não declaram isso e ignoram o mecanismo. Exemplo vivo: `SOLID/CLAUDE.md`.
+
 ### Retomar um curso
 
 Para começar/retomar qualquer curso, o aluno usa a skill **`/retomar-curso`**: ela detecta o curso,

@@ -72,7 +72,12 @@ python3 engine/reset.py         --curso AWS
 3. Crie os bancos: `apps/modulo-NN/questions.json` (quiz) e `provas/modulo-NN/questions.json` (prova).
    Opcionalmente os runners solo `apps/modulo-NN/quiz.py` e `provas/modulo-NN/prova.py` (copie de um
    curso existente — são stubs de 4 linhas que só apontam o `questions.json` ao lado).
-4. Pronto. As skills `/retomar-curso` e `/revisar` e os drivers do `engine/` já funcionam nele —
+4. **Se o curso for agnóstico de linguagem** (design, algoritmos, padrões — a linguagem dos exemplos
+   é gosto do aluno): declare isso no `CLAUDE.md` do curso, escreva os arquivos numa **linguagem-base**
+   única e siga a convenção de **preferência salva** (`<Curso>/.sessions/preferencias.json`) descrita no
+   `CLAUDE.md` da raiz. O `/retomar-curso` já pergunta a linguagem no início e a honra nas retomadas —
+   sem código novo no motor. Cursos de infra ou *sobre* uma linguagem específica ignoram isso.
+5. Pronto. As skills `/retomar-curso` e `/revisar` e os drivers do `engine/` já funcionam nele —
    nada de copiar motor. O progresso vai para `Design-Patterns/.sessions/`.
 
 > Regra de manutenção: a **lógica** dos drivers mora só aqui. Não duplique drivers dentro de cursos.

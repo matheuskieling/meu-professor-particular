@@ -247,7 +247,7 @@
       }
     ]
   },
-  "pos": 12,
+  "pos": 18,
   "status": {
     "intro": "visto",
     "t1": "visto",
@@ -261,12 +261,12 @@
     "p1": "visto",
     "p2": "visto",
     "p3": "visto",
-    "p4": "pendente",
-    "p5": "pendente",
-    "p6": "pendente",
-    "q1": "pendente",
-    "prova": "pendente",
-    "fim": "pendente"
+    "p4": "visto",
+    "p5": "visto",
+    "p6": "visto",
+    "q1": "visto",
+    "prova": "visto",
+    "fim": "visto"
   },
   "notes": [
     {
@@ -308,8 +308,33 @@
       "beat": "p4",
       "ts": "2026-07-19T14:25:24+00:00",
       "text": "CORRECAO da nota anterior: o usuario IAM (admin-matheus com AdministratorAccess) JA FOI CRIADO. Paramos no Passo 2 do beat p4: GERAR AS ACCESS KEYS (ainda nao geradas). Retomar direto na geracao das access keys (com aviso de seguranca: secret aparece 1 vez so, nunca no repo, revogar se vazar), depois instalar CLI (aws: command not found), aws configure, comandos p5/p6, quiz, prova."
+    },
+    {
+      "beat": "p4",
+      "ts": "2026-07-20T17:09:36+00:00",
+      "text": "Access keys do admin-matheus GERADAS e guardadas com seguranca (fora do repo). Aluno avisado: secret aparece 1x, revogar se vazar, nao colar no chat. Proximo: instalar CLI (aws: command not found) + aws configure."
+    },
+    {
+      "beat": "p5",
+      "ts": "2026-07-20T17:13:17+00:00",
+      "text": "CLI instalada (aws-cli/2.34.32 via pacman aws-cli-v2), aws configure OK (us-east-1/json). get-caller-identity retornou user/mkieling-admin na conta 514640445902 (NAO root). Nota: ARN real e 'mkieling-admin', nao 'admin-matheus'."
+    },
+    {
+      "beat": "p6",
+      "ts": "2026-07-20T17:25:02+00:00",
+      "text": "Pratica concluida: comandos CLI describe-regions/describe-availability-zones rodados PELO ALUNO (us-east-1=6 AZs, sa-east-1=3 AZs). Aluno entendeu isolamento de regioes. Perguntou se precisa decorar sintaxe CLI p/ prova: expliquei que nao (provas sao conceituais/cenario, nao sintaxe). Checklist modulo 01 100% verde. Indo pro quiz q1."
+    },
+    {
+      "beat": "q1",
+      "ts": "2026-07-20T17:29:24+00:00",
+      "text": "Quiz da aula (q1): 10/10 (100%) APROVADO. Aluno domina os conceitos do modulo 01. Indo para a prova."
+    },
+    {
+      "beat": "prova",
+      "ts": "2026-07-20T17:36:45+00:00",
+      "text": "PROVA modulo 01: 11/12 (92%) APROVADO. Unico erro: Q3 (Lambda vs EC2) por inversao do referencial da comparacao, nao por falha de conceito. Aluno domina fundamentos. Modulo 01 COMPLETO."
     }
   ],
   "iniciado_em": "2026-07-18T17:53:33+00:00",
-  "marco_sessao": 9
+  "marco_sessao": 12
 }

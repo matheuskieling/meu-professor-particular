@@ -55,18 +55,23 @@ skills já funcionam para qualquer curso novo, então **basta pedir ao seu agent
 que ele monta tudo no formato-padrão (roteiro de aula ao vivo + teoria + prática + quiz + prova).
 
 **O que informar ao agente** (quanto mais claro, melhor o curso):
-- **Tema e nome** do curso (ex.: "Design Patterns em TypeScript").
+- **Tema e nome** do curso (ex.: "Design Patterns").
 - **Público/nível** (iniciante? já programa? quer profundidade?).
 - **Tamanho**: quantos módulos, ou "você decide o currículo".
 - **Estilo**: mais teórico ou mão-na-massa? tem prática executável (código, terminal)?
 - **Avaliação**: quer quiz + prova por módulo? simulados de certificação (se o tema tiver)?
-- **Idioma** (padrão: português).
+- **Idioma** (do texto/aula; padrão: português).
+- **Linguagem dos exemplos** (só p/ temas de código): você **não precisa** decidir — se o tema for
+  agnóstico (design patterns, algoritmos, SOLID...), o agente vai te avisar e **perguntar em qual
+  linguagem escrever os exemplos**; e, depois de pronto, o curso deixa **você (ou qualquer aluno)
+  escolher a linguagem ao estudar**, com a escolha salva pra retomar sempre nela.
 
 **Modelo de pedido** (copie e ajuste):
 
 > "Seguindo o formato-padrão do repositório (veja `CLAUDE.md` e `engine/CLAUDE.md`), crie um curso
 > novo de **<tema>** para **<seu nível>**. Proponha primeiro o **currículo de módulos** para eu
-> aprovar; depois monte cada módulo com `roteiro.json` + `teoria.md` + `pratica.md` + quiz (10
+> aprovar e, se o tema for agnóstico de linguagem, **me pergunte em qual linguagem escrever os
+> exemplos**; depois monte cada módulo com `roteiro.json` + `teoria.md` + `pratica.md` + quiz (10
 > questões) e prova (12 questões com feedback por alternativa), na pasta `<Nome-do-Curso>/`. Quando
 > terminar, me conduza pelo módulo 1."
 

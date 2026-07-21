@@ -221,15 +221,15 @@
       }
     ]
   },
-  "pos": 4,
-  "marco_sessao": 2,
+  "pos": 6,
+  "marco_sessao": 4,
   "status": {
     "intro": "visto",
     "t1": "visto",
     "t2": "visto",
     "t3": "visto",
-    "t4": "pendente",
-    "t5": "pendente",
+    "t4": "visto",
+    "t5": "visto",
     "t6": "pendente",
     "t7": "pendente",
     "p1": "pendente",
@@ -261,6 +261,11 @@
       "beat": "t3",
       "ts": "2026-07-21T14:36:20+00:00",
       "text": "PARADA no fim do t3 (anatomia da policy + ARN). Cobrimos: campos da policy (Version 2012-10-17, Statement, Sid, Effect Allow/Deny, Action servico:Operacao com curinga, Resource=ARN, Condition), o formato do ARN (arn:aws:servico:regiao:conta:recurso) e o detalhe classico bucket vs bucket/* (ListBucket no bucket, GetObject no bucket/*). Checkpoint: aluno leu ARN de SQS mas PULOU o campo 'servico' (sqs) e nao citou valores — corrigi mostrando os 6 campos e o contraste global(S3, regiao/conta vazias) vs regional(SQS, preenchidas). Aluno entendeu apos correcao. REFORCAR no proximo review: os 6 campos do ARN, especialmente o campo servico. Proximo: t4 = logica de avaliacao (Deny explicito > Allow > Deny implicito)."
+    },
+    {
+      "beat": "t5",
+      "ts": "2026-07-21T17:24:24+00:00",
+      "text": "FIM da sessao no t5 concluido (managed vs inline, least privilege, MFA/higiene de credenciais). Aluno respondeu checkpoint com dominio: managed=reaproveitavel/inline=presa a identidade e morre com ela; least privilege=minimo necessario, s3:GetObject no lugar de s3:*. Reforcei bonus: managed tem versionamento+auditoria central; least privilege tambem aperta RESOURCE (ARN especifico, nao *). Meta do aluno: prova CLF-C02 (liberada apos Modulo 07) em ~1 mes; plano combinado ~3-4 beats/dia (restam ~90 beats ate fim do M07). Proximo: t6 = Roles e STS (credenciais temporarias) - aluno ja tem base forte disso das sessoes anteriores."
     }
   ],
   "iniciado_em": "2026-07-20T20:21:32+00:00"

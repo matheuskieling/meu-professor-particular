@@ -23,21 +23,29 @@ para o progresso refletir o que foi feito em outras máquinas.
 ## 3. Rodar o relatório
 
 ```bash
-python3 engine/progresso.py --curso <CURSO>     # ou sem --curso p/ autodetectar
+python3 engine/progresso.py --curso <CURSO> --color always   # ou sem --curso p/ autodetectar
 ```
 
-Isso imprime: barra + % por módulo, % do curso completo (beats e módulos concluídos), o **último
-beat concluído** com data, e o **ritmo** (beats por dia, com média).
+Use **sempre `--color always`**: o Bash não roda num TTY, então o `auto` desligaria as cores. O
+driver imprime um **painel** (à la `/usage`): barra + % por módulo, % do curso completo, sparkline de
+ritmo e o **último beat concluído** com data.
 
-## 4. Apresentar ao aluno (com contexto, não cru)
+## 4. Apresentar ao aluno — MOSTRE O PAINEL, não reescreva
 
-Mostre o relatório e **comente com as próprias palavras**, adaptando ao aluno:
-- Onde ele está e quanto falta para o próximo marco relevante **daquele curso**. Ex.: no AWS, os
-  simulados da **CLF-C02** liberam após o **Módulo 07** e os da **SAA-C03** após o **18** — se o aluno
-  tem meta de certificação, traduza o % em "faltam ~N beats até lá" e, se ele deu um prazo, sugira um
-  ritmo (beats/dia) para chegar. Esse contexto de metas **não** vem do driver (que é agnóstico): é o
-  agente que o adiciona, lendo o `CLAUDE.md` do curso.
-- Se o ritmo estiver irregular ou parado, incentive sem cobrar; se estiver bom, reforce.
+O painel do driver **É** o relatório visual. A regra de ouro:
+
+- **Cole o painel verbatim num bloco de código** (```` ``` ````), exatamente como o driver imprimiu —
+  as barras e a sparkline são a parte visual e renderizam em monoespaçado. **Não** transforme o painel
+  em prosa/listas/tabela markdown por conta própria; foi esse o erro que fez o relatório virar texto de
+  novo. **Só reescreva em prosa se o aluno pedir** (ex.: "me explica em texto", "resume por escrito");
+  fora isso, o padrão é o painel. (As cores ANSI só renderizam no terminal real do aluno; no bloco de
+  código elas não aparecem, e tudo bem — o layout já é o visual.)
+- **Só embaixo do painel**, adicione **1–3 linhas** de contexto — não repita os números, agregue
+  significado: quanto falta para o próximo marco **daquele curso**. Ex.: no AWS, os simulados da
+  **CLF-C02** liberam após o **Módulo 07** e os da **SAA-C03** após o **18** — se o aluno tem meta de
+  certificação, traduza o % em "faltam ~N beats até lá" e, se deu prazo, sugira um ritmo (beats/dia).
+  Esse contexto de metas **não** vem do driver (agnóstico): é o agente que o adiciona lendo o
+  `CLAUDE.md` do curso. Se o ritmo estiver parado, incentive sem cobrar; se estiver bom, reforce.
 
 ## 5. Datas retroativas (opcional)
 

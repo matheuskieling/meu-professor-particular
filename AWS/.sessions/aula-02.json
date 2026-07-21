@@ -221,13 +221,13 @@
       }
     ]
   },
-  "pos": 2,
-  "marco_sessao": 0,
+  "pos": 4,
+  "marco_sessao": 2,
   "status": {
     "intro": "visto",
     "t1": "visto",
-    "t2": "pendente",
-    "t3": "pendente",
+    "t2": "visto",
+    "t3": "visto",
     "t4": "pendente",
     "t5": "pendente",
     "t6": "pendente",
@@ -256,6 +256,11 @@
       "beat": "t1",
       "ts": "2026-07-20T20:46:12+00:00",
       "text": "PARADA da sessao no beat t1 (root vs IAM), checkpoint respondido com excelencia: aluno explicou por que root nao tem access key (cred que nao expira + poder ilimitado + pode trancar dono pra fora) e p/ que serve (fechar conta, email/billing, plano de suporte, destravar bucket S3/SCP auto-bloqueado). Regra dada: acao sobre a PROPRIA conta=root; sobre recursos DENTRO=IAM. Proximo: beat t2 = tres tipos de identidade IAM (users/groups/roles) com policies na pratica."
+    },
+    {
+      "beat": "t3",
+      "ts": "2026-07-21T14:36:20+00:00",
+      "text": "PARADA no fim do t3 (anatomia da policy + ARN). Cobrimos: campos da policy (Version 2012-10-17, Statement, Sid, Effect Allow/Deny, Action servico:Operacao com curinga, Resource=ARN, Condition), o formato do ARN (arn:aws:servico:regiao:conta:recurso) e o detalhe classico bucket vs bucket/* (ListBucket no bucket, GetObject no bucket/*). Checkpoint: aluno leu ARN de SQS mas PULOU o campo 'servico' (sqs) e nao citou valores — corrigi mostrando os 6 campos e o contraste global(S3, regiao/conta vazias) vs regional(SQS, preenchidas). Aluno entendeu apos correcao. REFORCAR no proximo review: os 6 campos do ARN, especialmente o campo servico. Proximo: t4 = logica de avaliacao (Deny explicito > Allow > Deny implicito)."
     }
   ],
   "iniciado_em": "2026-07-20T20:21:32+00:00"

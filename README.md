@@ -25,13 +25,14 @@ por vez, tira dúvidas, aplica quizzes e provas, e **salva onde você parou** pr
 |---------|-----------|-------------|
 | **`/retomar-curso`** | Detecta o curso, sincroniza seu progresso (`git pull`), resume onde você parou e **retoma a aula exatamente do ponto salvo**. Ao encerrar, commita seu progresso no fork. | Sempre que for **começar ou continuar** a estudar. É o jeito padrão de entrar no curso. Aceita argumento: `/retomar-curso AWS`. |
 | **`/revisar`** | Monta uma **mini-prova estilo Anki** amostrando de tudo que você já concluiu, com **repetição espaçada** (as perguntas voltam de tempos em tempos; erradas reaparecem mais cedo). | Quando quiser **revisar e fixar** o que já aprendeu, a qualquer momento. Aceita argumento: `/revisar AWS`. |
+| **`/progresso`** | Mostra a **visão geral do avanço**: barra e **% de cada módulo**, **% do curso completo**, o **último beat concluído** (com data) e o **ritmo** (beats por dia). Só leitura — não altera nada. | Quando quiser saber **quanto já fez, quanto falta** ou acompanhar seu ritmo rumo a uma meta. Aceita argumento: `/progresso AWS`. |
 
 Cada comando existe no formato nativo de cada harness (a lógica é uma só — em
 `.claude/skills/<comando>/SKILL.md`):
 
 | Harness | Como acionar |
 |---------|--------------|
-| **Claude Code** | `/retomar-curso`, `/revisar` (skills nativas) |
+| **Claude Code** | `/retomar-curso`, `/revisar`, `/progresso` (skills nativas) |
 | **Gemini CLI** | idem (comandos em `.gemini/commands/`) |
 | **Cursor** | idem (comandos em `.cursor/commands/`) |
 | **Copilot (VS Code)** | idem (prompts em `.github/prompts/`) |
@@ -93,7 +94,7 @@ contribuir o curso de volta. Passo a passo técnico em [`engine/CLAUDE.md`](engi
 ├── README.md            ← você está aqui
 ├── CLAUDE.md            ← instruções-mestre para os agentes (fonte de verdade)
 ├── AGENTS.md            ← ponteiro para agentes de outros harnesses
-├── .claude/skills/      ← skills do Claude Code (/retomar-curso, /revisar)
+├── .claude/skills/      ← skills do Claude Code (/retomar-curso, /revisar, /progresso)
 ├── engine/              ← motor compartilhado por TODOS os cursos (drivers Python)
 │   └── CLAUDE.md        ← como o motor funciona + como criar um curso novo
 ├── AWS/                 ← Curso 1 (só conteúdo; README próprio com o passo a passo)

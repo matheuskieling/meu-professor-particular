@@ -20,8 +20,13 @@ Comandos:
     status  [--id NOME]                mapa de progresso (o que já vimos e o que falta)
     revisao [--id NOME]                conteúdo estudado desde a última sessão + nº sugerido de perguntas
     marco   [--id NOME]                marca o ponto atual como "já revisado" (chamar após a revisão)
+    backfill [--id NOME]               estima datas de beats já concluídos a partir das notas (retroativo)
     note "<texto>" [--id NOME]         registra uma nota/dúvida no ponto atual
     reset   [--id NOME]                apaga o progresso da aula
+
+Datas de conclusão: cada `next` carimba `concluido_em[beat] = agora`. O `status` mostra a data ao
+lado de cada beat e destaca o último concluído (responde "onde paramos?"). O relatório de progresso
+do curso (visão geral + %) fica em `engine/progresso.py`.
 
 Revisão espaçada: a cada retomada, `revisao` mostra os beats de teoria/prática vistos desde o último
 `marco` (a "última sessão") e sugere quantas perguntas de revisão fazer — o tamanho acompanha o
@@ -61,6 +66,17 @@ import _common
 
 def _now():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def _fmt_dt(iso):
+    """'2026-07-21T14:30:00+00:00' -> '21/07 14:30' (hora local). Robusto a valor faltando."""
+    if not iso:
+        return None
+    try:
+        dt = datetime.fromisoformat(iso).astimezone()
+        return dt.strftime("%d/%m %H:%M")
+    except (ValueError, TypeError):
+        return None
 
 
 def _default_id(roteiro):
@@ -126,6 +142,7 @@ def cmd_start(args):
         "pos": 0,
         "marco_sessao": 0,
         "status": {b["id"]: "pendente" for b in roteiro["beats"]},
+        "concluido_em": {},
         "notes": [],
         "iniciado_em": _now(),
     }
@@ -148,7 +165,10 @@ def cmd_next(args):
     state = _load(args.id, args.curso)
     beats = _beats(state)
     if state["pos"] < len(beats):
-        state["status"][beats[state["pos"]]["id"]] = "visto"
+        beat_id = beats[state["pos"]]["id"]
+        state["status"][beat_id] = "visto"
+        # carimba a data de conclusão do beat (primeira vez que é marcado como visto)
+        state.setdefault("concluido_em", {}).setdefault(beat_id, _now())
         state["pos"] += 1
     _save(args.id, state, args.curso)
     _show_beat(state)
@@ -177,11 +197,27 @@ def cmd_status(args):
     state = _load(args.id, args.curso)
     beats = _beats(state)
     r = state["roteiro"]
+    concl = state.get("concluido_em", {})
+    aprox = set(state.get("concluido_aprox", []))
     print(f"Aula: Módulo {r.get('modulo', '?')} — {r.get('titulo', '')}")
     print(f"Progresso: {state['pos']}/{len(beats)} beats.\n")
     for i, b in enumerate(beats):
-        marca = "▶" if i == state["pos"] else ("✔" if state["status"].get(b["id"]) == "visto" else "·")
-        print(f"  {marca} {b['id']:>4}  [{b['fase']:<10}] {b['titulo']}")
+        visto = state["status"].get(b["id"]) == "visto"
+        marca = "▶" if i == state["pos"] else ("✔" if visto else "·")
+        data = _fmt_dt(concl.get(b["id"]))
+        quando = ""
+        if data:
+            quando = f"  · ~{data}" if b["id"] in aprox else f"  · {data}"
+        elif visto:
+            quando = "  · —"
+        print(f"  {marca} {b['id']:>4}  [{b['fase']:<10}] {b['titulo']}{quando}")
+    # último beat concluído — o beat logo antes da posição atual (onde paramos), com sua data
+    ult = next((b for b in reversed(beats[:state["pos"]])
+                if state["status"].get(b["id"]) == "visto"), None)
+    if ult:
+        data = _fmt_dt(concl.get(ult["id"]))
+        quando = (f"~{data}" if ult["id"] in aprox else data) if data else "sem data"
+        print(f"\nÚltimo beat concluído: {ult['id']} ({ult['titulo']}) — {quando}")
     if state.get("notes"):
         print("\nNotas registradas:")
         for n in state["notes"]:
@@ -232,6 +268,37 @@ def cmd_marco(args):
           "A próxima retomada vai revisar apenas o conteúdo novo a partir daqui.")
 
 
+def cmd_backfill(args):
+    """Estima a data de beats já concluídos (visto) a partir do ts das notas do beat.
+
+    Retroativo e best-effort: só preenche beats que estão 'visto', ainda não têm
+    data e possuem ao menos uma nota (usa a nota mais antiga). As datas assim
+    inferidas são marcadas como aproximadas (aparecem com '~' no status/progresso).
+    Beats sem nota permanecem sem data — nada é inventado.
+    """
+    state = _load(args.id, args.curso)
+    concl = state.setdefault("concluido_em", {})
+    aprox = set(state.get("concluido_aprox", []))
+    # menor ts de nota por beat
+    primeira_nota = {}
+    for n in state.get("notes", []):
+        b, ts = n.get("beat"), n.get("ts")
+        if b and ts and (b not in primeira_nota or ts < primeira_nota[b]):
+            primeira_nota[b] = ts
+    novos = 0
+    for b_id, visto in state.get("status", {}).items():
+        if visto == "visto" and b_id not in concl and b_id in primeira_nota:
+            concl[b_id] = primeira_nota[b_id]
+            aprox.add(b_id)
+            novos += 1
+    state["concluido_aprox"] = sorted(aprox)
+    _save(args.id, state, args.curso)
+    sem_data = sum(1 for b_id, v in state.get("status", {}).items()
+                   if v == "visto" and b_id not in concl)
+    print(f"Backfill: {novos} beat(s) ganharam data aproximada (via notas). "
+          f"{sem_data} beat(s) concluído(s) seguem sem data (nenhuma nota associada).")
+
+
 def cmd_note(args):
     state = _load(args.id, args.curso)
     beats = _beats(state)
@@ -266,6 +333,7 @@ def main():
         ("status", cmd_status, "mapa de progresso"),
         ("revisao", cmd_revisao, "conteúdo desde a última sessão + nº sugerido de perguntas"),
         ("marco", cmd_marco, "marca o ponto atual como já revisado"),
+        ("backfill", cmd_backfill, "estima datas de beats já concluídos a partir das notas"),
         ("reset", cmd_reset, "apaga o progresso"),
     ]:
         p = sub.add_parser(name, help=helptext)

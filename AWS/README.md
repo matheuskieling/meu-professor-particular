@@ -116,6 +116,20 @@ acumulada com repetição espaçada** — digite **`/revisar`** (ou peça "me te
 
 Faça uma revisão dessas de vez em quando (a cada poucas sessões) pra fixar o conteúdo de verdade.
 
+## Acompanhar o progresso (`/progresso`)
+
+Pra ver **quanto você já avançou e quanto falta**, digite **`/progresso`** (ou "quanto já fiz do
+curso?"). Ele mostra, numa visão geral do curso inteiro:
+
+- **% de cada módulo** e **% do curso completo** (com barra e beats concluídos/total);
+- o **último beat concluído** e quando — a resposta direta a "onde parei?";
+- o **ritmo** (beats por dia), útil pra calibrar o passo rumo a uma meta (ex.: a prova **CLF-C02**,
+  cujos simulados liberam após o **Módulo 07**).
+
+É **só leitura** — não altera seu progresso. As datas de conclusão são registradas automaticamente a
+cada beat que você conclui (beats feitos antes dessa função aparecem sem data, ou com `~` se estimadas
+a partir das suas notas via `engine/aula.py backfill`).
+
 ## Recomeçar do zero (reset)
 
 Pra zerar seu progresso (recomeçar ou testar de novo) sem tocar no conteúdo do curso:

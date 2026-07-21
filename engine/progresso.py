@@ -4,29 +4,61 @@ Relatório de PROGRESSO de um curso — visão geral (não conduz aula, só repo
 
 Diferente do `aula.py status` (que olha UMA sessão/módulo), este driver varre o curso
 INTEIRO: soma os beats de todos os módulos (`<curso>/NN-*/roteiro.json`) e cruza com o
-progresso salvo (`<curso>/.sessions/aula-*.json`) para mostrar:
+progresso salvo (`<curso>/.sessions/aula-*.json`) para mostrar, em formato de painel:
 
-  • % de cada módulo (barra + concluídos/total);
-  • % do curso completo (beats e módulos concluídos);
+  • uma barra grande com o % do curso completo (beats e módulos concluídos);
+  • uma linha por módulo com barra fina (blocos parciais) + concluídos/total;
   • o último beat concluído e quando (responde "onde paramos?");
-  • o ritmo (beats concluídos por dia), a partir das datas que o `aula.py` carimba.
+  • o ritmo (beats/dia) como um sparkline + colunas dos últimos dias.
 
 É agnóstico de curso: descobre o curso por `--curso <dir>` ou autodetecção (mesma regra
 dos outros drivers). Só leitura — nunca altera progresso.
 
+Cores ANSI: ligadas só quando a saída é um terminal (`--color auto`, padrão). Quando a
+saída é capturada (pipe/agente), saem desligadas, então o texto fica limpo. Force com
+`--color always` / `--color never`.
+
 Uso:
-    python3 engine/progresso.py [--curso AWS]
+    python3 engine/progresso.py [--curso AWS] [--color auto|always|never]
 """
 
 import argparse
 import glob
 import json
 import os
+import sys
 from datetime import datetime
 
 import _common
 
-BAR_WIDTH = 20
+WIDTH = 60          # largura de referência das réguas de seção
+CURSO_BAR = 46      # largura da barra do curso completo
+MOD_BAR = 12        # largura das barras por módulo
+TITLE_W = 30        # largura da coluna de título do módulo
+DAY_COL = 7         # largura de cada coluna do ritmo
+
+# barra com preenchimento fino: cheios + um bloco parcial + trilho vazio
+_FULL = "█"
+_EMPTY = "░"
+_PART = " ▏▎▍▌▋▊▉█"          # 8 níveis de bloco parcial
+_SPARK = "▁▂▃▄▅▆▇█"          # sparkline do ritmo
+
+
+# --- cores -------------------------------------------------------------------
+class C:
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    DIM = "\033[2m"
+    GREEN = "\033[32m"
+    CYAN = "\033[36m"
+    YELLOW = "\033[33m"
+    MAGENTA = "\033[35m"
+
+
+def _paint(text, *codes, on=True):
+    if not on or not codes:
+        return text
+    return "".join(codes) + text + C.RESET
 
 
 def _fmt_dt(iso):
@@ -38,9 +70,37 @@ def _fmt_dt(iso):
         return None
 
 
-def _bar(frac):
-    cheio = round(frac * BAR_WIDTH)
-    return "█" * cheio + "░" * (BAR_WIDTH - cheio)
+def _bar(frac, width):
+    """Barra com um bloco parcial no final — leitura suave do percentual."""
+    frac = max(0.0, min(1.0, frac))
+    total = frac * width
+    full = int(total)
+    bar = _FULL * full
+    if full < width:
+        level = round((total - full) * 8)
+        if level > 0:
+            bar += _PART[level]
+    bar += _EMPTY * (width - len(bar))
+    return bar[:width]
+
+
+def _spark(values):
+    if not values:
+        return ""
+    mx = max(values) or 1
+    return "".join(_SPARK[min(len(_SPARK) - 1, round(v / mx * (len(_SPARK) - 1)))]
+                   for v in values)
+
+
+def _rule(title, width, color):
+    """Régua de seção: ──── Título ─────────────..."""
+    left = f"──── {title} "
+    line = left + "─" * max(0, width - len(left))
+    return _paint(line, C.DIM, on=color)
+
+
+def _trunc(s, w):
+    return s if len(s) <= w else s[:w - 1].rstrip() + "…"
 
 
 def _modulos(curso_root):
@@ -61,6 +121,8 @@ def _modulos(curso_root):
 
 
 def cmd_progresso(args):
+    color = args.color == "always" or (args.color == "auto" and sys.stdout.isatty())
+
     curso_root = _common.detectar_curso_root(args.curso)
     if not curso_root:
         raise SystemExit("Curso não detectado; informe --curso <dir>.")
@@ -79,7 +141,6 @@ def cmd_progresso(args):
         n = len(beats)
         status = (state or {}).get("status", {})
         concl = (state or {}).get("concluido_em", {})
-        aprox = set((state or {}).get("concluido_aprox", []))
         feitos = sum(1 for b in beats if status.get(b["id"]) == "visto")
         tot_beats += n
         tot_feitos += feitos
@@ -101,44 +162,79 @@ def cmd_progresso(args):
     modulo_atual = ultimo[1] if ultimo else next(
         (m for m, r, s, f, n, c in reversed(dados) if s is not None and not c), None)
 
-    linhas = []
+    out = []
+
+    # --- cabeçalho -----------------------------------------------------------
+    out.append(_paint(f"📊 Progresso — Curso {curso_nome}", C.BOLD, on=color))
+    out.append(_paint("═" * WIDTH, C.DIM, on=color))
+    out.append("")
+
+    # --- curso completo ------------------------------------------------------
+    frac_curso = tot_feitos / tot_beats if tot_beats else 0
+    bar = _bar(frac_curso, CURSO_BAR)
+    bar = _paint(bar, C.CYAN, C.BOLD, on=color)
+    out.append("  " + _paint("Curso completo", C.BOLD, on=color))
+    out.append(f"  {bar}  {round(frac_curso * 100)}%")
+    resumo = f"  {tot_feitos} / {tot_beats} beats   ·   {mods_concluidos} / {len(mods)} módulos ✅"
+    out.append(_paint(resumo, C.DIM, on=color))
+    out.append("")
+
+    # --- módulos -------------------------------------------------------------
+    out.append(_rule("Módulos", WIDTH, color))
     for modulo, roteiro, state, feitos, n, concluido in dados:
         frac = feitos / n if n else 0
         atual = modulo == modulo_atual
-        marca = "✅" if concluido else ("▶ " if atual else "· ")
-        seta = "   ← aqui" if atual else ""
-        linhas.append(f"  {marca} {modulo} {roteiro.get('titulo', '')[:34]:<34} {_bar(frac)} "
-                      f"{round(frac*100):>3}%  ({feitos}/{n}){seta}")
+        if concluido:
+            icon, cor = "●", (C.GREEN,)
+        elif atual:
+            icon, cor = "▶", (C.CYAN, C.BOLD)
+        else:
+            icon, cor = "·", (C.DIM,)
+        titulo = _trunc(roteiro.get("titulo", ""), TITLE_W)
+        seta = "  ← aqui" if atual else ""
+        linha = (f"  {icon} {modulo}  {titulo:<{TITLE_W}}  {_bar(frac, MOD_BAR)}  "
+                 f"{round(frac * 100):>3}%  {feitos:>2}/{n:<2}{seta}")
+        out.append(_paint(linha, *cor, on=color))
+    out.append("")
 
-    frac_curso = tot_feitos / tot_beats if tot_beats else 0
-    print(f"📊 Progresso — Curso {curso_nome}\n")
-    print(f"Curso completo   {_bar(frac_curso)}  {round(frac_curso*100)}%   "
-          f"({tot_feitos}/{tot_beats} beats · {mods_concluidos}/{len(mods)} módulos ✅)\n")
-    print("Por módulo:")
-    for ln in linhas:
-        print(ln)
+    # --- ritmo ---------------------------------------------------------------
+    out.append(_rule("Ritmo", WIDTH, color))
+    if por_dia:
+        dias = sorted(por_dia)
+        media = sum(por_dia.values()) / len(dias)
+        recentes = dias[-7:]
+        vals = [por_dia[d] for d in recentes]
+        spark = _paint(_spark(vals), C.MAGENTA, C.BOLD, on=color)
+        total = "beats/dia" if len(dias) <= 7 else "beats/dia (últimos 7)"
+        out.append(f"  {spark}   média {media:.1f} {total}")
+        out.append("")
+        labels = "".join(f"{d[8:10]}/{d[5:7]}".center(DAY_COL) for d in recentes)
+        counts = "".join(str(por_dia[d]).center(DAY_COL) for d in recentes)
+        out.append("  " + _paint(labels, C.DIM, on=color))
+        out.append("  " + _paint(counts, C.BOLD, on=color))
+    else:
+        out.append(_paint("  ainda sem datas registradas "
+                          "(aparecem conforme você avança os beats).", C.DIM, on=color))
+    out.append("")
 
+    # --- último beat ---------------------------------------------------------
     if ultimo:
         _chave, modulo, b_id, ts = ultimo
         roteiro, state = next((r, s) for m, r, s in mods if m == modulo)
         titulo = next((b["titulo"] for b in roteiro["beats"] if b["id"] == b_id), b_id)
         ap = "~" if b_id in set((state or {}).get("concluido_aprox", [])) else ""
-        print(f"\nÚltimo beat concluído: Módulo {modulo} · {b_id} ({titulo}) — {ap}{_fmt_dt(ts)}")
+        out.append("  " + _paint(f"🎯 Último: M{modulo} · {b_id} — {_trunc(titulo, 40)}",
+                                 C.BOLD, on=color))
+        out.append("  " + _paint(f"   concluído {ap}{_fmt_dt(ts)}", C.DIM, on=color))
 
-    if por_dia:
-        dias = sorted(por_dia)
-        media = sum(por_dia.values()) / len(dias)
-        recentes = dias[-7:]
-        trecho = " · ".join(f"{d[8:10]}/{d[5:7]} → {por_dia[d]}" for d in recentes)
-        prefixo = "Ritmo (beats/dia): " if len(dias) <= 7 else "Ritmo (últimos 7 dias): "
-        print(f"{prefixo}{trecho}   (média {media:.1f}/dia nos dias ativos)")
-    else:
-        print("\nRitmo: ainda sem datas registradas (aparecem conforme você avança os beats).")
+    print("\n".join(out))
 
 
 def main():
     parser = argparse.ArgumentParser(description="Relatório de progresso de um curso (visão geral).")
     parser.add_argument("--curso", default=None, help="diretório do curso (autodetecta se omitido)")
+    parser.add_argument("--color", choices=("auto", "always", "never"), default="auto",
+                        help="cores ANSI (padrão: auto — só em terminal)")
     parser.set_defaults(func=cmd_progresso)
     args = parser.parse_args()
     args.func(args)

@@ -10,7 +10,8 @@ São Python puro, **sem dependências** (`python3` e pronto).
 
 | Arquivo | Papel |
 |---------|-------|
-| `aula.py` | Conduz a **aula ao vivo** a partir de um `roteiro.json`; salva o progresso e a revisão da última sessão. |
+| `aula.py` | Conduz a **aula ao vivo** a partir de um `roteiro.json`; salva o progresso, carimba a **data de conclusão de cada beat** e a revisão da última sessão. |
+| `progresso.py` | **Relatório de progresso do curso inteiro** (só leitura): % por módulo, % do curso, último beat concluído e ritmo (beats/dia). |
 | `session.py` | Conduz **quiz / prova / simulado** a partir de um `questions.json` (feedback por alternativa; suporta múltipla resposta). |
 | `revisar.py` | **Revisão acumulada estilo Anki** (repetição espaçada) amostrando dos módulos já concluídos. |
 | `reset.py` | Zera o progresso de um curso (apaga `<curso>/.sessions/`). |
@@ -34,6 +35,10 @@ curso assim:
 python3 engine/aula.py start AWS/01-fundamentos/roteiro.json     # curso derivado do caminho
 python3 engine/aula.py current --id aula-01 --curso AWS
 python3 engine/aula.py next    --id aula-01 --curso AWS
+
+# Progresso do curso (visão geral: % por módulo, % do curso, último beat, ritmo)
+python3 engine/progresso.py --curso AWS
+python3 engine/aula.py backfill --id aula-01 --curso AWS              # (retroativo) estima datas via notas
 
 # Quiz / prova / simulado
 python3 engine/session.py start AWS/apps/modulo-01/questions.json     # quiz da aula

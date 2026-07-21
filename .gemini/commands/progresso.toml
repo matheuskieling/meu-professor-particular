@@ -1,0 +1,10 @@
+description = "Mostra o progresso de um curso: % por módulo, % do curso, último beat concluído e ritmo"
+
+prompt = """
+Leia o arquivo `.claude/skills/progresso/SKILL.md` deste repositório (é a definição canônica
+deste comando, válida para qualquer agente) e siga exatamente as instruções dele: detectar o curso,
+sincronizar o progresso, rodar `engine/progresso.py` e apresentar o relatório ao aluno com contexto
+(onde está, quanto falta, ritmo), sem despejar a saída crua.
+
+Argumentos do usuário (curso, opcional): {{args}}
+"""

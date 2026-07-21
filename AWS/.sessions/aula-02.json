@@ -268,5 +268,17 @@
       "text": "FIM da sessao no t5 concluido (managed vs inline, least privilege, MFA/higiene de credenciais). Aluno respondeu checkpoint com dominio: managed=reaproveitavel/inline=presa a identidade e morre com ela; least privilege=minimo necessario, s3:GetObject no lugar de s3:*. Reforcei bonus: managed tem versionamento+auditoria central; least privilege tambem aperta RESOURCE (ARN especifico, nao *). Meta do aluno: prova CLF-C02 (liberada apos Modulo 07) em ~1 mes; plano combinado ~3-4 beats/dia (restam ~90 beats ate fim do M07). Proximo: t6 = Roles e STS (credenciais temporarias) - aluno ja tem base forte disso das sessoes anteriores."
     }
   ],
-  "iniciado_em": "2026-07-20T20:21:32+00:00"
+  "iniciado_em": "2026-07-20T20:21:32+00:00",
+  "concluido_em": {
+    "intro": "2026-07-20T20:24:32+00:00",
+    "t1": "2026-07-20T20:46:12+00:00",
+    "t3": "2026-07-21T14:36:20+00:00",
+    "t5": "2026-07-21T17:24:24+00:00"
+  },
+  "concluido_aprox": [
+    "intro",
+    "t1",
+    "t3",
+    "t5"
+  ]
 }

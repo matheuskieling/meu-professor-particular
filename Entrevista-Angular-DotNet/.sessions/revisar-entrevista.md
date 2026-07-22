@@ -64,6 +64,26 @@ Resultado honesto do 1º simulado (não o 20/20 do motor — o que você **sabia
 
 **value vs reference** (🟢, precisão) — o que define value type é a **semântica de cópia**, NÃO "ficar na stack" (campo de classe/boxed vai pra heap). Passar struct = cópia; class = mesma referência (mutar afeta fora; reatribuir não, sem `ref`).
 
+## 📌 Sessão 3 (mista + curveballs) — novos pontos
+
+**switchMap vs mergeMap vs concatMap** (🔴 novo) — switchMap cancela o anterior (busca/autocomplete), mergeMap paralelo, concatMap enfileira em ordem, exhaustMap ignora novos (anti duplo-submit). Autocomplete = debounceTime + switchMap.
+
+**IEnumerable vs IQueryable** (🟡) — IQueryable monta expression tree → EF traduz pra SQL (filtro no banco). IEnumerable = LINQ em memória (filtro na app). Ambos deferred. Perigo: virar IEnumerable cedo puxa a tabela toda.
+
+**record vs class** (🟡) — record: igualdade por VALOR, imutável (init), `with`, ToString automático → DTOs/value objects. class: identidade + estado mutável → entidades.
+
+**standalone vs NgModules** (🔴 novo) — standalone declara as próprias deps via `imports`, sem NgModule. Menos boilerplate, deps explícitas, lazy via loadComponent, bootstrapApplication. Padrão no Angular 17+.
+
+**Task vs ValueTask** (bônus, raro) — Task é class (aloca sempre); ValueTask é struct, evita alocação quando completa síncrono (cache hit). ValueTask só pode ser awaited 1x → Task por padrão.
+
+**Evitar leak de subscribe (Angular)** (🟢) — async pipe (auto), takeUntilDestroyed() (moderno), takeUntil+Subject no ngOnDestroy, ou unsubscribe manual. HttpClient completa sozinho.
+
+**CancellationToken** (🟢) — cancelamento COOPERATIVO: um sinal que o código deve checar/repassar (ToListAsync(ct)). Em ASP.NET Core vem do RequestAborted → cancela query quando cliente desconecta.
+
+**@defer** (🔴 novo, bônus) — lazy loading no nível do TEMPLATE: adia carregar um bloco+JS até um gatilho (viewport/interaction/idle), com placeholder/loading/error. Pra componentes pesados abaixo da dobra.
+
+**abstract class vs interface** (🟢) — abstract: estado+implementação, herança única, is-a. interface: contrato sem estado, implementação múltipla, can-do. Interface quando compõe vários contratos / DIP.
+
 ## 🟢 Já domina (confie)
 - Idempotência (com idempotency key; GET/PUT/DELETE idempotentes, POST não; at-least-once + idempotência > exactly-once).
 - Lifetimes DI (+ a história real: DbContext Transient estourou conexões → Scoped resolveu). **CONTE ESSA HISTÓRIA NA ENTREVISTA.**

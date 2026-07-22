@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 04: .NET Runtime, GC & Memory",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Numa entrevista, você é questionado sobre a diferença entre .NET Framework e .NET 8. Qual afirmação está correta?",
+      "opcoes": [
+        ".NET Framework é cross-platform e open source; .NET 8 é só Windows",
+        ".NET Framework é só Windows e está em manutenção; .NET 8 é cross-platform, open source, unificado e LTS",
+        "Ambos são idênticos, mudou só o número da versão",
+        ".NET 8 ainda se chama '.NET Core 8'"
+      ],
+      "correta": 1,
+      "explicacao": ".NET Framework é só Windows e está em manutenção. .NET 8 é a evolução cross-platform, open source, unificada (o 'Core' saiu do nome no .NET 5) e é LTS.",
+      "feedbacks": [
+        "Invertido. Quem é cross-platform e open source é o .NET moderno (Core/5+); o Framework é que é só Windows.",
+        "Correto. Framework = legado só Windows em manutenção; .NET 8 = cross-platform, open source, unificado e LTS.",
+        "Errado. Há diferenças concretas: cross-platform, open source, modularidade, performance e ciclo de vida.",
+        "Errado. A partir do .NET 5 o 'Core' saiu do nome — é 'só .NET', então é '.NET 8', não '.NET Core 8'."
+      ]
+    },
+    {
+      "pergunta": "O que descreve corretamente o .NET Standard?",
+      "opcoes": [
+        "Um runtime que roda em qualquer SO",
+        "Um contrato/especificação de API para compartilhar código entre .NET Framework e .NET Core/5+",
+        "A ferramenta de compilação AOT do .NET",
+        "Uma coleção de bibliotecas gráficas do Windows"
+      ],
+      "correta": 1,
+      "explicacao": ".NET Standard é um contrato de API (não um runtime). Uma lib que mira netstandard2.0 roda em Framework e em Core/5+. Hoje serve quase só para suportar Framework legado.",
+      "feedbacks": [
+        "Errado. .NET Standard não é um runtime — é uma especificação de API. Quem executa é o CLR/CoreCLR.",
+        "Correto. É um contrato de API que permite uma mesma biblioteca rodar em Framework e em Core/5+.",
+        "Errado. AOT/ReadyToRun são recursos de compilação; .NET Standard é um contrato de API.",
+        "Errado. Isso descreveria WPF/WinForms; .NET Standard é um contrato de API compartilhado."
+      ]
+    },
+    {
+      "pergunta": "Sobre o pipeline de execução do C#, qual sequência está correta?",
+      "opcoes": [
+        "C# → código nativo no build → executado direto",
+        "C# → IL no build → JIT compila para nativo em runtime, método a método",
+        "C# → interpretado linha a linha em runtime",
+        "C# → bytecode Java → JVM"
+      ],
+      "correta": 1,
+      "explicacao": "O compilador C# gera IL (bytecode) no build. Em runtime, o JIT do CLR compila o IL para nativo, método a método, na primeira chamada. Native AOT é uma alternativa opt-in que compila tudo antes.",
+      "feedbacks": [
+        "Errado no build. C# não gera nativo no build por padrão — gera IL. Só Native AOT (opt-in) gera nativo antecipado.",
+        "Correto. C# → IL (build) → JIT para nativo em runtime, método a método.",
+        "Errado. C# não é interpretado; gera IL, que o JIT compila para nativo.",
+        "Errado. .NET usa IL/CLR, não bytecode Java/JVM."
+      ]
+    },
+    {
+      "pergunta": "Qual afirmação sobre value types e reference types está correta?",
+      "opcoes": [
+        "string é value type e é imutável",
+        "Copiar um reference type copia o objeto inteiro; copiar um value type copia só a referência",
+        "Value type tem semântica de cópia por valor; reference type copia a referência (dois nomes, um objeto)",
+        "struct é reference type e class é value type"
+      ],
+      "correta": 2,
+      "explicacao": "Value type copia o valor (semântica de cópia por valor). Reference type copia a referência, então dois nomes apontam para o mesmo objeto no heap. string é reference type (imutável), não value type.",
+      "feedbacks": [
+        "Errado. string é reference type (imutável), não value type.",
+        "Invertido. Reference type copia a referência (não o objeto); value type copia o valor.",
+        "Correto. Value type = cópia por valor; reference type = cópia da referência (mesmo objeto).",
+        "Invertido. struct é value type; class é reference type."
+      ]
+    },
+    {
+      "pergunta": "O entrevistador diz: 'struct sempre vive na stack'. Como um sênior corrige?",
+      "opcoes": [
+        "Está certo, todo struct sempre vive na stack",
+        "Impreciso: um value type local vive na stack, mas como campo de classe, boxed ou capturado por closure vai para o heap",
+        "Errado, struct sempre vive no heap",
+        "Depende apenas do tamanho do struct em bytes"
+      ],
+      "correta": 1,
+      "explicacao": "É impreciso. Value type como variável local vive na stack, mas se for campo de uma class, sofrer boxing ou for capturado por closure, vai para o heap. O que decide é onde a variável mora.",
+      "feedbacks": [
+        "Errado. É a pegadinha clássica — depende de onde a variável mora, não só do tipo.",
+        "Correto. Local → stack; campo de classe/boxed/closure → heap. O que decide é onde a variável mora.",
+        "Errado no outro extremo. Como variável local, o struct vive na stack.",
+        "Errado. Não é o tamanho — é o contexto (local vs campo vs boxed vs closure)."
+      ]
+    },
+    {
+      "pergunta": "Qual código NÃO causa boxing?",
+      "opcoes": [
+        "object o = 42;",
+        "arrayList.Add(10); // ArrayList",
+        "list.Add(10); // List<int>",
+        "string.Format(\"{0}\", 10)"
+      ],
+      "correta": 2,
+      "explicacao": "List<int> não faz boxing porque T é resolvido para int. Atribuir um int a object, adicionar int a ArrayList e passar int para string.Format (via object) causam boxing.",
+      "feedbacks": [
+        "Causa boxing. Atribuir um int a object empacota o value type no heap.",
+        "Causa boxing. ArrayList guarda object, então cada int é empacotado.",
+        "Correto. List<int> não faz boxing — T é resolvido para int (benefício dos generics).",
+        "Causa boxing. O int é passado como object para o formatador."
+      ]
+    },
+    {
+      "pergunta": "Um candidato diz que o GC do .NET usa contagem de referência. Qual é a correção correta?",
+      "opcoes": [
+        "Está certo: quando a contagem chega a zero, o objeto é coletado",
+        "Errado: o GC usa rastreamento por alcançabilidade (tracing) a partir de raízes; por isso ciclos de referência são coletados",
+        "Errado: o GC coleta por ordem de alocação (FIFO)",
+        "Está certo, mas só para reference types"
+      ],
+      "correta": 1,
+      "explicacao": "O GC do .NET usa tracing por alcançabilidade a partir das raízes (locais, statics, handles), não contagem de referência. Consequência prática: ciclos de referência (A↔B) são coletados normalmente se ninguém de fora os alcança.",
+      "feedbacks": [
+        "Errado. Contagem de referência é de COM/Python; o .NET usa tracing por alcançabilidade.",
+        "Correto. Tracing a partir das raízes — por isso ciclos de referência não vazam.",
+        "Errado. Não é FIFO; é alcançabilidade a partir das raízes.",
+        "Errado. O GC não usa contagem de referência para nenhum tipo — usa tracing."
+      ]
+    },
+    {
+      "pergunta": "Qual é a ordem correta das fases do GC ao coletar?",
+      "opcoes": [
+        "Compact → Mark → Sweep",
+        "Mark (marca os vivos a partir das raízes) → Sweep (recupera o não-marcado) → Compact (move os vivos)",
+        "Sweep → Mark → Compact",
+        "Mark → Compact → Sweep"
+      ],
+      "correta": 1,
+      "explicacao": "Mark: percorre a partir das raízes e marca os vivos. Sweep: recupera a memória do que não foi marcado (lixo). Compact: move os vivos para ficarem contíguos, atualizando as referências.",
+      "feedbacks": [
+        "Errado. Não dá para compactar antes de saber quem está vivo (mark).",
+        "Correto. Mark → Sweep → Compact, sempre a partir das raízes.",
+        "Errado. Sweep vem depois do mark — você precisa marcar os vivos primeiro.",
+        "Errado. Sweep vem antes de compact na descrição clássica; primeiro marca, recupera lixo, depois compacta."
+      ]
+    },
+    {
+      "pergunta": "Sobre as gerações do GC, qual afirmação está correta?",
+      "opcoes": [
+        "Existem Gen0 até Gen4; Gen4 é a mais longeva",
+        "Gen2 é o teto; sobreviventes são promovidos e coletar Gen2 é um full GC (inclui Gen0 e Gen1)",
+        "Gen0 é a mais cara e rara de coletar",
+        "As gerações separam value types de reference types"
+      ],
+      "correta": 1,
+      "explicacao": "Gen2 é o teto. Objetos que sobrevivem a uma coleta são promovidos (Gen0→Gen1→Gen2). Coletar Gen2 é um full GC — inclui Gen0 e Gen1 juntas. Gen0 é a coleta mais barata e frequente.",
+      "feedbacks": [
+        "Errado. Não existe Gen3/Gen4 — Gen2 é o teto.",
+        "Correto. Gen2 é o teto; sobreviventes são promovidos; coletar Gen2 é full GC.",
+        "Invertido. Gen0 é a mais barata e frequente; Gen2 é a cara e rara.",
+        "Errado. Gerações particionam por idade do objeto, não por tipo."
+      ]
+    },
+    {
+      "pergunta": "Qual afirmação sobre o LOH e os modos de GC está correta?",
+      "opcoes": [
+        "O LOH guarda objetos >= ~85 KB, é logicamente Gen2 e não é compactado por padrão",
+        "O LOH é sempre compactado a cada coleta de Gen0",
+        "Workstation GC otimiza throughput com um heap por CPU; Server GC otimiza latência",
+        "O limiar do LOH é 8,5 KB"
+      ],
+      "correta": 0,
+      "explicacao": "O LOH guarda objetos >= ~85 KB, é logicamente Gen2 e não é compactado por padrão (fragmentação). Workstation GC otimiza latência (um heap); Server GC otimiza throughput (um heap por CPU).",
+      "feedbacks": [
+        "Correto. LOH: >= ~85 KB, Gen2, sem compactação por padrão.",
+        "Errado. O LOH não é compactado por padrão, e só é coletado em GC de Gen2.",
+        "Invertido. Server GC = throughput (um heap por CPU); Workstation = latência.",
+        "Errado. O limiar é ~85 KB (85.000 bytes), não 8,5 KB."
+      ]
+    },
+    {
+      "pergunta": "Existe memory leak em código gerenciado .NET? Qual afirmação está correta?",
+      "opcoes": [
+        "Não existe leak porque o GC coleta tudo automaticamente",
+        "Existe: qualquer objeto ainda ALCANÇÁVEL (ex.: event handler sem -=, static que só cresce, cache sem eviction) nunca é coletado",
+        "Só existe leak em código unmanaged, nunca em .NET",
+        "Leak só acontece se você chamar GC.Collect() errado"
+      ],
+      "correta": 1,
+      "explicacao": "Existe leak gerenciado: o GC só coleta o que não é mais alcançável. Se você deixa de usar um objeto mas o mantém referenciado (event handler sem -=, static crescente, cache sem eviction, closure, timer não cancelado), ele nunca é coletado.",
+      "feedbacks": [
+        "Errado. O GC coleta só o que não é alcançável — algo referenciado nunca some.",
+        "Correto. Leak = objeto ainda alcançável que você não usa mais. Event handler sem -= é o caso clássico.",
+        "Errado. Leaks gerenciados existem (ex.: event handler sem -=), além dos unmanaged.",
+        "Errado. Leak vem de referências vivas, não de chamar GC.Collect()."
+      ]
+    },
+    {
+      "pergunta": "Você quer parsear uma string sem alocar novas strings intermediárias em um caminho quente. Qual afirmação está correta?",
+      "opcoes": [
+        "Use Span<T>/ReadOnlySpan<T> para fatiar sem copiar; mas em método async use Memory<T>, pois Span<T> é ref struct",
+        "Span<T> pode ser campo de classe e usado em async normalmente",
+        "stackalloc aloca no heap gerenciado e pressiona o GC",
+        "A única opção é concatenar com + em loop"
+      ],
+      "correta": 0,
+      "explicacao": "Span<T> é uma view sem cópia sobre memória contígua, reduzindo alocação. É ref struct (só stack), então não pode ser campo nem usado em async — nesse caso usa-se Memory<T>. stackalloc aloca na stack (zero pressão no GC).",
+      "feedbacks": [
+        "Correto. Span<T> fatia sem copiar; por ser ref struct, em async troca-se por Memory<T>.",
+        "Errado. Span<T> é ref struct: não pode ser campo de classe nem viver através de um await.",
+        "Errado. stackalloc aloca na STACK, sem tocar o heap gerenciado nem pressionar o GC.",
+        "Errado. Concatenar com + em loop gera lixo; Span<T>/StringBuilder resolvem sem alocar à toa."
+      ]
+    }
+  ]
+}

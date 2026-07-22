@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 06: .NET DI, Lifetimes & Repository",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "O entrevistador pergunta: 'O que a Injeção de Dependência te dá que fazer new dentro da classe não dá?' Qual resposta está mais completa?",
+      "opcoes": [
+        "Desempenho — objetos injetados são sempre mais rápidos",
+        "Desacoplamento (dependo de abstração) e testabilidade (injeto um mock no teste)",
+        "Nada — é apenas uma questão de estilo de código",
+        "Garantia de que a classe será um Singleton"
+      ],
+      "correta": 1,
+      "explicacao": "DI entrega dependências de fora, desacoplando (dependência de interface) e permitindo testar com mocks.",
+      "feedbacks": [
+        "DI não é sobre desempenho; injetar não deixa nada mais rápido intrinsecamente.",
+        "Correto. Os dois ganhos centrais são desacoplamento (depender de abstração) e testabilidade (mockar no teste).",
+        "É bem mais que estilo: 'new' interno acopla a classe à implementação concreta e impede o teste isolado.",
+        "DI não define lifetime; isso é o registro (AddSingleton/AddScoped/AddTransient) que decide."
+      ]
+    },
+    {
+      "pergunta": "Diferencie DI, IoC e DIP. Qual mapeamento está certo?",
+      "opcoes": [
+        "IoC = conceito; DI = técnica; DIP = princípio SOLID (depender de abstrações)",
+        "IoC = princípio SOLID; DI = conceito; DIP = técnica",
+        "Todos são o mesmo conceito com nomes diferentes",
+        "DIP = conceito; IoC = princípio; DI = framework do .NET"
+      ],
+      "correta": 0,
+      "explicacao": "IoC é o conceito, DI a técnica que o aplica, DIP o princípio SOLID de depender de abstrações.",
+      "feedbacks": [
+        "Correto. IoC (conceito) → DI (técnica) → DIP (princípio SOLID). O container é a ferramenta que aplica os três.",
+        "Invertido: DIP é o princípio SOLID, não IoC; DI é técnica, não conceito.",
+        "São distintos: confundi-los é um erro comum que o entrevistador procura.",
+        "DI não é 'o framework do .NET'; é uma técnica. O container embutido é a ferramenta."
+      ]
+    },
+    {
+      "pergunta": "Um validador leve, sem estado e barato de criar. Qual lifetime é o mais adequado?",
+      "opcoes": [
+        "Singleton, para reaproveitar sempre a mesma instância",
+        "Scoped, para uma instância por request",
+        "Transient, pois é leve, sem estado e barato — cada consumidor recebe o seu",
+        "Depende de registrar como Singleton e Scoped ao mesmo tempo"
+      ],
+      "correta": 2,
+      "explicacao": "Serviços leves e sem estado são o caso natural de Transient (nova instância por resolução).",
+      "feedbacks": [
+        "Singleton exigiria cuidado com thread-safety e não traz ganho aqui — é sem estado e barato.",
+        "Scoped funcionaria, mas sem necessidade: não há estado por request a compartilhar.",
+        "Correto. Sem estado, leve e barato de criar é o cenário clássico de Transient.",
+        "Não se registra o mesmo serviço com dois lifetimes; escolha um."
+      ]
+    },
+    {
+      "pergunta": "No ASP.NET Core, o que é exatamente um 'escopo' para um serviço Scoped?",
+      "opcoes": [
+        "O tempo de uma chamada de método",
+        "A vida da aplicação inteira",
+        "Um IServiceScope — o ASP.NET Core abre um por request HTTP e o descarta no fim",
+        "Cada thread do thread pool"
+      ],
+      "correta": 2,
+      "explicacao": "Escopo é o IServiceScope; o middleware abre um por request e faz Dispose ao final.",
+      "feedbacks": [
+        "Scoped não é por chamada de método — é por escopo, que em web é o request.",
+        "Isso descreve Singleton, não Scoped.",
+        "Correto. O escopo é o IServiceScope; em web, um por request HTTP, com Dispose no fim.",
+        "Não é por thread; um request usa um escopo, independente de qual thread o atende."
+      ]
+    },
+    {
+      "pergunta": "Por que o DbContext do EF Core NÃO deve ser Singleton?",
+      "opcoes": [
+        "Porque é imutável e não faz sentido compartilhar",
+        "Porque não é thread-safe e seu change tracker acumularia entidades entre requests, causando bugs e vazamento",
+        "Porque Singletons são sempre proibidos no EF Core",
+        "Porque o DbContext precisa ser criado com new manualmente"
+      ],
+      "correta": 1,
+      "explicacao": "Como Singleton, o DbContext seria usado por várias threads simultâneas (não é thread-safe) e o change tracker viveria pra sempre.",
+      "feedbacks": [
+        "O DbContext é mutável (rastreia mudanças); o problema é justamente compartilhar esse estado.",
+        "Correto. Não é thread-safe e o change tracker é uma unidade de trabalho por request; como Singleton, quebra sob concorrência e vaza memória.",
+        "Não são 'sempre proibidos'; o motivo é técnico (thread-safety e change tracker).",
+        "AddDbContext registra o DbContext no container; não se usa new manual no fluxo normal."
+      ]
+    },
+    {
+      "pergunta": "Você tem um Singleton que injeta um AppDbContext (Scoped) no construtor. Em Development, o que acontece?",
+      "opcoes": [
+        "Funciona normalmente e é a forma recomendada",
+        "O validador de escopo lança InvalidOperationException, pois é uma captured dependency",
+        "O DbContext vira Transient automaticamente",
+        "O container ignora o DbContext e injeta null"
+      ],
+      "correta": 1,
+      "explicacao": "É a captured dependency; o validador de escopo (ligado em Development) detecta e lança InvalidOperationException.",
+      "feedbacks": [
+        "Não é recomendado — é o bug clássico; o framework inclusive recusa a resolução em Development.",
+        "Correto. O validador de escopo detecta 'consumir scoped a partir de singleton' e lança InvalidOperationException.",
+        "O container não muda o lifetime sozinho; ele recusa a montagem (em Dev).",
+        "Não injeta null; lança exceção ao validar o escopo."
+      ]
+    },
+    {
+      "pergunta": "Qual é a forma correta de um Singleton usar um DbContext (Scoped) por operação?",
+      "opcoes": [
+        "Injetar o DbContext direto e reusar a mesma instância sempre",
+        "Injetar IServiceProvider e chamar GetRequiredService<AppDbContext>() na raiz",
+        "Injetar IServiceScopeFactory, criar 'using var scope = _scopeFactory.CreateScope();' e resolver o DbContext dentro do escopo",
+        "Registrar o DbContext como Singleton"
+      ],
+      "correta": 2,
+      "explicacao": "IServiceScopeFactory cria um escopo por operação; o DbContext vive só o tempo do using e é descartado ao final.",
+      "feedbacks": [
+        "Injetar direto é exatamente a captured dependency que queremos evitar.",
+        "Resolver na raiz do provider ainda captura o Scoped como se fosse Singleton; precisa ser dentro de um escopo criado.",
+        "Correto. IServiceScopeFactory + escopo por operação (com using) dá um DbContext curto e descartado corretamente.",
+        "Tornar o DbContext Singleton reintroduz todos os problemas de thread-safety e change tracker."
+      ]
+    },
+    {
+      "pergunta": "Qual regra resume quando um lifetime pode injetar outro com segurança?",
+      "opcoes": [
+        "A vida da dependência nunca pode ser MENOR que a de quem a injeta",
+        "A vida da dependência nunca pode ser MAIOR que a de quem a injeta",
+        "Qualquer lifetime pode injetar qualquer outro sem problema",
+        "Só Singletons podem injetar dependências"
+      ],
+      "correta": 0,
+      "explicacao": "Singleton pode injetar Singleton; Scoped pode injetar Scoped ou Singleton; um Singleton não injeta Scoped/Transient diretamente.",
+      "feedbacks": [
+        "Correto. A dependência tem de viver pelo menos tanto quanto quem a injeta; por isso Singleton→Scoped é problema.",
+        "Invertido: injetar um Singleton (vida maior) num Scoped é seguro; o problema é o contrário.",
+        "Não é livre: injetar Scoped num Singleton é a captured dependency.",
+        "Falso; qualquer lifetime pode injetar dependências, respeitando a regra de tempo de vida."
+      ]
+    },
+    {
+      "pergunta": "O entrevistador pergunta: 'Como você evita race condition em um serviço Singleton com estado?' Melhor resposta?",
+      "opcoes": [
+        "Não é preciso; o container serializa o acesso sozinho",
+        "Usando estado imutável, ou sincronizando com lock / coleções concorrentes (ex.: ConcurrentDictionary)",
+        "Registrando-o também como Scoped",
+        "Marcando os campos como readonly resolve qualquer concorrência"
+      ],
+      "correta": 1,
+      "explicacao": "A mesma instância é compartilhada entre threads; estado mutável precisa de sincronização ou deve ser imutável.",
+      "feedbacks": [
+        "O container não serializa acesso ao seu serviço; concorrência é responsabilidade do seu código.",
+        "Correto. Estado imutável, lock, ou coleções concorrentes como ConcurrentDictionary evitam a race condition.",
+        "Registrar duplicado não faz sentido e não resolve concorrência.",
+        "readonly impede reatribuir o campo, mas não torna thread-safe a mutação do objeto apontado (ex.: um Dictionary)."
+      ]
+    },
+    {
+      "pergunta": "Qual descreve corretamente o Unit of Work?",
+      "opcoes": [
+        "Uma interface que expõe IQueryable para o consumidor compor queries",
+        "Um coordenador que agrupa alterações de vários repositórios numa transação, commitando tudo com um SaveChanges (atomicidade)",
+        "Uma classe que substitui o DbContext removendo o rastreamento de mudanças",
+        "Um cache global de entidades compartilhado entre requests"
+      ],
+      "correta": 1,
+      "explicacao": "O Unit of Work coordena repositórios numa transação; um SaveChanges commita tudo — tudo ou nada.",
+      "feedbacks": [
+        "Isso descreve (mal) um repositório genérico; UoW é sobre transação/atomicidade.",
+        "Correto. UoW coordena várias mudanças numa transação e as commita juntas, garantindo atomicidade.",
+        "O UoW não remove o rastreamento; no EF, o próprio DbContext já é o UoW e rastreia mudanças.",
+        "Não é um cache entre requests; isso seria um Singleton mal projetado."
+      ]
+    },
+    {
+      "pergunta": "Um colega criou IRepository<T> genérico que retorna IQueryable<T>. Qual crítica é correta?",
+      "opcoes": [
+        "É o melhor design possível — combina abstração e flexibilidade",
+        "É uma abstração vazada: o consumidor ainda depende do provider do EF, então a abstração não abstrai nada",
+        "IQueryable força tudo a rodar em memória, prejudicando performance",
+        "Repositórios nunca podem retornar coleções"
+      ],
+      "correta": 1,
+      "explicacao": "Expor IQueryable vaza o EF: o consumidor compõe queries traduzidas pelo provider, e a promessa de esconder a fonte de dados não se cumpre.",
+      "feedbacks": [
+        "Ao contrário: retornar IQueryable é o pior dos mundos, pois perde a abstração que o Repository deveria dar.",
+        "Correto. É abstração vazada — o consumidor continua acoplado ao provider do EF; trocar a fonte quebraria tudo.",
+        "IQueryable não roda em memória por si; ele é traduzido para SQL pelo provider — o problema é o vazamento da abstração.",
+        "Repositórios podem retornar coleções; o problema específico aqui é expor IQueryable."
+      ]
+    },
+    {
+      "pergunta": "Pergunta de fechamento sênior: 'Faz sentido pôr Repository em cima do EF Core?' Melhor resposta?",
+      "opcoes": [
+        "Sempre — é obrigatório como boa prática universal",
+        "Nunca — Repository é um anti-padrão em qualquer cenário",
+        "Depende: o DbContext já é repositório + Unit of Work; uso Repository quando fala a linguagem do domínio (DDD), há múltiplas fontes, ou pra centralizar queries complexas — senão é over-engineering",
+        "Só se você não usar EF Core migrations"
+      ],
+      "correta": 2,
+      "explicacao": "A resposta madura reconhece o trade-off: o DbContext já é repo + UoW; Repository só quando agrega valor real.",
+      "feedbacks": [
+        "Dogma. O entrevistador quer ver trade-off, não regra universal — e o DbContext já é repo + UoW.",
+        "Exagero oposto: Repository tem casos legítimos (DDD, múltiplas fontes, queries centralizadas).",
+        "Correto. 'Depende' com justificativa: o DbContext já é repo + UoW; use Repository só quando abstrair o EF traz valor real.",
+        "Migrations não têm relação com a decisão de usar ou não Repository."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,194 @@
+{
+  "modulo": "04",
+  "titulo": ".NET — Runtime, GC & Memory Management",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que este módulo cobre e por que cai em entrevista",
+      "pontos": [
+        "Este módulo é prep de entrevista real: ecossistema .NET (Framework vs Core vs .NET 8), CLR/IL/JIT, stack vs heap, boxing, o Garbage Collector por dentro, memory leaks em código gerenciado e Span<T>",
+        "GC e gerenciamento de memória são clássicos de entrevista .NET — separam quem só usa o runtime de quem entende o que acontece por baixo",
+        "Entrevistador adora nuance aqui: gerações do GC, LOH, por que struct vive na stack (com ressalvas), como um leak acontece mesmo com GC — é onde te pegam",
+        "Formato: eu explico um tópico por vez → você pergunta à vontade → simulo uma entrevista com você → quiz → prova de fim de módulo",
+        "Meta: você responder cada pergunta soando sênior, com a resposta direta primeiro e o detalhe técnico que impressiona logo depois"
+      ],
+      "checkpoint": "Confirme que o aluno topa o formato (explico → pergunta → simulação → quiz → prova) e que a entrevista é amanhã, então o foco é fluência e precisão nas respostas",
+      "ref": "04-dotnet-runtime-gc-memory/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": ".NET Framework vs .NET Core vs .NET 5/6/7/8 (e Standard, Mono)",
+      "pontos": [
+        ".NET Framework: só Windows, legado, não recebe features novas (última é a 4.8.x, em manutenção)",
+        ".NET Core: reescrita cross-platform, open source, modular (NuGet), alta performance — de onde nasceu o .NET moderno",
+        "A partir do .NET 5 dropou o 'Core' do nome: virou 'só .NET', unificando Framework + Core + Xamarin numa base só; .NET 8 é LTS",
+        ".NET Standard: um CONTRATO de API (não um runtime) pra uma lib rodar em Framework e Core ao mesmo tempo — hoje quase só importa pra dar suporte a Framework legado",
+        "Mono/Xamarin: implementação alternativa do runtime (mobile, Unity); no .NET 6+ virou MAUI, integrado ao runtime unificado",
+        "Pegadinha: 'diferença entre Framework e Core' — resposta forte é cross-platform + open source + performance + modular, e que Framework está em fim de linha"
+      ],
+      "checkpoint": "Peça pro aluno responder em 3 frases 'qual a diferença entre .NET Framework e .NET Core/.NET 8' como responderia na entrevista",
+      "ref": "04-dotnet-runtime-gc-memory/teoria.md#1-net-framework-vs-net-core-vs-net-5678-e-standard-mono"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "CLR/CoreCLR, IL, JIT e código gerenciado",
+      "pontos": [
+        "CLR (CoreCLR no .NET moderno) é a máquina virtual: gerencia memória, GC, exceções, segurança de tipos e o JIT",
+        "O compilador C# (Roslyn) NÃO gera código de máquina: gera IL (Intermediate Language), um bytecode independente de CPU, dentro do assembly",
+        "JIT (Just-In-Time) compila o IL pra código de máquina nativo em tempo de execução, método a método, na primeira chamada",
+        "Código gerenciado = roda sob o CLR (tem GC, type safety); código unmanaged = nativo, sem GC (C/C++, P/Invoke, ponteiros)",
+        "AOT/ReadyToRun: pré-compilam IL pra nativo antes de rodar — Native AOT gera binário sem JIT (startup rápido, ideal p/ serverless/containers)",
+        "Pegadinha: C# não é 'interpretado' nem compila direto pra nativo no build — é IL no build e JIT em runtime"
+      ],
+      "checkpoint": "Peça pro aluno explicar a cadeia C# → IL → JIT → nativo e o que significa 'código gerenciado'",
+      "ref": "04-dotnet-runtime-gc-memory/teoria.md#2-clrcoreclr-il-jit-e-codigo-gerenciado"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "Stack vs Heap, value types vs reference types, string",
+      "pontos": [
+        "Value type (struct, int, bool, enum, DateTime): guarda o VALOR direto; cópia copia o conteúdo; sem alocação no heap gerenciado quando é variável local",
+        "Reference type (class, string, array, delegate): a variável guarda uma REFERÊNCIA; o objeto vive no heap; cópia copia a referência (dois nomes, um objeto)",
+        "Regra prática de entrevista: local value type → stack; objeto de class → heap. Mas value type dentro de uma class/array vai junto no heap (não é 'stack sempre')",
+        "Stack é rápida, LIFO, liberada ao sair do método; heap é gerenciada pelo GC",
+        "string é REFERENCE type mas IMUTÁVEL: toda 'alteração' cria nova string; concatenação em loop gera lixo → use StringBuilder",
+        "Pegadinha: dizer 'struct sempre vive na stack' é impreciso — depende de onde a variável mora (campo de classe, boxed, closure vão pro heap)"
+      ],
+      "checkpoint": "Peça pro aluno diferenciar cópia de value type vs reference type e dizer por que 'struct sempre na stack' é impreciso",
+      "ref": "04-dotnet-runtime-gc-memory/teoria.md#3-stack-vs-heap-value-types-vs-reference-types-string"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Boxing e unboxing",
+      "pontos": [
+        "Boxing: empacotar um value type dentro de um objeto no heap pra tratá-lo como object (ou interface) — aloca e copia",
+        "Unboxing: extrair o value type de volta da box — exige cast explícito e checa o tipo (InvalidCastException se errado)",
+        "Custo: alocação no heap + pressão no GC; em loops quentes vira gargalo de performance",
+        "Onde acontece escondido: object.Equals, coleções não-genéricas (ArrayList, Hashtable), string.Format/concat com value type, chamar método de interface num struct",
+        "Como evitar: generics (List<int> não faz boxing), Span<T>, evitar object/interface em caminho quente",
+        "Pegadinha: List<int> NÃO faz boxing (T é resolvido pro tipo), mas ArrayList com int faz — a diferença é o entrevistador querer ouvir"
+      ],
+      "checkpoint": "Peça a definição de boxing/unboxing, o custo e por que generics resolvem",
+      "ref": "04-dotnet-runtime-gc-memory/teoria.md#4-boxing-e-unboxing"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Garbage Collector: reachability, mark-sweep-compact",
+      "pontos": [
+        "Por que existe: memória gerenciada — você não dá free(); o GC libera automaticamente o que não é mais alcançável, evitando leaks/dangling pointers",
+        "Como decide: parte das RAÍZES (variáveis locais na stack, campos static, registradores, handles do GC) e marca tudo que é alcançável por referência",
+        "Mark: marca o alcançável. Sweep: o não-marcado é lixo. Compact: move os vivos pra juntar e desfragmentar o heap (por isso referências têm que ser atualizadas)",
+        "O GC é NÃO-DETERMINÍSTICO: você não sabe QUANDO roda; GC.Collect() existe mas quase nunca deve ser chamado em produção",
+        "Alcançabilidade ≠ 'em uso': um objeto ainda referenciado (ex.: por um static ou event handler) NÃO é coletado, mesmo que você não use mais — é a raiz de muitos leaks",
+        "Pegadinha: GC não usa contagem de referência (isso é COM/Python); é rastreamento por alcançabilidade, então ciclos de referência SÃO coletados"
+      ],
+      "checkpoint": "Peça pro aluno explicar raízes/alcançabilidade e o ciclo mark-sweep-compact, e por que ciclos de referência não vazam no .NET",
+      "ref": "04-dotnet-runtime-gc-memory/teoria.md#5-garbage-collector-reachability-mark-sweep-compact"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "Gerações 0/1/2, LOH, workstation vs server, background GC",
+      "pontos": [
+        "Gerações existem por causa da hipótese geracional: a maioria dos objetos morre jovem — então coletar só a Gen0 (barato e frequente) recupera a maior parte do lixo",
+        "Gen0: objetos novos, coleta rápida e frequente. Gen1: sobreviventes da Gen0 (buffer). Gen2: objetos longevos (coleta cara e rara). Sobreviveu → promove",
+        "LOH (Large Object Heap): objetos >= ~85KB; é logicamente Gen2, coletado só em GC de Gen2, e NÃO é compactado por padrão (fragmentação) — pode forçar com GCSettings.LargeObjectHeapCompactionMode",
+        "Workstation GC: default desktop, otimiza latência/responsividade. Server GC: multi-heap por CPU, otimiza throughput — padrão em ASP.NET Core em servidor",
+        "Background/concurrent GC: coleta a Gen2 em thread separada, minimizando as pausas 'stop-the-world' do app",
+        "Pegadinha: o número da geração não sobe além de 2 — Gen2 é o teto; e coletar Gen2 implica coletar Gen0 e Gen1 juntas (full GC)"
+      ],
+      "checkpoint": "Peça pro aluno explicar por que existem gerações (hipótese geracional), o que é o LOH e o limite de ~85KB, e a diferença workstation vs server GC",
+      "ref": "04-dotnet-runtime-gc-memory/teoria.md#6-geracoes-012-loh-workstation-vs-server-background-gc"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "Memory leaks em código gerenciado",
+      "pontos": [
+        "Sim, existem leaks com GC: qualquer coisa ainda ALCANÇÁVEL nunca é coletada, mesmo que você nunca mais use",
+        "Causas clássicas: event handlers/delegates não removidos (o publisher segura o subscriber), referências static que só crescem, caches sem limite/eviction",
+        "Closures capturando objetos (a lambda mantém viva a variável capturada) e timers/subscriptions não cancelados também prendem objetos",
+        "IDisposable não liberado é ponte pro módulo 05: recursos unmanaged (arquivo, socket, conexão) não são liberados pelo GC no tempo certo",
+        "Diagnóstico rápido: dotnet-counters (ver Gen sizes/allocations subindo), dotnet-dump/dotnet-gcdump pra tirar dump e achar quem segura a referência (root path)",
+        "Pegadinha: o sintoma clássico é event handler — o += sem -= faz o objeto emissor manter o assinante vivo pra sempre"
+      ],
+      "checkpoint": "Peça um exemplo de leak em .NET (de preferência event handler ou static) e como você o diagnosticaria",
+      "ref": "04-dotnet-runtime-gc-memory/teoria.md#7-memory-leaks-em-codigo-gerenciado"
+    },
+    {
+      "id": "t8",
+      "fase": "teoria",
+      "titulo": "Span<T>, Memory<T> e stackalloc",
+      "pontos": [
+        "Span<T>: uma janela/view sobre memória contígua (array, string, stackalloc, unmanaged) SEM copiar — fatiar/parsear sem alocar novos arrays",
+        "É um ref struct: só vive na stack, não pode ser campo de classe nem ir pra heap/async — por isso é ultra barato e seguro",
+        "Memory<T>: o 'primo' que PODE viver no heap e ser usado em async/campos — dá .Span quando precisa da view; use quando Span<T> não cabe (métodos async)",
+        "stackalloc: aloca um buffer na STACK (não no heap gerenciado) — zero pressão no GC, mas cuidado com tamanho (stack overflow) e escopo",
+        "Por que cai em entrevista de performance: reduzir alocações no heap = menos trabalho pro GC = menos pausas e mais throughput em caminho quente",
+        "Pegadinha: Span<T> não pode ser usado em método async nem como campo — se precisar disso, é Memory<T>"
+      ],
+      "checkpoint": "Peça pro aluno explicar o que Span<T> resolve (alocação), por que é ref struct, e quando usar Memory<T> no lugar",
+      "ref": "04-dotnet-runtime-gc-memory/teoria.md#8-spant-memoryt-e-stackalloc"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Simulação de entrevista",
+      "pontos": [
+        "Agora vira entrevista: eu pergunto, você responde em voz alta como responderia amanhã",
+        "Faço as perguntas do banco uma a uma, da mais comum ('Framework vs Core', 'como funciona o GC') pra pegadinha (LOH, leak com GC)",
+        "Depois de cada resposta, critico: o que faltou, o que foi impreciso, como soar mais sênior",
+        "Foco em fluência: resposta direta primeiro, depois o detalhe técnico que impressiona",
+        "Sem consultar a teoria durante a simulação — é treino de recall sob pressão"
+      ],
+      "checkpoint": "Confirme que o aluno quer começar a simulação e que vai responder sem olhar a teoria",
+      "acao": "Conduzir simulação de entrevista no chat: fazer as perguntas do pratica.md uma a uma, ouvir a resposta do aluno e criticar (o que faltou, como soar mais sênior)",
+      "ref": "04-dotnet-runtime-gc-memory/pratica.md"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz do módulo",
+      "pontos": [
+        "10 questões objetivas cobrindo os 8 subtópicos",
+        "Estilo entrevista: uma correta, distratores plausíveis",
+        "Serve pra fixar antes da prova — errar aqui é bom, mostra o que revisar"
+      ],
+      "checkpoint": "Confirme que o aluno está pronto pro quiz de 10 questões",
+      "acao": "Rodar: python3 engine/session.py start Entrevista-Angular-DotNet/apps/modulo-04/questions.json",
+      "ref": "04-dotnet-runtime-gc-memory/pratica.md"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova de fim de módulo",
+      "pontos": [
+        "12 questões, aprovação em 70%",
+        "Feedback por alternativa: cada opção explica por que está certa ou errada",
+        "Cobre tudo: ecossistema .NET, CLR/IL/JIT, stack/heap, boxing, GC/gerações/LOH, leaks, Span<T>"
+      ],
+      "checkpoint": "Confirme que o aluno quer fazer a prova agora (70% pra passar)",
+      "acao": "Rodar: python3 engine/session.py start Entrevista-Angular-DotNet/provas/modulo-04/questions.json --id prova",
+      "ref": "04-dotnet-runtime-gc-memory/pratica.md"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Recap e próximo módulo",
+      "pontos": [
+        "Recap: Framework vs Core vs .NET 8, C#→IL→JIT, stack/heap e value vs reference, boxing, GC (raízes, mark-sweep-compact, gerações, LOH), leaks gerenciados e Span<T>",
+        "Se algo travou na simulação (LOH, leak com GC, 'struct sempre na stack'), vale revisar aquele subtópico específico antes da entrevista",
+        "Próximo: Módulo 05 — IDisposable & Finalizers (o outro lado da memória: recursos unmanaged que o GC não libera no tempo certo)",
+        "Ligação direta: falamos que IDisposable não liberado é um tipo de leak; o módulo 05 mostra o padrão Dispose, using e por que finalizer é caro"
+      ],
+      "checkpoint": "Pergunte se ficou alguma dúvida do módulo 04 antes de seguir pro 05 (IDisposable & Finalizers)",
+      "ref": "04-dotnet-runtime-gc-memory/teoria.md"
+    }
+  ]
+}

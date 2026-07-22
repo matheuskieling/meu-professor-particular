@@ -1,0 +1,48 @@
+{
+  "modulo": "08",
+  "titulo": "Simulado geral — Angular + .NET",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o ensaio final antes da entrevista",
+      "pontos": [
+        "Este é o ensaio final: um simulado que mistura Angular e .NET, no clima do dia da entrevista",
+        "Não é mais um módulo por vez — aqui os dois temas vêm embaralhados, como o entrevistador faria",
+        "Objetivo: medir a fluência geral e revelar os pontos frágeis antes que apareçam ao vivo",
+        "Cada questão errada é um sinal claro do que revisar — anote o módulo correspondente",
+        "Encare sem consultar a teoria: é treino de recall sob pressão, igual à entrevista real"
+      ],
+      "checkpoint": "Confirme que o aluno está pronto pra começar o simulado (sem consultar teoria) e lembre que errar aqui é bom — mostra o que revisar",
+      "ref": "provas/simulado/questions.json"
+    },
+    {
+      "id": "sim",
+      "fase": "prova",
+      "titulo": "Simulado geral (Angular + .NET)",
+      "pontos": [
+        "São ~20 questões cobrindo os dois temas: change detection, signals, router/DI, GC, IDisposable, lifetimes, async/idempotência",
+        "Feedback por alternativa: cada opção explica por que está certa ou errada",
+        "Aprovação em 70% — mas o valor real está em ver ONDE errou",
+        "Responda como responderia ao entrevistador: direto primeiro, detalhe técnico depois"
+      ],
+      "checkpoint": "Ao terminar, comente o resultado com o aluno e aponte quais módulos revisar com base nos erros",
+      "acao": "Rodar: python3 engine/session.py start Entrevista-Angular-DotNet/provas/simulado/questions.json --id simulado",
+      "ref": "provas/simulado/questions.json"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Fechamento pré-entrevista — recap e boa sorte",
+      "pontos": [
+        "Recap Angular: ciclo de vida e OnPush, signals vs RxJS e zoneless, lazy loading, guards/resolvers, DI e interceptors",
+        "Recap .NET: runtime e GC (gerações, boxing, LOH), IDisposable vs finalizer, lifetimes e captured dependency, async/escalabilidade, idempotência",
+        "Na entrevista: comece pela resposta direta, depois traga o detalhe que soa sênior; assuma quando não souber, sem enrolar",
+        "Você já treinou os dois lados — confie na base que construiu e respire antes de responder",
+        "Boa sorte amanhã: fluência vem da calma e da estrutura, não de decorar tudo"
+      ],
+      "checkpoint": "Pergunte se o aluno quer revisar algum tema específico antes da entrevista (com base no que errou no simulado)",
+      "ref": "provas/simulado/questions.json"
+    }
+  ]
+}

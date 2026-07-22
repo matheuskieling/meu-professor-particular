@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 04 — .NET: Runtime, GC & Memory",
+  "questoes": [
+    {
+      "pergunta": "O entrevistador pergunta a principal diferença entre .NET Framework e .NET Core. Qual resposta é a mais forte?",
+      "opcoes": [
+        ".NET Core é apenas uma versão mais recente do .NET Framework, com as mesmas limitações",
+        ".NET Core é cross-platform, open source, modular e mais performático; o Framework é só Windows e está em manutenção",
+        ".NET Framework é cross-platform e o Core é só Windows",
+        "Não há diferença técnica; só mudou o nome"
+      ],
+      "correta": 1,
+      "explicacao": ".NET Core nasceu cross-platform, open source, modular (NuGet) e mais performático. O .NET Framework é só Windows, acoplado ao SO e em manutenção (não recebe features novas). A partir do .NET 5 o 'Core' saiu do nome e virou 'só .NET'."
+    },
+    {
+      "pergunta": "O que é o .NET Standard?",
+      "opcoes": [
+        "Um runtime cross-platform que substitui o .NET Core",
+        "Uma especificação/contrato de API que permite uma biblioteca rodar em .NET Framework e .NET Core/5+",
+        "A versão LTS mais recente do .NET",
+        "Um compilador que gera código nativo direto"
+      ],
+      "correta": 1,
+      "explicacao": ".NET Standard não é um runtime — é um contrato de API. Uma lib que mira netstandard2.0 roda tanto em Framework quanto em Core/5+. Hoje importa quase só para suportar Framework legado."
+    },
+    {
+      "pergunta": "O que o compilador C# (Roslyn) gera no build de um projeto .NET?",
+      "opcoes": [
+        "Código de máquina nativo direto para a CPU alvo",
+        "IL (Intermediate Language), um bytecode independente de CPU, dentro do assembly",
+        "Um script interpretado em tempo de execução",
+        "Bytecode Java"
+      ],
+      "correta": 1,
+      "explicacao": "O build gera IL (bytecode independente de CPU) no assembly. Em runtime, o JIT do CLR compila esse IL para código nativo, método a método. C# não é interpretado nem compila para nativo no build (exceto Native AOT, que é opt-in)."
+    },
+    {
+      "pergunta": "Considere um struct usado como campo de uma classe. Onde a instância desse struct vive em memória?",
+      "opcoes": [
+        "Sempre na stack, porque todo struct vive na stack",
+        "No heap, junto com o objeto da classe que o contém",
+        "Em um heap especial só para value types",
+        "Não é alocado até ser usado"
+      ],
+      "correta": 1,
+      "explicacao": "'Struct sempre vive na stack' é impreciso. Um value type que é campo de uma class mora no heap junto com o objeto. O que decide é ONDE a variável mora, não só o tipo — boxing e closures também levam value types ao heap."
+    },
+    {
+      "pergunta": "Qual dessas operações causa boxing?",
+      "opcoes": [
+        "Adicionar um int a um List<int>",
+        "Adicionar um int a um ArrayList (que guarda object)",
+        "Somar dois inteiros locais",
+        "Declarar um Span<int> local"
+      ],
+      "correta": 1,
+      "explicacao": "ArrayList guarda object, então cada int adicionado sofre boxing (alocação no heap + cópia). List<int> NÃO faz boxing porque T é resolvido para o tipo concreto — é justamente o benefício dos generics."
+    },
+    {
+      "pergunta": "Como o Garbage Collector do .NET decide o que coletar?",
+      "opcoes": [
+        "Por contagem de referências: quando chega a zero, coleta",
+        "Por alcançabilidade: marca o que é alcançável a partir das raízes (locais, statics, handles); o resto é lixo",
+        "Coleta objetos por ordem de criação (FIFO)",
+        "Coleta tudo que não foi usado nos últimos 60 segundos"
+      ],
+      "correta": 1,
+      "explicacao": "O GC usa rastreamento por alcançabilidade (tracing), não contagem de referência. Ele parte das raízes e marca o alcançável; o não-marcado é lixo (sweep), e os vivos são compactados. Por ser tracing, ciclos de referência são coletados normalmente."
+    },
+    {
+      "pergunta": "Por que o GC do .NET usa gerações (0, 1 e 2)?",
+      "opcoes": [
+        "Para permitir até 10 níveis de coleta de memória",
+        "Por causa da hipótese geracional: a maioria dos objetos morre jovem, então coletar a Gen0 (barato e frequente) recupera quase todo o lixo",
+        "Porque cada geração roda em uma thread diferente obrigatoriamente",
+        "Para separar value types de reference types"
+      ],
+      "correta": 1,
+      "explicacao": "A hipótese geracional diz que a maioria dos objetos morre jovem. Coletar só a Gen0, que é barato e frequente, já recupera a maior parte do lixo. Sobreviventes são promovidos (Gen0 → Gen1 → Gen2). Gen2 é o teto."
+    },
+    {
+      "pergunta": "O que caracteriza o Large Object Heap (LOH)?",
+      "opcoes": [
+        "Guarda objetos >= ~85 KB, é logicamente Gen2 e não é compactado por padrão",
+        "Guarda todos os arrays, independente do tamanho, e é sempre compactado",
+        "É o heap da Gen0, coletado a cada milissegundo",
+        "É onde ficam os value types locais"
+      ],
+      "correta": 0,
+      "explicacao": "O LOH guarda objetos >= ~85 KB. É logicamente Gen2 (coletado só em GC de Gen2) e NÃO é compactado por padrão, porque mover objetos grandes é caro — o preço é fragmentação. Dá para forçar compactação pontual via GCSettings."
+    },
+    {
+      "pergunta": "Qual é uma causa clássica de memory leak em código gerenciado .NET?",
+      "opcoes": [
+        "Usar List<int> em vez de ArrayList",
+        "Um event handler assinado com += e nunca removido com -=, fazendo o publisher segurar o subscriber",
+        "Declarar um struct local dentro de um método",
+        "Chamar StringBuilder.Append em um loop"
+      ],
+      "correta": 1,
+      "explicacao": "Event handler é o caso clássico: publisher.Evento += handler faz o publisher referenciar o subscriber. Se o publisher vive muito e falta o -=, o subscriber nunca é coletado — porque continua ALCANÇÁVEL. O GC só coleta o que não é mais alcançável."
+    },
+    {
+      "pergunta": "Por que Span<T> não pode ser usado em um método async?",
+      "opcoes": [
+        "Porque Span<T> só funciona com value types",
+        "Porque Span<T> é um ref struct e só pode viver na stack, não pode sobreviver a um await; nesse caso usa-se Memory<T>",
+        "Porque async não suporta generics",
+        "Porque Span<T> sempre aloca no heap"
+      ],
+      "correta": 1,
+      "explicacao": "Span<T> é um ref struct: só vive na stack, não pode ser campo de classe nem sobreviver a um await (métodos async podem suspender e retomar em outro contexto). Quando se precisa de uma view em código assíncrono, usa-se Memory<T>, que vive no heap e expõe .Span."
+    }
+  ]
+}

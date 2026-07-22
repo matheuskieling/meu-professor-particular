@@ -1,0 +1,166 @@
+{
+  "modulo": "07",
+  "titulo": ".NET — Async, Escalabilidade & Idempotência",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que este módulo cobre e por que cai em entrevista",
+      "pontos": [
+        "Este é o último módulo da trilha .NET: async/await por dentro, thread pool, escalabilidade (stateless/horizontal) e idempotência de APIs",
+        "Async e idempotência são o clássico do backend sênior: separam quem só usa await de quem entende throughput, thread pool e retries",
+        "O entrevistador quer o 'porquê': por que async melhora escalabilidade (e não a velocidade de UMA request), por que .Result trava, por que POST não é idempotente",
+        "Escalabilidade é a pergunta de arquitetura: 'como você escala essa API?' — a resposta certa é stateless + horizontal, não 'compro uma máquina maior'",
+        "Formato: eu explico um tópico por vez → você pergunta à vontade → simulo a entrevista → quiz (10) → prova (12, 70%)",
+        "Meta: responder cada um desses temas soando sênior, sem travar e sem confundir async com paralelismo"
+      ],
+      "checkpoint": "Confirme que o aluno topa o formato (explico → pergunta → simulação → quiz → prova) e que a entrevista é amanhã — foco é fluência nas respostas",
+      "ref": "07-dotnet-async-escalabilidade-idempotencia/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "async/await e Task: o que async realmente faz",
+      "pontos": [
+        "O compilador transforma o método async numa máquina de estados: cada await é um ponto onde ele pode pausar e retomar depois",
+        "Task representa uma operação assíncrona em andamento (uma promessa de resultado) — não é uma thread nem cria uma",
+        "Async NÃO é paralelismo: por padrão roda numa thread só; await libera a thread durante a espera, não roda dois códigos ao mesmo tempo",
+        "O benefício real é throughput/escalabilidade, não a velocidade de uma request: uma request async não fica mais rápida, mas o servidor atende mais requests com as mesmas threads",
+        "Durante um await de I/O, a thread volta pro pool e serve outra request; quando o I/O termina, o resto do método é reagendado",
+        "Pegadinha: 'async deixa meu código mais rápido' — não; deixa o servidor mais escalável ao não segurar threads paradas"
+      ],
+      "checkpoint": "Peça pro aluno explicar em uma frase por que async melhora throughput e não a latência de uma request, e o que é uma Task",
+      "ref": "07-dotnet-async-escalabilidade-idempotencia/teoria.md#1-asyncawait-e-task-o-que-async-realmente-faz"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "Thread pool, I/O bound vs CPU bound",
+      "pontos": [
+        "Thread pool é um conjunto reutilizável de threads que o runtime gerencia — criar thread é caro, então o pool recicla",
+        "I/O bound = espera por rede/disco/banco: aí async brilha, pois a thread não fica bloqueada esperando o hardware responder",
+        "CPU bound = cálculo pesado que ocupa o processador: async puro NÃO ajuda; aí é Task.Run/paralelismo pra usar mais núcleos",
+        "Regra: I/O bound → async/await; CPU bound → Task.Run / Parallel; não use Task.Run pra 'tornar async' um I/O (isso só desperdiça thread)",
+        "Thread pool starvation: código síncrono bloqueando threads (ou sync-over-async) esgota o pool; novas requests ficam na fila e a latência explode",
+        "Pegadinha: envolver await de I/O em Task.Run não escala — você tirou a thread do pool sem necessidade; async I/O já não usa thread durante a espera"
+      ],
+      "checkpoint": "Peça pro aluno distinguir I/O bound de CPU bound e dizer quando usar async vs Task.Run; confirme o que é thread pool starvation",
+      "ref": "07-dotnet-async-escalabilidade-idempotencia/teoria.md#2-thread-pool-io-bound-vs-cpu-bound"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "Armadilhas: deadlock, async void, ConfigureAwait, async all the way",
+      "pontos": [
+        ".Result e .Wait() em código async causam deadlock (sync-over-async): a thread bloqueada é justamente a que o await precisa pra continuar (em contexto com SynchronizationContext, ex.: UI/ASP.NET clássico)",
+        "async void é fire-and-forget e engole exceções: só em event handlers; nunca em lógica de negócio (use async Task pra poder await/try-catch)",
+        "ConfigureAwait(false): não volta ao SynchronizationContext capturado; era essencial em bibliotecas e no ASP.NET clássico pra evitar deadlock — ASP.NET Core não tem SynchronizationContext, então importa menos ali",
+        "SynchronizationContext = o 'contexto' pra onde o await tenta voltar (thread de UI, request do ASP.NET clássico); é o que gera o deadlock quando você bloqueia com .Result",
+        "Async all the way: se um método é async, quem chama também deve ser async e usar await — misturar await com .Result no meio é o que trava",
+        "Pegadinha: 'ConfigureAwait(false) resolve deadlock' — evita, mas a cura de verdade é não bloquear (nunca .Result/.Wait); em ASP.NET Core nem há contexto pra deadlockar assim"
+      ],
+      "checkpoint": "Peça a causa exata do deadlock com .Result, quando async void é aceitável, e o que ConfigureAwait(false) faz",
+      "ref": "07-dotnet-async-escalabilidade-idempotencia/teoria.md#3-armadilhas-deadlock-async-void-configureawait-async-all-the-way"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Escalabilidade — conceitos: vertical vs horizontal e stateless",
+      "pontos": [
+        "Escala vertical = máquina maior (mais CPU/RAM): simples, mas tem teto físico e ponto único de falha",
+        "Escala horizontal = mais instâncias atrás de um load balancer: elástica e resiliente, mas exige que o serviço seja stateless",
+        "Serviço stateless = não guarda estado de sessão em memória local; qualquer instância atende qualquer request — é o que permite escalar horizontalmente e balancear",
+        "Externalizar o estado: sessão/cache num store compartilhado (Redis, cache distribuído, banco), não na memória do processo",
+        "Sticky sessions (afinidade de sessão) é anti-pattern pra escala: amarra o usuário a uma instância, quebra o balanceamento e derruba a sessão se aquela instância cair",
+        "Pegadinha: guardar carrinho/sessão numa static ou em memória do processo funciona com 1 instância e quebra na hora que você escala pra 2+"
+      ],
+      "checkpoint": "Peça pro aluno explicar por que stateless é pré-requisito de escala horizontal e por que sticky session é anti-pattern",
+      "ref": "07-dotnet-async-escalabilidade-idempotencia/teoria.md#4-escalabilidade-conceitos-vertical-vs-horizontal-e-stateless"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Escalabilidade — técnicas: load balancing, cache, filas, backpressure",
+      "pontos": [
+        "Load balancer distribui requests entre as instâncias (round-robin, least-connections) e tira do ar as que ficam unhealthy",
+        "Caching reduz carga no banco e melhora latência: cache distribuído (Redis) pra dados quentes; invalidação é o difícil",
+        "Filas/mensageria (RabbitMQ, SQS, Kafka) desacoplam produtor de consumidor e absorvem picos: a API só enfileira e responde rápido; o worker processa no seu ritmo",
+        "Backpressure: quando o consumidor não dá conta, você limita a entrada (rate limit, tamanho de fila, rejeitar/adiar) pra não derrubar o sistema todo",
+        "Async é a base do throughput: sem segurar threads em I/O, cada instância aguenta muito mais requests concorrentes — multiplicador de tudo acima",
+        "Pegadinha: fila introduz processamento assíncrono e entrega at-least-once → o consumidor precisa ser idempotente (gancho pro próximo tópico)"
+      ],
+      "checkpoint": "Peça pro aluno citar duas técnicas de escala e explicar como uma fila absorve pico; confirme por que async é a base do throughput",
+      "ref": "07-dotnet-async-escalabilidade-idempotencia/teoria.md#5-escalabilidade-tecnicas-load-balancing-cache-filas-backpressure"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "Idempotência: definição, HTTP, idempotency key e o mito do exactly-once",
+      "pontos": [
+        "Idempotência: repetir a mesma operação N vezes tem o mesmo efeito de fazê-la 1 vez — reprocessar não muda o resultado nem gera dado duplicado",
+        "Importa por causa de retries, timeouts, duplo clique e entrega at-least-once: em rede real, requests se repetem e você não pode cobrar/criar duas vezes",
+        "HTTP: GET, PUT e DELETE são idempotentes por definição; POST NÃO é (cria um recurso novo a cada chamada) — por isso POST de pagamento precisa de proteção",
+        "Idempotency key: o cliente manda um Id único (header Idempotency-Key); o servidor guarda a chave + resultado e, se a chave repetir, devolve o mesmo resultado sem reexecutar",
+        "Implementação: dedup por chave (tabela/cache de chaves processadas) ou upsert (PUT que insere-ou-atualiza pelo mesmo id) — a operação em si vira segura de repetir",
+        "Exactly-once é praticamente um mito em sistemas distribuídos: o padrão viável é at-least-once (pode duplicar) + consumidor idempotente = efeito de exactly-once",
+        "Pegadinha: 'minha fila garante exactly-once' — quase nunca; assuma at-least-once e projete o consumidor idempotente pra sobreviver a redeliveries"
+      ],
+      "checkpoint": "Peça a definição de idempotência, quais verbos HTTP são idempotentes e como uma idempotency key protege um POST; confirme at-least-once + idempotência vs exactly-once",
+      "ref": "07-dotnet-async-escalabilidade-idempotencia/teoria.md#6-idempotencia-definicao-http-idempotency-key-e-o-mito-do-exactly-once"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Simulação de entrevista",
+      "pontos": [
+        "Agora vira entrevista: eu pergunto, você responde em voz alta como responderia amanhã",
+        "Faço as perguntas do banco uma a uma, da mais comum pra pegadinha (async → escalabilidade → idempotência)",
+        "Depois de cada resposta, critico: o que faltou, o que foi impreciso, como soar mais sênior",
+        "Foco em fluência: resposta direta primeiro (ex.: 'async melhora throughput, não latência'), depois o detalhe que impressiona",
+        "Sem consultar a teoria durante a simulação — é treino de recall sob pressão"
+      ],
+      "checkpoint": "Confirme que o aluno quer começar a simulação e que vai responder sem olhar a teoria",
+      "acao": "Conduzir simulação de entrevista no chat: fazer as perguntas do pratica.md uma a uma, ouvir a resposta do aluno e criticar (o que faltou, como soar mais sênior)",
+      "ref": "07-dotnet-async-escalabilidade-idempotencia/pratica.md"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz do módulo",
+      "pontos": [
+        "10 questões objetivas cobrindo os 6 subtópicos",
+        "Estilo entrevista: uma correta, distratores plausíveis",
+        "Serve pra fixar antes da prova — errar aqui é bom, mostra o que revisar"
+      ],
+      "checkpoint": "Confirme que o aluno está pronto pro quiz de 10 questões",
+      "acao": "Rodar: python3 engine/session.py start Entrevista-Angular-DotNet/apps/modulo-07/questions.json",
+      "ref": "07-dotnet-async-escalabilidade-idempotencia/pratica.md"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova de fim de módulo",
+      "pontos": [
+        "12 questões, aprovação em 70%",
+        "Feedback por alternativa: cada opção explica por que está certa ou errada",
+        "Cobre tudo: async/Task, thread pool, deadlock/async void/ConfigureAwait, stateless/horizontal, filas/cache, idempotência"
+      ],
+      "checkpoint": "Confirme que o aluno quer fazer a prova agora (70% pra passar)",
+      "acao": "Rodar: python3 engine/session.py start Entrevista-Angular-DotNet/provas/modulo-07/questions.json --id prova",
+      "ref": "07-dotnet-async-escalabilidade-idempotencia/pratica.md"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Recap e fecho da trilha .NET",
+      "pontos": [
+        "Recap: async libera thread em I/O (throughput, não latência); I/O bound → async, CPU bound → Task.Run; .Result deadlocka; stateless + horizontal escala; fila absorve pico; idempotência sobrevive a retries",
+        "Se algo travou na simulação (ex.: confundir async com paralelismo, ou por que POST não é idempotente), revise aquele subtópico antes da entrevista",
+        "Isto fecha a trilha .NET (módulos 04→07): GC/memória, IDisposable, DI/lifetimes/Repository e agora async/escalabilidade/idempotência",
+        "Próximo passo é o SIMULADO GERAL (módulo 08): mistura Angular + .NET no formato do dia da entrevista — o ensaio final"
+      ],
+      "checkpoint": "Pergunte se ficou alguma dúvida do módulo 07 ou da trilha .NET antes de partir pro simulado geral (módulo 08)",
+      "ref": "07-dotnet-async-escalabilidade-idempotencia/teoria.md"
+    }
+  ]
+}

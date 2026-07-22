@@ -1,0 +1,197 @@
+{
+  "modulo": "06",
+  "titulo": ".NET — DI, Service Lifetimes & Repository",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — por que lifetimes e repository caem MUITO em entrevista .NET",
+      "pontos": [
+        "DI é o coração do ASP.NET Core moderno — quase toda entrevista .NET passa por aqui",
+        "Os service lifetimes (Transient/Scoped/Singleton) são a pergunta clássica de 'você sabe usar o container?'",
+        "A pegadinha favorita: 'o que acontece se você injetar um Scoped num Singleton?' — quem responde bem soa sênior",
+        "Repository Pattern é onde o candidato pleno para e o sênior brilha: sabe usar E sabe criticar",
+        "Objetivo: você explicar os 3 lifetimes, a captured dependency e defender/criticar Repository sem gaguejar",
+        "Formato: eu explico um sub-tópico por vez, você pergunta, depois viramos a mesa numa simulação de entrevista, quiz e prova de 70%"
+      ],
+      "checkpoint": "Confirme que o aluno está pronto e topa o formato: teoria conversada, depois simulação de entrevista, quiz e prova",
+      "ref": "06-dotnet-di-lifetimes-repository/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "O que é DI: IoC, container embutido e constructor injection",
+      "pontos": [
+        "DI (Injeção de Dependência) = a classe recebe suas dependências de fora, não as cria com 'new'",
+        "IoC (Inversão de Controle) = o conceito guarda-chuva: quem controla a criação/fluxo é o framework, não seu código",
+        "Motivação: desacoplamento (depender de interface, não de classe concreta) e testabilidade (injetar mock/fake)",
+        "Container embutido: IServiceCollection registra (na inicialização), IServiceProvider resolve (em runtime)",
+        "Constructor injection é a forma padrão: pede a dependência no construtor; o container preenche o grafo inteiro",
+        "Registrar: services.AddScoped/AddSingleton/AddTransient<IServico, Servico>(); resolver: pelo construtor ou GetRequiredService"
+      ],
+      "checkpoint": "Peça pro aluno explicar por que 'new SqlRepository()' dentro de um serviço quebra a testabilidade e o desacoplamento",
+      "ref": "06-dotnet-di-lifetimes-repository/teoria.md#1-di-o-que-é-ioc-container-embutido-e-constructor-injection"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "DI vs IoC vs DIP: não confundir os três",
+      "pontos": [
+        "IoC é o CONCEITO amplo: inverter quem controla o fluxo/criação (framework chama seu código, não o contrário)",
+        "DI é uma TÉCNICA específica de IoC: entregar dependências prontas de fora (via construtor, geralmente)",
+        "DIP é um PRINCÍPIO (o 'D' do SOLID): módulos de alto nível não dependem de baixo nível; ambos dependem de abstrações",
+        "DIP diz 'dependa de interfaces'; DI é como você faz isso acontecer na prática (o container injeta a implementação)",
+        "Erro comum em entrevista: dizer 'DI e IoC são a mesma coisa' ou 'DI é o mesmo que DIP'",
+        "Frase de bolso: 'DIP é a regra, DI é a técnica, IoC é o guarda-chuva; o container DI é a ferramenta que aplica os três'"
+      ],
+      "checkpoint": "Pergunte a diferença entre DIP (princípio) e DI (técnica) com uma frase de cada",
+      "ref": "06-dotnet-di-lifetimes-repository/teoria.md#2-di-vs-ioc-vs-dip-o-princípio-solid"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "Lifetime Transient: nova instância a cada resolução",
+      "pontos": [
+        "Transient: o container cria uma instância NOVA toda vez que o serviço é resolvido/injetado",
+        "Se três serviços diferentes pedem o mesmo Transient num request, são três instâncias distintas",
+        "Bom para: serviços leves, sem estado, baratos de criar (ex.: um validador, um mapper simples)",
+        "Cuidado: Transient dentro de Singleton continua sendo criado só uma vez (fica 'preso' na vida do Singleton)",
+        "Não use Transient para algo caro de criar (conexão, cliente HTTP tipado mal configurado) — desperdício",
+        "Regra: se não precisa compartilhar estado e é barato, Transient é o padrão mais seguro"
+      ],
+      "checkpoint": "Peça um exemplo de serviço que faz sentido ser Transient e por quê",
+      "ref": "06-dotnet-di-lifetimes-repository/teoria.md#3-lifetime-transient"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Lifetime Scoped: uma instância por escopo (request HTTP); DbContext é Scoped",
+      "pontos": [
+        "Scoped: UMA instância por 'escopo'; no ASP.NET Core, cada request HTTP cria um escopo",
+        "Dentro do mesmo request, todos que pedem o serviço recebem a MESMA instância; em outro request, outra",
+        "'Escopo' é o IServiceScope: o middleware do ASP.NET Core abre um por request e faz o Dispose no fim",
+        "DbContext do EF Core é registrado como Scoped por padrão (AddDbContext) — e faz sentido",
+        "Por que Scoped? DbContext NÃO é thread-safe e carrega o change tracker por unidade de trabalho (o request)",
+        "Um request = uma unidade de trabalho = um DbContext compartilhado entre os serviços daquele request"
+      ],
+      "checkpoint": "Pergunte por que o DbContext é Scoped e não Singleton (thread-safety e change tracker por request)",
+      "ref": "06-dotnet-di-lifetimes-repository/teoria.md#4-lifetime-scoped"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Lifetime Singleton: uma instância pra app; cuidado com estado e thread-safety",
+      "pontos": [
+        "Singleton: UMA única instância para toda a aplicação, criada uma vez e reutilizada em todos os requests",
+        "Bom para: caches, configuração, clientes reutilizáveis, coisas sem estado mutável por request",
+        "PERIGO: como é compartilhado entre threads/requests simultâneos, qualquer estado mutável precisa ser thread-safe",
+        "Um Dictionary mutável num Singleton sem lock = corrupção/race condition sob concorrência",
+        "Singleton vive tanto quanto a app; guardar dados 'de um usuário' nele vaza entre usuários",
+        "Regra: Singleton só com estado imutável ou com sincronização explícita (lock, ConcurrentDictionary)"
+      ],
+      "checkpoint": "Peça pro aluno explicar por que um campo mutável num Singleton é perigoso sob concorrência",
+      "ref": "06-dotnet-di-lifetimes-repository/teoria.md#5-lifetime-singleton"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "Captured dependency: Scoped dentro de Singleton (o clássico bug)",
+      "pontos": [
+        "Injetar um Scoped (ou Transient) no construtor de um Singleton = 'captured dependency'",
+        "O Singleton é criado uma vez e SEGURA aquela instância pra sempre — o Scoped vira efetivamente Singleton",
+        "Consequência grave: um DbContext (Scoped) fica compartilhado entre TODOS os requests, sem thread-safety, sem Dispose por request",
+        "O validador de escopo do ASP.NET Core (ligado por padrão em Development) detecta e joga InvalidOperationException no startup/resolução",
+        "Correção: injete IServiceScopeFactory no Singleton, crie um escopo por operação (using var scope = ...) e resolva o Scoped ali dentro",
+        "Regra de ouro: a vida de uma dependência nunca pode ser MENOR que a de quem a injeta"
+      ],
+      "checkpoint": "Peça pro aluno explicar por que o Scoped 'vira Singleton' e como o IServiceScopeFactory resolve",
+      "ref": "06-dotnet-di-lifetimes-repository/teoria.md#6-a-armadilha-da-captured-dependency"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "Repository Pattern: abstrair dados, repositório genérico e Unit of Work",
+      "pontos": [
+        "Repository = abstrair o acesso a dados atrás de uma interface (IUserRepository) — o resto do código não conhece o banco",
+        "Motivação: testabilidade (mockar o repo), trocar a fonte de dados, centralizar queries num só lugar",
+        "Repositório genérico: IRepository<T> com Add/Remove/GetById/List — reduz repetição entre entidades",
+        "Unit of Work: coordena vários repositórios numa mesma transação; um SaveChanges commita tudo junto",
+        "Sem UoW, você arrisca salvar metade e falhar a outra; o UoW garante 'tudo ou nada'",
+        "No EF Core, o próprio DbContext já é o Unit of Work e cada DbSet<T> já é um repositório"
+      ],
+      "checkpoint": "Peça pro aluno explicar o papel do Unit of Work e por que ele existe além dos repositórios",
+      "ref": "06-dotnet-di-lifetimes-repository/teoria.md#7-repository-pattern-e-unit-of-work"
+    },
+    {
+      "id": "t8",
+      "fase": "teoria",
+      "titulo": "Crítica: quando NÃO usar Repository (o EF Core já é um)",
+      "pontos": [
+        "O DbContext do EF Core JÁ é um repositório (DbSet<T>) + Unit of Work (SaveChanges) — pôr outro por cima é redundante",
+        "Repositório genérico sobre IQueryable vira 'abstração vazada': ou expõe IQueryable (e vaza EF), ou esconde e você perde poder de query",
+        "Se você retorna IQueryable, o consumidor ainda depende do provider EF — a abstração não abstrai nada",
+        "Se esconde tudo atrás de métodos, precisa criar um método pra cada query (GetActiveUsersOrderedByName...) — explode",
+        "Repository AINDA faz sentido: domínios ricos (DDD), múltiplas fontes, ou pra centralizar queries complexas e testar sem banco",
+        "Resposta sênior: 'depende — não ponho Repository genérico só por reflexo; uso quando abstrair o EF traz valor real, senão uso o DbContext direto'"
+      ],
+      "checkpoint": "Peça pro aluno defender OS DOIS lados: quando Repository ajuda e quando é over-engineering com EF Core",
+      "ref": "06-dotnet-di-lifetimes-repository/teoria.md#8-crítica-quando-não-usar-repository"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Simulação de entrevista — DI, Lifetimes & Repository",
+      "pontos": [
+        "Agora a mesa vira: você é o candidato, eu sou o entrevistador",
+        "Faço as perguntas do pratica.md UMA A UMA e ouço sua resposta antes de comentar",
+        "Depois de cada resposta eu critico: o que faltou, o que estava impreciso, como soar mais sênior",
+        "Foco nos termos exatos (lifetime, escopo, captured dependency, Unit of Work) e nos trade-offs",
+        "Sem pressa: é pra treinar a FALA, não só reconhecer a resposta certa"
+      ],
+      "checkpoint": "Confirme que o aluno quer começar a simulação e conduza pergunta a pergunta, criticando cada resposta",
+      "acao": "Conduzir simulação de entrevista no chat: fazer as perguntas do pratica.md uma a uma, ouvir a resposta do aluno e criticar (o que faltou, como soar mais sênior)",
+      "ref": "06-dotnet-di-lifetimes-repository/pratica.md"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz de fixação — Módulo 06",
+      "pontos": [
+        "10 perguntas de múltipla escolha em estilo entrevista",
+        "Fixa os 3 lifetimes, a captured dependency e Repository/UoW",
+        "Explicação em cada questão pra reforçar o porquê",
+        "Erra sem medo: o objetivo é achar buraco antes da prova"
+      ],
+      "checkpoint": "Depois do quiz, revise com o aluno as questões erradas antes de ir pra prova",
+      "acao": "Rodar: python3 engine/session.py start Entrevista-Angular-DotNet/apps/modulo-06/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do Módulo 06 (aprovação 70%)",
+      "pontos": [
+        "12 questões cobrindo todos os sub-tópicos do módulo",
+        "Feedback por alternativa — entenda por que cada opção está certa ou errada",
+        "Aprovação: 70%",
+        "Se não passar, revisamos os pontos fracos e refazemos"
+      ],
+      "checkpoint": "Confira o resultado; se ficou abaixo de 70%, revise os tópicos fracos antes de fechar o módulo",
+      "acao": "Rodar: python3 engine/session.py start Entrevista-Angular-DotNet/provas/modulo-06/questions.json --id prova"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Recap e próximo módulo",
+      "pontos": [
+        "Recap: DI/IoC/DIP; Transient (nova sempre) / Scoped (por request) / Singleton (app inteira)",
+        "Você sabe explicar a captured dependency e resolver com IServiceScopeFactory",
+        "Você sabe usar E criticar o Repository Pattern — o EF Core já é repo + UoW",
+        "Frase de bolso: 'a vida de uma dependência nunca pode ser menor que a de quem a injeta'",
+        "Próximo: Módulo 07 — Async, Escalabilidade & Idempotência",
+        "Comemore o avanço e alinhe quando retomar"
+      ],
+      "checkpoint": "Feche o módulo, confirme os pontos que ficaram sólidos e combine o início do Módulo 07",
+      "ref": "06-dotnet-di-lifetimes-repository/teoria.md#glossário"
+    }
+  ]
+}

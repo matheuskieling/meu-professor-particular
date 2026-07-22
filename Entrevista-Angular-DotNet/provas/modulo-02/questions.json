@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 02: Angular Signals & Reatividade",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Em uma frase de entrevista, qual é o problema central que Signals resolvem?",
+      "opcoes": [
+        "Deixar o bundle do Angular menor",
+        "Permitir change detection granular em vez da verificação global e imprecisa do Zone.js",
+        "Substituir o TypeScript por reatividade nativa do browser",
+        "Rodar componentes em Web Workers"
+      ],
+      "correta": 1,
+      "explicacao": "Signals rastreiam dependências na leitura, permitindo atualização cirúrgica em vez da change detection global do Zone.js, que reverifica a árvore porque não sabe o que mudou.",
+      "feedbacks": [
+        "Signals não são sobre tamanho de bundle; são sobre reatividade granular e o caminho pro zoneless.",
+        "Correto: o ganho é change detection granular — o Angular sabe exatamente quem dependia do signal que mudou.",
+        "Signals são um modelo de reatividade em TypeScript, não uma API nativa do browser que substitui a linguagem.",
+        "Signals não têm relação com Web Workers; o ponto é granularidade da change detection."
+      ]
+    },
+    {
+      "pergunta": "Como o Zone.js decide reverificar a árvore de componentes?",
+      "opcoes": [
+        "Ele sabe exatamente qual dado mudou e atualiza só o componente afetado",
+        "Ele faz monkey-patch de APIs assíncronas e, quando alguma dispara, reverifica a árvore porque não sabe o que mudou",
+        "Ele observa mutações no DOM diretamente",
+        "Ele só reverifica componentes marcados com signals"
+      ],
+      "correta": 1,
+      "explicacao": "Zone.js faz monkey-patch de eventos, timers, XHR/fetch e Promises. Quando algo dispara, avisa o Angular, que reverifica a árvore (respeitando OnPush) por não saber o que mudou.",
+      "feedbacks": [
+        "Esse é o modelo dos Signals, não do Zone.js — o Zone.js justamente NÃO sabe o que mudou.",
+        "Correto: é por isso que a change detection padrão é global e imprecisa.",
+        "Zone.js não observa mutações do DOM; ele intercepta APIs assíncronas via patch.",
+        "Zone.js é anterior aos Signals e reverifica com base em eventos assíncronos, não em signals."
+      ]
+    },
+    {
+      "pergunta": "Qual é a forma correta de atualizar um objeto dentro de um signal para que a mudança seja detectada?",
+      "opcoes": [
+        "user().nome = 'Ana'",
+        "user.update(u => ({ ...u, nome: 'Ana' }))",
+        "user.mutate(u => u.nome = 'Ana')",
+        "user.value.nome = 'Ana'"
+      ],
+      "correta": 1,
+      "explicacao": "A igualdade padrão é Object.is. É preciso criar uma nova referência (spread) para que o signal detecte a mudança e notifique os consumidores.",
+      "feedbacks": [
+        "Isso muta a mesma referência; Object.is dá true e ninguém é notificado.",
+        "Correto: nova referência via spread faz o signal detectar a mudança.",
+        "mutate() foi removido justamente para reforçar o modelo imutável.",
+        "Signal não tem .value (isso é BehaviorSubject) e mutar não notifica de qualquer forma."
+      ]
+    },
+    {
+      "pergunta": "Qual conjunto de propriedades descreve corretamente um computed()?",
+      "opcoes": [
+        "Gravável, ansioso (eager) e recalcula em todo tick",
+        "Somente-leitura, memoizado, lazy e glitch-free",
+        "Gravável, memoizado e assíncrono",
+        "Somente-leitura, ansioso e sem memoização"
+      ],
+      "correta": 1,
+      "explicacao": "computed é derivado, somente-leitura, memoizado (recalcula só quando uma dependência muda), lazy (só roda quando lido) e glitch-free (nunca expõe estado intermediário).",
+      "feedbacks": [
+        "computed é somente-leitura e lazy, não gravável nem eager a cada tick.",
+        "Correto: essas são exatamente as garantias do computed.",
+        "computed não é gravável nem assíncrono; é síncrono e somente-leitura.",
+        "computed é lazy e memoizado — não é eager e tem cache."
+      ]
+    },
+    {
+      "pergunta": "Um computed derivado de dois signals não recalcula mesmo você chamando .set(). Qual explicação é plausível?",
+      "opcoes": [
+        "computed nunca recalcula depois da primeira leitura",
+        "Você fez set() para o mesmo valor; Object.is dá true e a dependência não é considerada alterada",
+        "computed precisa de allowSignalWrites para recalcular",
+        "Faltou inscrever no computed com subscribe()"
+      ],
+      "correta": 1,
+      "explicacao": "Se o set() atribui um valor igual (Object.is true), o computed considera que a dependência não mudou e mantém o valor memoizado.",
+      "feedbacks": [
+        "computed recalcula sempre que uma dependência realmente muda e é lido.",
+        "Correto: set para o mesmo valor não é considerado mudança (Object.is).",
+        "allowSignalWrites é de effect; não tem relação com recomputo de computed.",
+        "computed é pull; não se inscreve com subscribe — você lê chamando a função."
+      ]
+    },
+    {
+      "pergunta": "Qual destes é o uso ADEQUADO de effect()?",
+      "opcoes": [
+        "Calcular o total do carrinho a partir de preço e quantidade",
+        "Sincronizar o tema atual com o localStorage sempre que ele muda",
+        "Memoizar o resultado de uma transformação cara",
+        "Criar um valor derivado somente-leitura para o template"
+      ],
+      "correta": 1,
+      "explicacao": "effect é para efeitos colaterais reativos, como persistir no localStorage. Derivar/memoizar valores é trabalho do computed.",
+      "feedbacks": [
+        "Total do carrinho é estado derivado — use computed, não effect.",
+        "Correto: sincronizar com localStorage é um efeito colateral legítimo para effect.",
+        "Memoização de valor derivado é computed, não effect.",
+        "Valor derivado somente-leitura é exatamente o que computed faz."
+      ]
+    },
+    {
+      "pergunta": "Sobre quando um effect() roda e como se limpa, o que é correto?",
+      "opcoes": [
+        "Roda síncrono a cada set() de qualquer signal do app",
+        "Roda ao ser criado e depois de forma agendada quando uma dependência muda; onCleanup executa antes da próxima rodada e no destroy",
+        "Só roda uma vez, na criação, e nunca mais",
+        "Precisa de ngOnDestroy manual para não vazar"
+      ],
+      "correta": 1,
+      "explicacao": "effect roda na criação e depois de forma agendada (após a change detection) quando uma dependência lida muda. onCleanup limpa antes da próxima execução e no destroy; criado no injection context, ele se limpa sozinho.",
+      "feedbacks": [
+        "Não é síncrono a cada set; múltiplos sets no mesmo tick coalescem e ele só depende do que ele lê.",
+        "Correto: criação + execução agendada por dependência, com onCleanup no meio e no destroy.",
+        "Ele reexecuta quando suas dependências mudam, não só uma vez.",
+        "No injection context ele se limpa automaticamente; onCleanup cobre o teardown."
+      ]
+    },
+    {
+      "pergunta": "Qual afirmação sobre Signals vs RxJS está correta?",
+      "opcoes": [
+        "Signals são push/assíncronos e RxJS é pull/síncrono",
+        "Signals são pull/síncronos (bons para estado); Observables são push/assíncronos (bons para streams e coordenação no tempo)",
+        "São equivalentes e intercambiáveis em qualquer cenário",
+        "RxJS foi descontinuado em favor de Signals"
+      ],
+      "correta": 1,
+      "explicacao": "Signal responde 'qual o valor agora?' (pull, síncrono); Observable responde 'o que acontece no tempo?' (push, assíncrono, com operadores). Não se substituem.",
+      "feedbacks": [
+        "Está invertido: Signals são pull/síncronos; Observables são push/assíncronos.",
+        "Correto: essa é a distinção-chave e o critério de escolha.",
+        "Não são intercambiáveis — resolvem problemas diferentes (estado vs tempo).",
+        "RxJS não foi descontinuado; continua essencial para o assíncrono."
+      ]
+    },
+    {
+      "pergunta": "Você precisa aplicar debounceTime e switchMap sobre o valor de um signal de busca. Como fazer a interop?",
+      "opcoes": [
+        "Envolver o signal em um effect e chamar HTTP direto",
+        "toObservable(termo).pipe(debounceTime(300), switchMap(t => api.buscar(t)))",
+        "Signals já têm debounceTime nativo",
+        "Converter com toSignal e depois aplicar os operadores no signal"
+      ],
+      "correta": 1,
+      "explicacao": "toObservable transforma o signal em stream para você aplicar operadores RxJS. Signals não têm operadores próprios; o tempo é território do RxJS.",
+      "feedbacks": [
+        "Fazer debounce/switch dentro de effect é reinventar mal o RxJS; use toObservable.",
+        "Correto: toObservable dá acesso aos operadores RxJS sobre o signal.",
+        "Signals não têm debounceTime — precisam do RxJS via interop.",
+        "toSignal vai no sentido oposto (Observable → Signal) e signals não têm esses operadores."
+      ]
+    },
+    {
+      "pergunta": "Sobre signal inputs em componentes, o que é verdade?",
+      "opcoes": [
+        "input() cria um input gravável no componente filho",
+        "input() cria um input como signal read-only; input.required<T>() exige o valor e você reage com computed/effect sem ngOnChanges",
+        "input() só funciona com ChangeDetectorRef manual",
+        "model() é apenas um alias de output()"
+      ],
+      "correta": 1,
+      "explicacao": "input() cria input como signal read-only no filho; input.required para obrigatório. Combina com computed/effect, dispensando ngOnChanges. model() é two-way (input + output).",
+      "feedbacks": [
+        "Signal input é read-only no filho; ele não é gravável lá.",
+        "Correto: read-only, required opcional e reatividade sem ngOnChanges.",
+        "Signal inputs marcam o componente pra checagem; não exigem ChangeDetectorRef manual.",
+        "model() é two-way (input + output), não um alias de output()."
+      ]
+    },
+    {
+      "pergunta": "Como Signals se relacionam com o modo zoneless e com OnPush?",
+      "opcoes": [
+        "Zoneless desativa Signals; OnPush é incompatível com signals",
+        "Sem Zone.js, a mudança de signal vira o gatilho da atualização; ler signal no template marca o componente pra checagem, casando com OnPush",
+        "Zoneless só funciona sem OnPush e sem Signals",
+        "Signals impedem o uso de OnPush no componente"
+      ],
+      "correta": 1,
+      "explicacao": "Em zoneless (provideExperimentalZonelessChangeDetection), a mudança de signal dispara a atualização. Ler signal no template marca o componente pra checar, o que combina perfeitamente com OnPush.",
+      "feedbacks": [
+        "Ao contrário: zoneless depende de Signals e OnPush combina com eles.",
+        "Correto: Signals são o gatilho da atualização em zoneless e casam com OnPush.",
+        "Zoneless é justamente potencializado por Signals e OnPush.",
+        "Signals e OnPush se reforçam; não há impedimento."
+      ]
+    },
+    {
+      "pergunta": "Com Signals no projeto, qual afirmação sobre unsubscribe está correta?",
+      "opcoes": [
+        "Signals eliminam qualquer necessidade de unsubscribe, inclusive para WebSocket via RxJS",
+        "Signals não têm subscription, mas streams RxJS de vida longa ainda vazam se não desinscritos; prefira async pipe ou takeUntilDestroyed",
+        "Toda request HTTP vaza memória se você não chamar unsubscribe",
+        "async pipe exige unsubscribe manual no ngOnDestroy"
+      ],
+      "correta": 1,
+      "explicacao": "Signals não têm subscription, então não vazam. Mas RxJS segue no jogo: streams de vida longa (WebSocket, interval) vazam sem unsubscribe. async pipe e takeUntilDestroyed resolvem automaticamente; HTTP pontual completa e não vaza.",
+      "feedbacks": [
+        "WebSocket é stream de vida longa em RxJS e ainda exige gerência de subscription.",
+        "Correto: use async pipe/takeUntilDestroyed; o risco real é stream de vida longa.",
+        "Request HTTP completa após 1 emissão, então não vaza mesmo sem unsubscribe.",
+        "async pipe desinscreve sozinho com o ciclo de vida do template."
+      ]
+    }
+  ]
+}

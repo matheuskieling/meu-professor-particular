@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 06 — .NET: DI, Lifetimes & Repository",
+  "questoes": [
+    {
+      "pergunta": "Qual é a diferença correta entre IoC, DI e DIP?",
+      "opcoes": [
+        "São três nomes para exatamente a mesma coisa",
+        "IoC é o conceito, DI é a técnica de aplicá-lo e DIP é o princípio SOLID de depender de abstrações",
+        "DI é o conceito, IoC é a técnica e DIP é um framework",
+        "DIP é o conceito, DI é o princípio e IoC é a técnica"
+      ],
+      "correta": 1,
+      "explicacao": "IoC é o conceito guarda-chuva (inverter o controle pro framework); DI é uma técnica de IoC (injetar dependências de fora); DIP é o 'D' do SOLID — depender de abstrações, não de concretos."
+    },
+    {
+      "pergunta": "Você registra um serviço com AddTransient. O que isso garante?",
+      "opcoes": [
+        "Uma instância por request HTTP",
+        "Uma única instância para toda a aplicação",
+        "Uma instância nova a cada vez que o serviço é resolvido",
+        "Que o serviço será descartado só no fim da aplicação"
+      ],
+      "correta": 2,
+      "explicacao": "Transient cria uma instância nova a cada resolução. Ideal para serviços leves, sem estado e baratos de criar."
+    },
+    {
+      "pergunta": "No ASP.NET Core, o que define o tempo de vida de um serviço Scoped?",
+      "opcoes": [
+        "Cada chamada de método do serviço",
+        "Cada instância da classe que o consome",
+        "Cada escopo — em web, cada request HTTP",
+        "Toda a aplicação, como um Singleton"
+      ],
+      "correta": 2,
+      "explicacao": "Scoped é uma instância por escopo (IServiceScope). O ASP.NET Core abre um escopo por request HTTP, então é uma instância por request, compartilhada entre os serviços daquele request."
+    },
+    {
+      "pergunta": "Por que o DbContext do EF Core é registrado como Scoped por padrão?",
+      "opcoes": [
+        "Porque ele é thread-safe e pode ser compartilhado por toda a app",
+        "Porque não é thread-safe e o change tracker representa a unidade de trabalho de um request",
+        "Porque criar um DbContext é caríssimo e precisa ser reutilizado por toda a aplicação",
+        "Porque o EF Core exige que todo serviço de dados seja Transient"
+      ],
+      "correta": 1,
+      "explicacao": "O DbContext não é thread-safe e seu change tracker representa uma unidade de trabalho. Um request = uma unidade de trabalho, por isso um DbContext por request (Scoped)."
+    },
+    {
+      "pergunta": "O que caracteriza um serviço Singleton?",
+      "opcoes": [
+        "Uma instância nova a cada injeção",
+        "Uma instância por request HTTP",
+        "Uma única instância para toda a aplicação, compartilhada entre requests e threads",
+        "Uma instância por thread"
+      ],
+      "correta": 2,
+      "explicacao": "Singleton é uma única instância para toda a app, reutilizada em todos os requests e threads. Por isso exige thread-safety em qualquer estado mutável."
+    },
+    {
+      "pergunta": "Qual o principal risco de um Singleton com um Dictionary mutável sendo escrito em vários requests?",
+      "opcoes": [
+        "Nenhum — o container serializa o acesso automaticamente",
+        "Race condition / corrupção de estado, porque a instância é compartilhada entre threads sem sincronização",
+        "O Dictionary é recriado a cada request, perdendo dados",
+        "O serviço vira Scoped automaticamente"
+      ],
+      "correta": 1,
+      "explicacao": "A mesma instância é usada por várias threads simultâneas. Estado mutável sem lock ou coleção concorrente (ex.: ConcurrentDictionary) causa race condition e corrupção."
+    },
+    {
+      "pergunta": "O que é uma 'captured dependency'?",
+      "opcoes": [
+        "Injetar um Singleton dentro de um Scoped",
+        "Injetar um Scoped (ou Transient) no construtor de um Singleton, fazendo-o virar efetivamente Singleton",
+        "Usar GetRequiredService em vez de constructor injection",
+        "Registrar o mesmo serviço com dois lifetimes diferentes"
+      ],
+      "correta": 1,
+      "explicacao": "O Singleton é criado uma vez e segura a dependência pra sempre; o Scoped é resolvido uma única vez e para de respeitar seu lifetime, virando efetivamente Singleton."
+    },
+    {
+      "pergunta": "Como corrigir corretamente a captured dependency de um Scoped dentro de um Singleton?",
+      "opcoes": [
+        "Registrar o Scoped como Singleton também",
+        "Injetar IServiceProvider e resolver o Scoped direto na raiz",
+        "Injetar IServiceScopeFactory e criar um escopo por operação (using var scope = ...), resolvendo o Scoped dentro dele",
+        "Marcar o método com [ThreadSafe]"
+      ],
+      "correta": 2,
+      "explicacao": "Injetar IServiceScopeFactory e criar um escopo por operação faz o Scoped viver só o tempo daquela operação, com Dispose ao final. Resolver na raiz do provider ainda captura."
+    },
+    {
+      "pergunta": "Qual afirmação sobre o Repository Pattern e o Unit of Work está correta?",
+      "opcoes": [
+        "Repository coordena a transação; Unit of Work abstrai a coleção de entidades",
+        "Repository abstrai o acesso a dados atrás de uma interface; Unit of Work coordena vários repositórios numa transação (um SaveChanges)",
+        "São sinônimos e sempre a mesma classe",
+        "Unit of Work substitui o Repository e o torna desnecessário"
+      ],
+      "correta": 1,
+      "explicacao": "Repository abstrai o acesso a dados atrás de uma interface. Unit of Work coordena vários repositórios numa mesma transação, garantindo atomicidade (tudo ou nada) com um SaveChanges."
+    },
+    {
+      "pergunta": "Sobre usar Repository genérico com EF Core, qual é a crítica mais madura para uma entrevista?",
+      "opcoes": [
+        "Sempre use Repository — é boa prática universal e obrigatória com EF Core",
+        "O DbContext já é repositório (DbSets) + Unit of Work (SaveChanges); um IRepository<T> genérico costuma ser redundante e vira abstração vazada, útil só em casos específicos (DDD, múltiplas fontes)",
+        "Repository é sempre proibido com EF Core",
+        "Repository só serve para melhorar a performance das queries"
+      ],
+      "correta": 1,
+      "explicacao": "O DbContext já implementa repositório + Unit of Work. Um Repository genérico por cima frequentemente é redundante e vaza a abstração (IQueryable). Vale quando fala a linguagem do domínio, há múltiplas fontes, ou centraliza queries complexas."
+    }
+  ]
+}

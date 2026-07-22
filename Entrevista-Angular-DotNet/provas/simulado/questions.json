@@ -1,0 +1,346 @@
+{
+  "titulo": "SIMULADO GERAL — Entrevista Angular + .NET",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "O entrevistador pergunta: por que você não deveria fazer uma chamada HTTP no constructor de um componente Angular, e sim no ngOnInit?",
+      "opcoes": [
+        "Porque no constructor os @Input ainda não foram setados e ele deveria só fazer DI, dificultando testes se contiver I/O",
+        "Porque o constructor não pode conter código assíncrono em TypeScript",
+        "Porque o ngOnInit roda antes do constructor, garantindo os dados prontos",
+        "Porque o constructor roda uma vez por ciclo de change detection"
+      ],
+      "correta": 0,
+      "explicacao": "O constructor deve apenas resolver a injeção de dependência e init trivial. No momento do constructor os @Input ainda não chegaram; eles só estão disponíveis a partir do ngOnInit (e do ngOnChanges). Fazer I/O ali acopla e dificulta testes.",
+      "feedbacks": [
+        "Correto: no constructor os @Input não estão prontos; ele é para DI. HTTP ali roda cedo demais e prejudica a testabilidade.",
+        "O constructor até pode chamar métodos async, o problema não é sintático — é semântico: os inputs ainda não chegaram.",
+        "Invertido: o constructor roda ANTES do ngOnInit, não o contrário.",
+        "O constructor roda uma vez por instância do componente, não por ciclo de change detection."
+      ]
+    },
+    {
+      "pergunta": "Com ChangeDetectionStrategy.OnPush, você faz this.itens.push(novoItem) e a lista não atualiza na tela. Por quê?",
+      "opcoes": [
+        "OnPush desativa completamente a change detection do componente",
+        "push() muta o array sem trocar a referência, e OnPush só reage a mudança de referência de @Input, evento local ou async pipe",
+        "Arrays não são suportados com OnPush, apenas objetos",
+        "É necessário chamar ngOnInit novamente após o push()"
+      ],
+      "correta": 1,
+      "explicacao": "OnPush exige imutabilidade: só dispara com nova REFERÊNCIA de @Input, evento originado no componente ou async pipe emitindo. push() mantém a mesma referência do array, então o componente é pulado. A correção é criar um novo array: this.itens = [...this.itens, novoItem].",
+      "feedbacks": [
+        "OnPush não desativa a change detection — apenas restringe QUANDO ela roda para o componente.",
+        "Isso mesmo: push() muta sem trocar referência; com OnPush você precisa de [...this.itens, novoItem] ou markForCheck().",
+        "Arrays funcionam normalmente com OnPush — o problema é a mutação sem troca de referência.",
+        "ngOnInit roda uma única vez; não é isso que dispara a checagem."
+      ]
+    },
+    {
+      "pergunta": "Numa entrevista Angular, qual é a diferença central entre um signal e um Observable do RxJS?",
+      "opcoes": [
+        "Signal sempre tem um valor atual e é lido de forma síncrona (pull); Observable é um fluxo de eventos ao longo do tempo (push) e pode não ter valor até emitir",
+        "Signal é assíncrono e pull-based; Observable é síncrono e push-based",
+        "São idênticos; signal é só um alias moderno para BehaviorSubject",
+        "Observable não pode ser cancelado, enquanto signal precisa de unsubscribe manual"
+      ],
+      "correta": 0,
+      "explicacao": "Um signal é um contêiner reativo síncrono que SEMPRE tem um valor atual e é lido chamando signal() (pull). Um Observable modela um fluxo de valores ao longo do tempo (push), é lazy e pode não emitir nada até você se inscrever. Signals brilham em estado; RxJS brilha em eventos/composição assíncrona.",
+      "feedbacks": [
+        "Correto: signal tem valor atual e leitura síncrona (pull); Observable é fluxo assíncrono de eventos (push).",
+        "Trocado: signal é síncrono e pull-based; Observable é o push-based ao longo do tempo.",
+        "Não são idênticos: um BehaviorSubject é push e exige subscribe; signal é pull e não precisa de subscribe.",
+        "É o contrário quanto a limpeza: signal não precisa de unsubscribe; subscriptions de Observable é que podem vazar."
+      ]
+    },
+    {
+      "pergunta": "O que um computed() do Angular faz e qual sua principal vantagem?",
+      "opcoes": [
+        "Executa um efeito colateral toda vez que um signal muda",
+        "Deriva um valor a partir de outros signals, recalculando de forma lazy e memoizada só quando uma dependência muda",
+        "Converte um Observable em signal automaticamente",
+        "Força a change detection global a cada leitura"
+      ],
+      "correta": 1,
+      "explicacao": "computed() cria um signal derivado: seu valor é calculado a partir de outros signals que ele lê. É lazy (só recalcula quando lido após uma dependência mudar) e memoizado (cacheia o resultado enquanto as dependências não mudam). Efeitos colaterais ficam no effect(), não no computed().",
+      "feedbacks": [
+        "Isso descreve o effect(), não o computed(). computed é para derivar VALORES, sem efeito colateral.",
+        "Correto: computed deriva valor de outros signals, com recálculo lazy e memoizado.",
+        "Quem converte Observable em signal é o toSignal(), não o computed().",
+        "computed não força change detection global — ele apenas recalcula seu próprio valor quando necessário."
+      ]
+    },
+    {
+      "pergunta": "Como o lazy loading de rotas com loadChildren/loadComponent melhora a aplicação Angular?",
+      "opcoes": [
+        "Ele carrega todos os módulos de uma vez, mas em ordem alfabética",
+        "Ele desativa a change detection nas rotas não visitadas",
+        "Ele divide o bundle: o código da rota só é baixado quando o usuário navega até ela, reduzindo o bundle inicial",
+        "Ele pré-renderiza todas as rotas no servidor obrigatoriamente"
+      ],
+      "correta": 2,
+      "explicacao": "Lazy loading faz code splitting: o chunk daquela rota só é baixado no momento em que o usuário navega até ela. Isso reduz o bundle inicial e acelera o primeiro carregamento. Em Angular moderno usa-se loadComponent (standalone) ou loadChildren.",
+      "feedbacks": [
+        "O oposto de lazy: ele NÃO carrega tudo de uma vez — carrega sob demanda.",
+        "Lazy loading é sobre carregamento de código, não sobre desligar change detection.",
+        "Correto: o chunk da rota só é baixado ao navegar, encolhendo o bundle inicial.",
+        "Pré-render no servidor é SSR/prerender, um recurso diferente e não obrigatório."
+      ]
+    },
+    {
+      "pergunta": "Você precisa injetar um token de autenticação em toda requisição HTTP saindo do app Angular. Qual mecanismo é o mais adequado?",
+      "opcoes": [
+        "Um resolver que roda antes de cada rota",
+        "Um guard CanActivate em todas as rotas",
+        "Um effect() global que observa o estado de login",
+        "Um HTTP interceptor, que intercepta requests/responses e pode clonar a request adicionando o header Authorization"
+      ],
+      "correta": 3,
+      "explicacao": "HTTP interceptors interceptam todas as requisições e respostas de HttpClient. Como HttpRequest é imutável, você clona a request adicionando o header (req.clone({ setHeaders: { Authorization: ... } })). É o lugar canônico para auth, logging, retry e tratamento centralizado de erro.",
+      "feedbacks": [
+        "Resolver serve para pré-carregar dados de uma rota, não para modificar requisições HTTP.",
+        "Guard controla acesso a rotas (CanActivate), não headers de HTTP.",
+        "effect() reage a signals; não intercepta requisições de HttpClient.",
+        "Correto: interceptor é o ponto central; clona a request imutável para adicionar o header Authorization."
+      ]
+    },
+    {
+      "pergunta": "Sobre guards e resolvers no Angular Router, qual afirmação está correta?",
+      "opcoes": [
+        "Guard (ex.: CanActivate) decide se a navegação prossegue; resolver pré-carrega dados antes de ativar a rota",
+        "Resolver decide se a rota pode ser ativada; guard busca os dados da rota",
+        "Ambos servem apenas para lazy loading e não têm outra função",
+        "Guard e resolver rodam sempre depois que o componente já foi instanciado"
+      ],
+      "correta": 0,
+      "explicacao": "Guards (CanActivate, CanDeactivate, CanMatch) autorizam ou bloqueiam a navegação. Resolvers buscam dados ANTES de a rota ser ativada, entregando-os prontos ao componente via ActivatedRoute. Ambos rodam antes de o componente da rota ser exibido.",
+      "feedbacks": [
+        "Correto: guard autoriza a navegação; resolver pré-carrega os dados antes da ativação.",
+        "Invertido: guard é quem decide a ativação; resolver é quem busca os dados.",
+        "Nenhum dos dois é sobre lazy loading — guards autorizam e resolvers pré-carregam dados.",
+        "Ambos rodam ANTES de o componente ser exibido, não depois."
+      ]
+    },
+    {
+      "pergunta": "Um colega afirma que 'zoneless no Angular significa que a aplicação não tem mais change detection'. O que você corrige?",
+      "opcoes": [
+        "Ele está certo: sem Zone.js não há change detection",
+        "Zoneless remove o Zone.js (que dizia QUANDO checar via monkey-patch); a change detection continua, mas é acionada por signals, eventos e async pipe",
+        "Zoneless só funciona com NgModules, não com componentes standalone",
+        "Zoneless desativa o RxJS na aplicação inteira"
+      ],
+      "correta": 1,
+      "explicacao": "Zone.js apenas AVISA o Angular de que algo pode ter mudado (monkey-patch de APIs async). Zoneless dispensa esse aviso automático; a change detection continua existindo, mas passa a ser disparada por signals, eventos de template e async pipe. Isso reduz overhead e checagens desnecessárias.",
+      "feedbacks": [
+        "Incorreto: a change detection permanece; o que sai é o Zone.js, que apenas sinalizava quando checar.",
+        "Correto: sem Zone.js, a checagem passa a ser acionada por signals, eventos e async pipe.",
+        "Zoneless não depende de NgModules; combina muito bem com standalone e signals.",
+        "Zoneless não tem relação com desligar RxJS — são coisas independentes."
+      ]
+    },
+    {
+      "pergunta": "Numa entrevista .NET, qual é a distinção correta entre .NET Framework, .NET Core e .NET 8?",
+      "opcoes": [
+        ".NET Framework é multiplataforma e open source; .NET 8 só roda no Windows",
+        "São três nomes para exatamente o mesmo runtime",
+        ".NET Framework é Windows-only e legado; .NET Core foi a reescrita multiplataforma e open source; .NET 5+ (incluindo .NET 8) é a evolução unificada do Core",
+        ".NET 8 é uma versão do .NET Framework 4.x"
+      ],
+      "correta": 2,
+      "explicacao": ".NET Framework (até 4.8) é Windows-only e em modo de manutenção. .NET Core foi a reescrita cross-platform, open source e modular. A partir do .NET 5 o nome virou só '.NET', unificando a plataforma — .NET 8 é a linha atual (LTS), multiplataforma e sucessora do Core.",
+      "feedbacks": [
+        "Trocado: quem é Windows-only e legado é o Framework; .NET 8 é multiplataforma.",
+        "São runtimes distintos com histórias diferentes, não o mesmo.",
+        "Correto: Framework é Windows/legado, Core foi a reescrita cross-platform, e .NET 5+/.NET 8 unificam essa evolução.",
+        ".NET 8 é a linha moderna unificada, não uma versão do Framework 4.x."
+      ]
+    },
+    {
+      "pergunta": "O que acontece na CLR quando seu código C# passa de IL para código nativo?",
+      "opcoes": [
+        "O compilador C# gera diretamente código de máquina, sem IL",
+        "O compilador gera IL (bytecode independente de plataforma), e o JIT da CLR compila o IL para código nativo em tempo de execução",
+        "A IL é interpretada linha a linha para sempre, nunca virando nativo",
+        "O GC converte a IL em código nativo durante a coleta"
+      ],
+      "correta": 1,
+      "explicacao": "O compilador C# (Roslyn) gera IL (Intermediate Language), um bytecode independente de plataforma. Em tempo de execução, o JIT (Just-In-Time) da CLR traduz o IL para código nativo da máquina, tipicamente método a método na primeira chamada. (Há também AOT, que compila antecipadamente.)",
+      "feedbacks": [
+        "O compilador C# gera IL, não código nativo direto — o passo nativo é do JIT.",
+        "Correto: C# vira IL; o JIT da CLR compila esse IL para nativo em runtime.",
+        "A IL não é interpretada para sempre — o JIT a compila para nativo.",
+        "O GC gerencia memória; não tem papel nenhum em compilar IL."
+      ]
+    },
+    {
+      "pergunta": "O entrevistador pergunta: o que é boxing em .NET e por que ele custa caro?",
+      "opcoes": [
+        "É converter uma string em número; custa por alocar memória",
+        "É liberar memória da stack manualmente",
+        "É o processo do JIT compilar um método pela primeira vez",
+        "É empacotar um value type (ex.: int) num object na heap, criando uma alocação e cópia; em laços quentes gera pressão no GC"
+      ],
+      "correta": 3,
+      "explicacao": "Boxing envolve um value type (int, struct) dentro de um object alocado na heap, exigindo alocação e cópia; unboxing faz o caminho de volta. Em código quente, boxing repetido gera lixo na heap e pressão no GC. Generics e Span<T> ajudam a evitá-lo.",
+      "feedbacks": [
+        "Isso é parsing/conversão de string, não boxing.",
+        "Boxing não libera stack; ele ALOCA na heap.",
+        "Compilar método pela primeira vez é papel do JIT, não boxing.",
+        "Correto: boxing coloca um value type na heap como object — alocação + cópia, e pressão no GC em laços."
+      ]
+    },
+    {
+      "pergunta": "Sobre as gerações do Garbage Collector do .NET, qual afirmação é correta?",
+      "opcoes": [
+        "O GC sempre coleta as três gerações juntas em toda coleta",
+        "Gen 2 é coletada com mais frequência que Gen 0",
+        "Objetos nascem na Gen 0; coletas de Gen 0 são frequentes e baratas, e quem sobrevive é promovido para Gen 1 e depois Gen 2",
+        "A LOH (Large Object Heap) é coletada junto com toda coleta de Gen 0"
+      ],
+      "correta": 2,
+      "explicacao": "O GC é geracional: objetos novos nascem em Gen 0, onde as coletas são frequentes e baratas (a maioria dos objetos morre jovem). Sobreviventes sobem para Gen 1 e, depois, Gen 2 (objetos de vida longa). A LOH (objetos grandes, >= 85 KB) é coletada junto com Gen 2, não a cada Gen 0.",
+      "feedbacks": [
+        "Nem sempre: coletas de Gen 0 são as mais comuns; coletar tudo (full GC / Gen 2) é mais raro e caro.",
+        "É o contrário: Gen 0 é coletada com muito mais frequência que Gen 2.",
+        "Correto: Gen 0 é barata e frequente; sobreviventes são promovidos a Gen 1 e Gen 2.",
+        "A LOH é coletada junto com Gen 2 (full GC), não a cada coleta de Gen 0."
+      ]
+    },
+    {
+      "pergunta": "Qual destes é uma causa clássica de memory leak em .NET, mesmo com o GC gerenciando a memória?",
+      "opcoes": [
+        "Usar variáveis locais dentro de um método",
+        "Um objeto de vida longa (ou static/evento) que mantém referência a objetos que já deveriam morrer, impedindo sua coleta",
+        "Alocar objetos na Gen 0",
+        "Usar generics em vez de object"
+      ],
+      "correta": 1,
+      "explicacao": "O GC coleta o que está inalcançável. Um leak ocorre quando algo de vida longa (uma coleção static, um event handler não removido, um cache) segura referências a objetos que já não são necessários, mantendo-os vivos. Não remover handlers de eventos é o caso mais famoso.",
+      "feedbacks": [
+        "Variáveis locais saem de escopo e viram elegíveis à coleta — não vazam.",
+        "Correto: referências presas em static/eventos/caches de vida longa impedem a coleta e causam o leak.",
+        "Alocar em Gen 0 é o fluxo normal; não é leak.",
+        "Generics ajudam (evitam boxing); não causam leak."
+      ]
+    },
+    {
+      "pergunta": "Qual a diferença entre implementar IDisposable e depender apenas de um finalizer (destrutor) em C#?",
+      "opcoes": [
+        "Finalizer libera recursos de forma determinística; IDisposable é não determinístico",
+        "São a mesma coisa; o compilador gera um a partir do outro",
+        "Finalizers aceleram a coleta dos objetos que os possuem",
+        "IDisposable (com using/Dispose) é liberação determinística chamada pelo dev; o finalizer é chamado pelo GC de forma não determinística e só deve existir para recursos não gerenciados como rede de segurança"
+      ],
+      "correta": 3,
+      "explicacao": "Dispose (via using) é chamado por você, de forma determinística, liberando recursos assim que não são mais necessários. O finalizer é executado pelo GC em momento imprevisível e adiciona custo (o objeto sobrevive a uma coleta extra). Use finalizer só para recursos não gerenciados, como rede de segurança, e chame GC.SuppressFinalize no Dispose.",
+      "feedbacks": [
+        "Invertido: quem é determinístico é o Dispose; o finalizer é que é não determinístico.",
+        "Não são a mesma coisa e o compilador não gera um do outro.",
+        "Finalizers ATRASAM a coleta — o objeto precisa de uma coleta extra após rodar o finalizer.",
+        "Correto: Dispose é determinístico (você chama); finalizer é do GC, não determinístico e só como rede de segurança."
+      ]
+    },
+    {
+      "pergunta": "Quando você usaria IAsyncDisposable e await using em vez de IDisposable?",
+      "opcoes": [
+        "Sempre, pois IAsyncDisposable substituiu IDisposable no .NET 8",
+        "Quando a limpeza do recurso envolve trabalho assíncrono (ex.: descarregar buffers em rede/stream), permitindo await na liberação sem bloquear a thread",
+        "Apenas em aplicações console, nunca em ASP.NET",
+        "Somente quando o objeto não tem recursos não gerenciados"
+      ],
+      "correta": 1,
+      "explicacao": "IAsyncDisposable (com await using) existe para quando o descarte precisa fazer I/O assíncrono — por exemplo, dar flush de um stream de rede antes de fechar. Ele complementa IDisposable, não o substitui: um tipo pode implementar os dois. O await using aguarda a limpeza sem bloquear a thread.",
+      "feedbacks": [
+        "Não substituiu: IDisposable continua sendo o padrão para limpeza síncrona.",
+        "Correto: use IAsyncDisposable quando a liberação exige trabalho assíncrono (I/O), com await using.",
+        "Nada impede seu uso em ASP.NET — é comum ali com streams e conexões.",
+        "Não é sobre ter ou não recursos não gerenciados; é sobre a limpeza ser assíncrona."
+      ]
+    },
+    {
+      "pergunta": "No DI do ASP.NET Core, qual a diferença entre Singleton, Scoped e Transient?",
+      "opcoes": [
+        "Singleton cria uma instância por request; Scoped, uma por app; Transient, uma por aplicação",
+        "Todos criam uma nova instância por request",
+        "Singleton: uma instância para toda a aplicação; Scoped: uma por request (escopo); Transient: uma nova a cada resolução",
+        "Transient é o único que vive por toda a aplicação"
+      ],
+      "correta": 2,
+      "explicacao": "Transient entrega uma instância nova a cada vez que é resolvido. Scoped entrega uma instância por escopo — em ASP.NET Core, tipicamente uma por requisição HTTP. Singleton entrega a mesma instância durante toda a vida da aplicação. Escolher o lifetime errado gera bugs sutis de estado compartilhado.",
+      "feedbacks": [
+        "Definições trocadas: Singleton é por aplicação, Scoped por request.",
+        "Não: só o Scoped é por request; Transient é a cada resolução e Singleton é único.",
+        "Correto: Singleton (app inteira), Scoped (por request/escopo), Transient (nova a cada resolução).",
+        "Transient é justamente o de vida mais curta (nova a cada resolução), não o de vida longa."
+      ]
+    },
+    {
+      "pergunta": "O entrevistador pergunta sobre 'captured dependency': o que acontece se você injetar um serviço Scoped dentro de um Singleton?",
+      "opcoes": [
+        "Nada de errado; o Scoped se torna Transient automaticamente",
+        "O Singleton captura a instância Scoped resolvida na criação e passa a usá-la para sempre, furando o ciclo de vida do Scoped (e o container pode até lançar erro em modo de validação)",
+        "O Scoped vira Singleton e o app fica mais rápido",
+        "O container recria o Singleton a cada request para compensar"
+      ],
+      "correta": 1,
+      "explicacao": "Um Singleton vive para sempre; se ele recebe um Scoped injetado, guarda aquela instância criada uma única vez e nunca mais respeita o escopo por request. Isso vaza estado entre requests. Por isso o ASP.NET Core, com validação de escopo ligada, lança exceção ao detectar essa captura. A solução é injetar IServiceProvider/IServiceScopeFactory e criar o escopo na hora.",
+      "feedbacks": [
+        "Não há conversão mágica; o Scoped fica preso à instância capturada pelo Singleton.",
+        "Correto: o Singleton captura o Scoped na criação e o usa para sempre, furando o escopo — e o container valida contra isso.",
+        "O Scoped não vira Singleton por vontade própria; o problema é o vazamento de estado.",
+        "O container não recria o Singleton por request — ele é único por definição."
+      ]
+    },
+    {
+      "pergunta": "Sobre o Repository Pattern numa entrevista .NET, qual afirmação é a mais precisa?",
+      "opcoes": [
+        "Repository sempre deve ser usado, pois o EF Core não é testável sem ele",
+        "Unit of Work e Repository são a mesma coisa com nomes diferentes",
+        "Repository abstrai o acesso a dados atrás de uma interface; o Unit of Work coordena o commit de várias operações numa transação. Como o DbContext do EF Core já é UoW + repositórios, envolvê-lo pode ser redundante",
+        "Repository serve para gerar as migrations do banco"
+      ],
+      "correta": 2,
+      "explicacao": "O Repository abstrai a fonte de dados atrás de uma interface (facilita troca e testes). O Unit of Work agrupa operações e faz commit atômico. Uma nuance de sênior: o DbContext do EF Core JÁ implementa UoW (SaveChanges) e DbSet já é um repositório, então envolvê-lo em outra camada de repositório muitas vezes é redundante — use quando agregar valor real.",
+      "feedbacks": [
+        "O EF Core é testável (InMemory, mocks de DbSet) sem repositório; 'sempre usar' é exagero.",
+        "São conceitos distintos: Repository é acesso a dados; UoW é coordenação transacional.",
+        "Correto: Repository abstrai dados, UoW coordena o commit — e o DbContext já é UoW+repositório, o que pode tornar a camada extra redundante.",
+        "Migrations são geradas por ferramentas do EF Core, não pelo Repository."
+      ]
+    },
+    {
+      "pergunta": "Você usa async/await numa Web API .NET. O que async/await realmente melhora em termos de escalabilidade?",
+      "opcoes": [
+        "Deixa cada request individual mais rápido, pois roda em paralelo em vários núcleos",
+        "Cria uma nova thread dedicada por request, garantindo isolamento",
+        "Elimina a necessidade de banco de dados",
+        "Enquanto uma operação de I/O está pendente, a thread do thread pool é liberada para atender outras requests, aumentando o throughput sob carga"
+      ],
+      "correta": 3,
+      "explicacao": "async/await não torna uma request individual mais rápida; ele melhora o throughput. Ao dar await em I/O (banco, HTTP, disco), a thread do thread pool é devolvida ao pool e pode servir outras requisições enquanto o I/O não termina. Assim o servidor atende mais requests concorrentes com menos threads.",
+      "feedbacks": [
+        "async/await não acelera a request individual nem é sobre paralelismo de CPU — é sobre liberar a thread durante o I/O.",
+        "É o oposto: async EVITA prender/criar uma thread por request durante o I/O.",
+        "Não tem relação com dispensar banco de dados.",
+        "Correto: durante o I/O pendente a thread volta ao pool e atende outras requests, elevando o throughput."
+      ]
+    },
+    {
+      "pergunta": "O entrevistador pergunta por que idempotência importa numa API que precisa escalar horizontalmente e ser resiliente a retries.",
+      "opcoes": [
+        "Porque idempotência torna a API mais rápida ao cachear respostas",
+        "Porque com retries e várias instâncias, a mesma request pode chegar duas vezes; uma operação idempotente produz o mesmo resultado se repetida, evitando efeitos duplicados (ex.: cobrar duas vezes)",
+        "Porque idempotência é obrigatória em toda requisição GET e nada mais",
+        "Porque só APIs stateful podem ser idempotentes"
+      ],
+      "correta": 1,
+      "explicacao": "Em sistemas distribuídos com retries, timeouts e balanceamento entre instâncias, a mesma requisição pode ser entregue mais de uma vez. Uma operação idempotente entrega o mesmo resultado quando repetida, sem duplicar efeitos colaterais (ex.: não cobrar o cartão duas vezes). Costuma-se garantir isso com uma idempotency key. GET/PUT/DELETE tendem a ser idempotentes; POST costuma precisar da chave.",
+      "feedbacks": [
+        "Idempotência não é sobre velocidade/cache; é sobre repetir a operação sem efeito duplicado.",
+        "Correto: com retries e várias instâncias, repetir a request não pode duplicar o efeito — é o papel da idempotência.",
+        "GET é naturalmente idempotente, mas o conceito vale para outros verbos (PUT, DELETE) e POST com chave.",
+        "Idempotência não depende de ser stateful; aliás combina justamente com serviços stateless que escalam."
+      ]
+    }
+  ]
+}

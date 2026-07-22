@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 03: Angular Router, Lazy Loading, DI & Interceptors",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "O entrevistador pergunta: 'Como você registra as rotas numa app standalone do Angular 17+ e onde a rota ativa é renderizada?' Qual resposta está correta?",
+      "opcoes": [
+        "Com RouterModule.forRoot(routes) num NgModule; a rota renderiza no <ng-content>",
+        "Com provideRouter(routes) no bootstrap; a rota ativa renderiza no <router-outlet>",
+        "Com provideHttpClient(routes); a rota renderiza no <router-link>",
+        "Com bootstrapApplication(routes); a rota renderiza automaticamente no <app-root>"
+      ],
+      "correta": 1,
+      "explicacao": "No standalone, registra-se com provideRouter(routes) nos providers do bootstrapApplication, e a rota ativa é renderizada no <router-outlet>.",
+      "feedbacks": [
+        "Essa é a forma ANTIGA (NgModule). No standalone usa-se provideRouter, e <ng-content> é projeção de conteúdo, não outlet de rota.",
+        "Correto. provideRouter(routes) registra as rotas no bootstrap standalone e o <router-outlet> é onde a rota ativa é renderizada (aninhado para rotas filhas).",
+        "provideHttpClient é para o HttpClient, não para rotas. E <router-link> não é o placeholder de renderização.",
+        "bootstrapApplication recebe o componente raiz e os providers, não as rotas diretamente; e não existe renderização automática da rota sem <router-outlet>."
+      ]
+    },
+    {
+      "pergunta": "O usuário navega de /user/1 para /user/2 e a MESMA instância do componente é reutilizada. Por que o valor exibido não muda se você usou route.snapshot.paramMap?",
+      "opcoes": [
+        "Porque queryParams e params não podem ser lidos no mesmo componente",
+        "Porque paramMap só funciona com loadComponent",
+        "Porque o snapshot é capturado uma vez na criação do componente e não atualiza quando só o param muda sem recriar o componente",
+        "Porque o Router precisa de um resolver para atualizar o snapshot"
+      ],
+      "correta": 2,
+      "explicacao": "O snapshot é uma foto do estado no momento da criação. Reutilizando a instância, é preciso assinar o Observable paramMap para reagir à mudança de id.",
+      "feedbacks": [
+        "Params e queryParams podem ser lidos no mesmo componente sem problema; não é essa a causa.",
+        "paramMap funciona independentemente de loadComponent; não há relação.",
+        "Correto. O snapshot é capturado na criação do componente. Se a instância é reutilizada e só o param muda, você precisa ASSINAR route.paramMap para reagir.",
+        "Um resolver pré-carrega dados, mas não é o que faz o snapshot atualizar; a solução é assinar o Observable."
+      ]
+    },
+    {
+      "pergunta": "O entrevistador pergunta por que lazy loading melhora a performance. Qual afirmação é PRECISA?",
+      "opcoes": [
+        "Reduz o total de bytes baixados durante toda a sessão do usuário",
+        "Reduz o tamanho do bundle inicial via code splitting, acelerando o carregamento inicial; o total baixado ao longo da sessão é semelhante ao eager",
+        "Elimina a change detection nas rotas carregadas sob demanda",
+        "Dispensa o uso do bundler porque cada rota vira um arquivo separado no servidor"
+      ],
+      "correta": 1,
+      "explicacao": "O ganho é o bundle INICIAL menor via code splitting; o total baixado ao longo da sessão é parecido com o eager.",
+      "feedbacks": [
+        "Impreciso — é a pegadinha clássica. O ganho é no bundle inicial, não no total baixado ao longo da sessão.",
+        "Correto. O import() dinâmico permite code splitting; o bundle inicial fica menor e o boot mais rápido. O total ao longo da sessão é semelhante ao eager.",
+        "Lazy loading não tem relação com change detection; são mecanismos independentes.",
+        "O bundler continua essencial — é ele que faz o code splitting em chunks."
+      ]
+    },
+    {
+      "pergunta": "Qual configuração de rota carrega um CONJUNTO de rotas filhas sob demanda, sem NgModule?",
+      "opcoes": [
+        "component: () => import('./admin').then(m => m.AdminComponent)",
+        "loadComponent: () => import('./admin.routes').then(m => m.ADMIN_ROUTES)",
+        "loadChildren: () => import('./admin.routes').then(m => m.ADMIN_ROUTES)",
+        "preload: () => import('./admin.module').then(m => m.AdminModule)"
+      ],
+      "correta": 2,
+      "explicacao": "loadChildren carrega um grupo de rotas; no standalone aponta para um array de rotas exportado (ex.: ADMIN_ROUTES), sem NgModule.",
+      "feedbacks": [
+        "'component' não aceita import dinâmico; é eager e recebe a classe do componente diretamente.",
+        "loadComponent carrega UM componente standalone, não um array de rotas.",
+        "Correto. loadChildren carrega um conjunto de rotas sob demanda; no mundo standalone aponta para um array de rotas (ADMIN_ROUTES), sem NgModule.",
+        "'preload' não é uma propriedade de rota; e o alvo aqui seria um array de rotas, não um NgModule."
+      ]
+    },
+    {
+      "pergunta": "Como você registra a estratégia PreloadAllModules numa app standalone?",
+      "opcoes": [
+        "provideRouter(routes, withPreloading(PreloadAllModules))",
+        "provideHttpClient(withPreloading(PreloadAllModules))",
+        "RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })",
+        "bootstrapApplication(AppComponent, PreloadAllModules)"
+      ],
+      "correta": 0,
+      "explicacao": "No standalone, a estratégia de preloading é registrada com o feature withPreloading dentro de provideRouter.",
+      "feedbacks": [
+        "Correto. provideRouter(routes, withPreloading(PreloadAllModules)) registra o preloading no bootstrap standalone.",
+        "provideHttpClient é para o HttpClient; não configura preloading de rotas.",
+        "Essa é a forma antiga (NgModule/forRoot). No standalone usa-se withPreloading dentro do provideRouter.",
+        "bootstrapApplication não recebe a estratégia de preloading diretamente; ela vai como feature do provideRouter."
+      ]
+    },
+    {
+      "pergunta": "O entrevistador pergunta: 'Qual a diferença entre preloading e eager loading?' Qual resposta está correta?",
+      "opcoes": [
+        "Nenhuma: ambos colocam o código no bundle inicial",
+        "Preloading mantém o código em chunk separado e o baixa em background após o boot; eager coloca o código no bundle inicial, carregado durante o boot",
+        "Preloading desativa o lazy loading; eager o mantém",
+        "Eager baixa depois do boot; preloading baixa junto com a app"
+      ],
+      "correta": 1,
+      "explicacao": "Preloading não é eager: o código continua em chunk separado; muda apenas QUANDO baixa (em background, após o boot).",
+      "feedbacks": [
+        "Não são iguais. Eager põe no bundle inicial; preloading mantém o chunk separado.",
+        "Correto. Preloading mantém o código em chunk lazy separado e o baixa em background depois do boot; eager coloca o código no bundle inicial, no boot.",
+        "Preloading depende do lazy loading (é preloading de chunks lazy); não o desativa.",
+        "Está invertido: eager carrega no boot; preloading baixa em background após o boot."
+      ]
+    },
+    {
+      "pergunta": "Você tem uma rota lazy /admin que só admins podem acessar. Qual guard evita até o download do chunk quando o usuário não é admin?",
+      "opcoes": [
+        "CanActivate, porque roda antes de qualquer coisa",
+        "CanDeactivate, porque controla o acesso à rota",
+        "CanMatch, porque roda antes do casamento da rota e, se reprovar, o chunk não é baixado",
+        "Um resolver, porque pré-carrega os dados de permissão"
+      ],
+      "correta": 2,
+      "explicacao": "CanMatch roda antes de a rota casar; reprovando, o Angular não baixa o chunk lazy. CanActivate roda depois (chunk já baixado).",
+      "feedbacks": [
+        "CanActivate roda DEPOIS que a rota casou — o chunk lazy já foi baixado antes de o guard barrar.",
+        "CanDeactivate controla a SAÍDA da rota (ex.: form sujo), não a entrada nem o download do chunk.",
+        "Correto. CanMatch roda antes do casamento; se reprovar, o router nem baixa o chunk lazy — economiza banda e não expõe o código.",
+        "Um resolver pré-carrega dados, não controla acesso nem evita o download do chunk."
+      ]
+    },
+    {
+      "pergunta": "Como um guard funcional (CanActivateFn) redireciona o usuário não autenticado para /login?",
+      "opcoes": [
+        "Lançando uma exceção do tipo RedirectException",
+        "Chamando window.location.href = '/login' dentro do guard",
+        "Retornando a string '/login'",
+        "Retornando um UrlTree criado com router.createUrlTree(['/login'])"
+      ],
+      "correta": 3,
+      "explicacao": "Guards funcionais podem retornar boolean ou um UrlTree; retornar um UrlTree faz o router redirecionar para aquela rota.",
+      "feedbacks": [
+        "Não existe RedirectException; o redirecionamento é feito retornando um UrlTree.",
+        "Manipular window.location ignora o Router e quebra o SPA; a forma correta é retornar um UrlTree.",
+        "Retornar uma string não redireciona; o guard precisa retornar boolean ou UrlTree.",
+        "Correto. Retornar um UrlTree (router.createUrlTree(['/login']) ou router.parseUrl) faz o Router redirecionar de forma idiomática."
+      ]
+    },
+    {
+      "pergunta": "O entrevistador pergunta como funciona a hierarquia de DI. Qual descrição está correta?",
+      "opcoes": [
+        "O Angular busca a dependência apenas no injetor root; se não achar, dá erro",
+        "O Angular busca subindo a árvore de injetores: componente → rota → root, até encontrar o provider",
+        "O Angular busca descendo: root → rota → componente",
+        "Cada componente sempre recebe uma nova instância de todo service, sem hierarquia"
+      ],
+      "correta": 1,
+      "explicacao": "A resolução de DI sobe a árvore: procura no injetor do componente, depois no da rota, depois no root.",
+      "feedbacks": [
+        "Não é só o root; a busca começa no injetor mais próximo (componente) e sobe até o root.",
+        "Correto. A resolução sobe a hierarquia: componente → rota → root, usando o primeiro provider encontrado.",
+        "A ordem é o oposto: a busca sobe (do componente para o root), não desce.",
+        "Services não são recriados por padrão; providedIn: 'root' é singleton na app. Providers de escopo é que criam instâncias próprias."
+      ]
+    },
+    {
+      "pergunta": "Qual afirmação sobre providedIn: 'root' e sobre providers no nível do componente está correta?",
+      "opcoes": [
+        "Ambos criam sempre a mesma instância singleton compartilhada",
+        "providedIn: 'root' é singleton na app e tree-shakable; um provider no componente cria uma instância PRÓPRIA naquele escopo, que não é o objeto do root",
+        "providedIn: 'root' cria uma instância por componente; o provider no componente é global",
+        "Provider no componente não é permitido no Angular standalone"
+      ],
+      "correta": 1,
+      "explicacao": "providedIn: 'root' é singleton global e tree-shakable. Um provider no componente/rota cria uma instância isolada naquele escopo — não é o mesmo objeto do root.",
+      "feedbacks": [
+        "Não. Provider no componente cria uma instância própria; não é a mesma do root.",
+        "Correto. root = singleton na app e tree-shakable; provider de escopo = instância própria daquele escopo (não é o objeto do root).",
+        "Está invertido: root é o singleton global; o provider no componente é que cria instância de escopo.",
+        "Providers no componente são perfeitamente válidos no standalone (array 'providers' do @Component)."
+      ]
+    },
+    {
+      "pergunta": "Num interceptor funcional de auth, por que você precisa CLONAR a requisição para adicionar o header Authorization?",
+      "opcoes": [
+        "Porque a HttpRequest é imutável; você clona com req.clone({ setHeaders: {...} }) e passa o clone para next()",
+        "Porque clonar melhora a performance do HttpClient",
+        "Porque o header só pode ser adicionado depois da resposta",
+        "Porque o Angular exige uma nova instância de HttpClient por requisição"
+      ],
+      "correta": 0,
+      "explicacao": "A HttpRequest é imutável. Modifica-se via req.clone({ setHeaders: {...} }), passando o clone para next().",
+      "feedbacks": [
+        "Correto. A HttpRequest é imutável; clona-se com req.clone({ setHeaders: { Authorization: `Bearer ...` } }) e passa-se o CLONE para next().",
+        "Não é sobre performance: é porque a request é imutável e não pode ser modificada in-place.",
+        "O header de auth vai na IDA (request), antes de enviar — não depois da resposta.",
+        "Não é preciso um novo HttpClient; basta clonar a request dentro do interceptor."
+      ]
+    },
+    {
+      "pergunta": "Você registra provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])). Na volta (response), quem processa a resposta primeiro?",
+      "opcoes": [
+        "authInterceptor, seguindo a ordem do array",
+        "errorInterceptor, porque na volta o pipeline roda em ordem inversa",
+        "Ambos ao mesmo tempo, em paralelo",
+        "Depende do status HTTP da resposta"
+      ],
+      "correta": 1,
+      "explicacao": "O pipeline é como uma cebola: na ida roda na ordem do array; na volta, em ordem inversa. Com [auth, error], na volta o error processa a response primeiro.",
+      "feedbacks": [
+        "Na volta a ordem é INVERTIDA; auth processa a resposta por último, não primeiro.",
+        "Correto. Na ida roda na ordem (auth, depois error); na volta, em ordem inversa — error recebe a response antes de auth. Por isso a ordem do array importa.",
+        "Os interceptores não rodam em paralelo; formam um pipeline sequencial (cebola).",
+        "A ordem do pipeline não depende do status; é sempre ordem na ida e ordem inversa na volta."
+      ]
+    }
+  ]
+}

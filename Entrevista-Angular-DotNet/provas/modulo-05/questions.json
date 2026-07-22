@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 05: .NET IDisposable, using & Finalizers",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Um candidato diz: 'não preciso de Dispose, o GC coleta tudo mesmo'. Qual é a melhor crítica sênior?",
+      "opcoes": [
+        "Está certo: o GC libera todos os recursos, inclusive arquivos e conexões",
+        "O GC gerencia memória gerenciada de forma não determinística; recursos não gerenciados (handles, conexões) são escassos e precisam de liberação determinística via Dispose",
+        "Está certo, desde que a classe tenha um finalizer",
+        "O GC nunca coleta objetos que implementam IDisposable"
+      ],
+      "correta": 1,
+      "explicacao": "O GC cuida da memória gerenciada, não de fechar handles/conexões, e roda de forma não determinística. Recursos não gerenciados são escassos e exigem Dispose (determinístico).",
+      "feedbacks": [
+        "Não. O GC libera memória gerenciada, não fecha arquivos, sockets ou devolve conexões ao pool.",
+        "Correto. Determinismo + escassez de recursos não gerenciados são os pontos-chave: por isso Dispose existe.",
+        "Não. Um finalizer só liberaria mais tarde e de forma cara; ainda assim o Dispose é o caminho determinístico correto.",
+        "Não. O GC coleta a memória do objeto normalmente; implementar IDisposable não impede a coleta."
+      ]
+    },
+    {
+      "pergunta": "Quando você DEVE implementar IDisposable numa classe?",
+      "opcoes": [
+        "Quando a classe detém um recurso não gerenciado direto OU detém como campo outro IDisposable",
+        "Em toda classe, por precaução",
+        "Apenas quando a classe tem um finalizer",
+        "Somente em classes estáticas"
+      ],
+      "correta": 0,
+      "explicacao": "Implemente quando há de fato algo a liberar: um recurso não gerenciado (handle, ponteiro) ou outro IDisposable mantido como campo. Fora disso é over-engineering.",
+      "feedbacks": [
+        "Correto. O gatilho é deter um recurso não gerenciado ou um IDisposable interno.",
+        "Não. Implementar em classe sem nada a liberar é over-engineering.",
+        "Não. É o inverso: o finalizer é que depende de haver recurso não gerenciado — não é pré-requisito para IDisposable.",
+        "Não. Classes estáticas nem podem implementar interfaces; o critério é deter recursos."
+      ]
+    },
+    {
+      "pergunta": "Para o que o compilador expande 'using (var x = ...) { corpo }'?",
+      "opcoes": [
+        "Um try/catch que engole exceções do corpo",
+        "Uma chamada a x.Dispose() logo após a criação",
+        "Um try/finally onde o finally chama x?.Dispose(), garantindo o Dispose mesmo com exceção",
+        "Um bloco lock em torno do recurso"
+      ],
+      "correta": 2,
+      "explicacao": "using vira try/finally com Dispose no finally — por isso o Dispose acontece mesmo se o corpo lançar exceção.",
+      "feedbacks": [
+        "Não. O using não engole exceções: elas propagam; o finally só garante o Dispose.",
+        "Não. O Dispose acontece no fim do bloco, dentro de um finally, não logo após a criação.",
+        "Correto. O finally com Dispose é o que torna o using seguro contra exceções.",
+        "Não. using não faz sincronização/lock; ele garante o descarte do recurso."
+      ]
+    },
+    {
+      "pergunta": "No Dispose Pattern, qual é o papel do parâmetro 'disposing' em Dispose(bool disposing)?",
+      "opcoes": [
+        "Contar quantas vezes Dispose foi chamado",
+        "Escolher entre Dispose síncrono e DisposeAsync",
+        "Distinguir a origem: true = veio do Dispose() do usuário (pode liberar gerenciados); false = veio do finalizer (só não gerenciados)",
+        "Indicar se o objeto está em outra thread"
+      ],
+      "correta": 2,
+      "explicacao": "Se true, veio do usuário: os objetos gerenciados existem e podem ser liberados. Se false, veio do finalizer: os gerenciados podem já ter sido coletados, então só se libera os não gerenciados.",
+      "feedbacks": [
+        "Não. A contagem de double-dispose é feita pelo campo _disposed, não pelo parâmetro disposing.",
+        "Não. A escolha sync/async é entre IDisposable e IAsyncDisposable, não pelo disposing.",
+        "Correto. O disposing separa a chamada do usuário (true) da chamada do finalizer (false).",
+        "Não. O disposing nada tem a ver com thread; indica a origem da chamada."
+      ]
+    },
+    {
+      "pergunta": "Por que se chama GC.SuppressFinalize(this) dentro do Dispose() público?",
+      "opcoes": [
+        "Para forçar o finalizer a rodar imediatamente",
+        "Para impedir que o objeto seja coletado pelo GC",
+        "Porque o descarte já foi explícito: remove o objeto da fila de finalização, evitando a sobrevida a uma coleta e a promoção de geração",
+        "Para liberar a memória gerenciada na hora"
+      ],
+      "correta": 2,
+      "explicacao": "Se o usuário chamou Dispose e limpou tudo, SuppressFinalize tira o objeto da fila de finalização — o GC não roda o finalizer à toa, evitando o custo (sobrevida + promoção de geração).",
+      "feedbacks": [
+        "Não. É o oposto: SuppressFinalize impede o finalizer de rodar, não o força.",
+        "Não. Ele não impede a coleta da memória; só evita a finalização desnecessária.",
+        "Correto. Descarte explícito → SuppressFinalize → GC não precisa finalizar, poupando o custo.",
+        "Não. Liberar memória gerenciada é trabalho do GC, não do SuppressFinalize."
+      ]
+    },
+    {
+      "pergunta": "Qual afirmação sobre o CUSTO de um finalizer está correta?",
+      "opcoes": [
+        "Não há custo; adicione a toda classe por segurança",
+        "O objeto com finalizer entra na fila de finalização, sobrevive à primeira coleta e é promovido de geração, sendo liberado só num ciclo posterior do GC",
+        "O finalizer roda deterministicamente no fim do escopo",
+        "O finalizer torna a coleta do objeto mais rápida que a de um objeto normal"
+      ],
+      "correta": 1,
+      "explicacao": "Objetos com finalizer sobrevivem à primeira coleta (são promovidos de geração) e só são liberados depois, numa thread de finalização — por isso são caros e devem ser raros.",
+      "feedbacks": [
+        "Não. Finalizers têm custo real; adicioná-los sem necessidade prejudica o GC.",
+        "Correto. Fila de finalização + sobrevida + promoção de geração são o custo do finalizer.",
+        "Não. Finalizer é não determinístico; quem roda deterministicamente é o Dispose via using.",
+        "Não. É o contrário: o finalizer atrasa e encarece a coleta do objeto."
+      ]
+    },
+    {
+      "pergunta": "O entrevistador pergunta a diferença essencial entre Dispose e um finalizer. Qual resposta é a melhor?",
+      "opcoes": [
+        "São a mesma coisa com nomes diferentes",
+        "Dispose é determinístico e chamado por você (via using); o finalizer é não determinístico, chamado pelo GC, e serve só como rede de segurança para recurso não gerenciado",
+        "O finalizer é chamado por você e o Dispose pelo GC",
+        "Dispose libera memória gerenciada; o finalizer libera memória não gerenciada"
+      ],
+      "correta": 1,
+      "explicacao": "Dispose = explícito e determinístico (você chama). Finalizer = implícito e não determinístico (GC chama), rede de segurança para não gerenciados. Nenhum dos dois 'libera memória' — isso é o GC.",
+      "feedbacks": [
+        "Não. São mecanismos distintos: determinístico (Dispose) vs não determinístico (finalizer).",
+        "Correto. Quem chama, o determinismo e o papel de rede de segurança do finalizer são os pontos-chave.",
+        "Não. É o inverso: você chama Dispose; o GC chama o finalizer.",
+        "Não. Ambos tratam de recursos não gerenciados; a memória (gerenciada) é sempre do GC."
+      ]
+    },
+    {
+      "pergunta": "Qual é a alternativa moderna que costuma dispensar escrever um finalizer para um handle não gerenciado?",
+      "opcoes": [
+        "Chamar GC.Collect() após o uso",
+        "Marcar o campo do handle como static",
+        "Envolver o recurso num lock",
+        "Encapsular o handle num tipo derivado de SafeHandle, que já traz um finalizer crítico próprio"
+      ],
+      "correta": 3,
+      "explicacao": "SafeHandle (ex.: SafeFileHandle) encapsula o handle e já possui finalizer crítico embutido, robusto contra falhas parciais e handle recycling. A classe só implementa IDisposable e dispensa ~destrutor.",
+      "feedbacks": [
+        "Não. Chamar GC.Collect() é uma má prática e não libera o handle corretamente.",
+        "Não. static não tem relação com liberação de handle; e agravaria vazamentos.",
+        "Não. lock trata de concorrência, não de liberação de recurso.",
+        "Correto. SafeHandle traz o finalizer crítico embutido; sua classe só precisa de IDisposable."
+      ]
+    },
+    {
+      "pergunta": "Quando faz sentido implementar IAsyncDisposable e consumir com 'await using'?",
+      "opcoes": [
+        "Sempre, pois é a versão moderna do using",
+        "Quando a limpeza é assíncrona: flush de stream para a rede, fechar conexão de rede, ou um DbContext do EF Core",
+        "Apenas para recursos gerenciados triviais",
+        "Somente quando a classe não tem finalizer"
+      ],
+      "correta": 1,
+      "explicacao": "IAsyncDisposable (ValueTask DisposeAsync()) é para limpeza que envolve I/O assíncrono. O 'await using' chama e aguarda DisposeAsync no fim do escopo, sem bloquear a thread. EF DbContext é um exemplo real.",
+      "feedbacks": [
+        "Não. Só usa-se DisposeAsync quando a limpeza precisa ser assíncrona; para o resto, Dispose síncrono basta.",
+        "Correto. Limpeza assíncrona (flush, conexão de rede, DbContext) é o caso de IAsyncDisposable.",
+        "Não. Recursos gerenciados triviais nem precisam de Dispose, muito menos assíncrono.",
+        "Não. A presença de finalizer é irrelevante para a decisão sync vs async."
+      ]
+    },
+    {
+      "pergunta": "Um colega envolve 'new HttpClient()' num using a cada requisição HTTP. Qual crítica é a correta?",
+      "opcoes": [
+        "Está certo: HttpClient é IDisposable, então deve ir num using sempre",
+        "Errado: o socket fica em TIME_WAIT após o Dispose e, em volume, esgota as portas (socket exhaustion); HttpClient é para reuso — use IHttpClientFactory",
+        "Errado, mas por consumir memória gerenciada demais",
+        "Está certo, desde que chame GC.Collect() em seguida"
+      ],
+      "correta": 1,
+      "explicacao": "Descartar HttpClient por requisição deixa sockets em TIME_WAIT e esgota portas TCP. Ele é feito para reuso; IHttpClientFactory gerencia um pool de handlers e lida com o DNS.",
+      "feedbacks": [
+        "Não. Ser IDisposable não significa descartar por requisição; HttpClient é a exceção clássica.",
+        "Correto. Socket exhaustion (TIME_WAIT) é o problema; IHttpClientFactory é a solução idiomática.",
+        "Não. O problema não é memória gerenciada, é esgotamento de sockets/portas.",
+        "Não. GC.Collect() é má prática e não resolve o problema de sockets em TIME_WAIT."
+      ]
+    },
+    {
+      "pergunta": "Você tem 'using var conexao = ...' dentro de um foreach que percorre 1000 itens. O que acontece?",
+      "opcoes": [
+        "A conexão é disposta ao fim de cada iteração",
+        "O código não compila: using var não é permitido em loops",
+        "As conexões acumulam abertas até o fim do método, pois using var dispõe no fim do escopo, não da iteração; para liberar por volta, use um bloco using (...) { } explícito",
+        "O GC dispõe cada conexão imediatamente por ser um loop"
+      ],
+      "correta": 2,
+      "explicacao": "using var dispõe no fim do escopo (o método). Dentro de um loop isso acumula recursos abertos. Para liberar a cada iteração, use um bloco 'using (...) { }' explícito dentro do loop.",
+      "feedbacks": [
+        "Não. using var não dispõe a cada iteração; ele espera o fim do escopo do método.",
+        "Não. using var compila dentro de loops; o problema é o escopo de descarte.",
+        "Correto. O escopo do using var é o método; use bloco explícito para liberar por iteração.",
+        "Não. O GC não dá Dispose; e o using var não age por iteração."
+      ]
+    },
+    {
+      "pergunta": "Numa classe base que segue o Dispose Pattern e pode ter derivadas, como o método Dispose(bool) deve ser declarado para a herança funcionar bem?",
+      "opcoes": [
+        "private void Dispose(bool disposing), para esconder da derivada",
+        "protected virtual void Dispose(bool disposing), para a derivada dar override, liberar seus recursos e chamar base.Dispose(disposing)",
+        "public static void Dispose(bool disposing), compartilhado por todas",
+        "internal sealed void Dispose(bool disposing), impedindo qualquer extensão"
+      ],
+      "correta": 1,
+      "explicacao": "O padrão usa protected virtual void Dispose(bool disposing): protected permite acesso pela derivada, virtual permite override; a derivada libera o que é seu e chama base.Dispose(disposing).",
+      "feedbacks": [
+        "Não. private impediria a derivada de estender o descarte — quebra a herança do padrão.",
+        "Correto. protected virtual é exatamente o que permite override + base.Dispose(disposing).",
+        "Não. static não faz sentido aqui (não age por instância) e quebra o padrão.",
+        "Não. sealed impede o override que a herança precisa; o padrão exige virtual."
+      ]
+    }
+  ]
+}

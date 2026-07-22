@@ -1,0 +1,180 @@
+{
+  "modulo": "02",
+  "titulo": "Angular — Signals & Reatividade",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — por que Signals é A pergunta de entrevista Angular hoje",
+      "pontos": [
+        "Signals é o tema mais quente em entrevista Angular desde a v16/17 — quem entende soa 'em dia'",
+        "A pergunta clássica é 'o que muda de Zone.js pra Signals?' — reatividade granular vs. change detection global",
+        "Objetivo do módulo: você conseguir explicar signal/computed/effect e defender Signals vs RxJS sem gaguejar",
+        "Formato: eu explico um sub-tópico por vez, você pergunta, depois viramos a mesa numa simulação de entrevista",
+        "Ao fim: prática (eu te entrevisto de verdade), quiz de fixação e prova de 70%"
+      ],
+      "checkpoint": "Confirme que o aluno está pronto e topa o formato: teoria conversada, depois simulação de entrevista, quiz e prova",
+      "ref": "02-angular-signals-reatividade/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "O que são Signals e por que existem",
+      "pontos": [
+        "Signal = container reativo de valor que sabe QUEM depende dele — reatividade granular",
+        "Modelo PULL: o consumidor lê quando quer; o valor é 'puxado', não empurrado como num stream",
+        "Contrasta com Zone.js: hoje o Angular faz change detection GLOBAL a cada evento/timer/http",
+        "Zone.js faz monkey-patch de APIs do browser e não sabe O QUE mudou — reverifica a árvore toda",
+        "Signal rastreia dependências em tempo de leitura → só reavalia/re-renderiza o que de fato depende",
+        "É o caminho pra change detection cirúrgica e, no futuro, zoneless"
+      ],
+      "checkpoint": "Pergunte se ficou claro o contraste: 'reverificar tudo' (Zone.js) vs. 'saber exatamente quem depende' (Signals)",
+      "ref": "02-angular-signals-reatividade/teoria.md#1-o-que-são-signals-e-por-que-existem"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "signal(): criar, ler, set(), update() e imutabilidade",
+      "pontos": [
+        "signal(inicial) cria um WritableSignal; ler é CHAMAR como função: count()",
+        "set(valor) troca o valor inteiro; update(fn) deriva do valor atual: update(c => c + 1)",
+        "Ler dentro de um contexto reativo (computed/effect/template) REGISTRA a dependência",
+        "Imutabilidade importa: a igualdade padrão é Object.is — mutar objeto no lugar NÃO notifica",
+        "Para objetos/arrays: crie uma nova referência (spread) no set/update, não faça push/mutação",
+        "mutate() foi removido justamente pra empurrar o modelo imutável; dá pra passar equal customizado"
+      ],
+      "checkpoint": "Peça pro aluno explicar por que push() num array dentro de um signal não dispara atualização",
+      "ref": "02-angular-signals-reatividade/teoria.md#2-signal-criar-ler-set-update-imutabilidade"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "computed(): sinais derivados, memoização e glitch-free",
+      "pontos": [
+        "computed(() => ...) cria um Signal derivado, somente-leitura, a partir de outros signals",
+        "É memoizado: só recalcula quando uma dependência lida realmente muda (Object.is)",
+        "É LAZY: só calcula quando alguém lê; se ninguém consome, não roda",
+        "Dependências são dinâmicas — dependem de QUAIS signals foram lidos na última execução",
+        "Glitch-free: nunca expõe estado intermediário inconsistente; consistente ao ser lido",
+        "Regra de ouro: estado DERIVADO é computed, não effect + set"
+      ],
+      "checkpoint": "Pergunte quando um computed recalcula e por que 'lazy' significa que ele pode nunca rodar",
+      "ref": "02-angular-signals-reatividade/teoria.md#3-computed-sinais-derivados-memoização-lazy-glitch-free"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "effect(): efeitos colaterais, cleanup e por que não derivar estado",
+      "pontos": [
+        "effect(() => ...) roda quando qualquer signal lido dentro dele muda — pra EFEITOS colaterais",
+        "Roda uma vez ao ser criado e depois de forma agendada (após a change detection), não síncrono a cada set",
+        "onCleanup(fn): registra limpeza rodada antes da próxima execução e no destroy (ex.: clearTimeout)",
+        "Por padrão NÃO pode escrever em signals; para isso precisa allowSignalWrites (e geralmente é cheiro de design)",
+        "Casos legítimos: log/analytics, sincronizar com localStorage, integrar com API não-reativa (canvas, chart)",
+        "NÃO use effect pra derivar estado — isso é trabalho do computed (evita loops e estado duplicado)"
+      ],
+      "checkpoint": "Peça um caso legítimo de effect e por que derivar valor com effect+set é um anti-padrão",
+      "ref": "02-angular-signals-reatividade/teoria.md#4-effect-efeitos-colaterais-cleanup-allowsignalwrites"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Signals vs RxJS: pull vs push, síncrono vs streams, interop",
+      "pontos": [
+        "Signal = valor SÍNCRONO, sempre tem 'o valor atual', modelo PULL — bom pra estado de UI",
+        "Observable = STREAM assíncrona no tempo, modelo PUSH — bom pra eventos, HTTP, debounce, cancelamento",
+        "RxJS tem operadores (switchMap, debounceTime, retry) que Signals não têm — não é substituição",
+        "Interop: toSignal(obs$) vira um signal (e desinscreve sozinho); toObservable(sig) vira stream",
+        "async pipe continua rei pra streams no template — inscreve e desinscreve por você",
+        "Regra: estado da tela = Signals; assíncrono/coordenação no tempo = RxJS"
+      ],
+      "checkpoint": "Pergunte quando o aluno escolheria RxJS mesmo tendo Signals disponíveis (ex.: debounce de busca)",
+      "ref": "02-angular-signals-reatividade/teoria.md#5-signals-vs-rxjs-observables"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "Signals em componentes: input(), output(), model() e zoneless",
+      "pontos": [
+        "input() cria input como signal (input.required<T>() pra obrigatório) — reativo e read-only no filho",
+        "output() substitui @Output()/EventEmitter com API mais enxuta; model() é two-way (input + output)",
+        "Signal inputs combinam com computed/effect sem ngOnChanges pra reagir a mudança de input",
+        "provideExperimentalZonelessChangeDetection() liga o modo zoneless — sem Zone.js",
+        "Em zoneless, o que dispara a atualização é a MUDANÇA de signal (e alguns gatilhos), não o patch global",
+        "Signals se casam com OnPush: leitura de signal no template marca o componente pra checar — menos ChangeDetectorRef manual"
+      ],
+      "checkpoint": "Pergunte como signals viabilizam zoneless e a relação com OnPush",
+      "ref": "02-angular-signals-reatividade/teoria.md#6-signals-em-componentes-inputs-outputs-model-zoneless"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "Gerência de subscriptions com RxJS (por que ainda importa)",
+      "pontos": [
+        "Observable que você inscreve manualmente e não desinscreve = vazamento de memória",
+        "async pipe: inscreve e desinscreve com o ciclo de vida do template — prefira sempre que der",
+        "takeUntilDestroyed(): operador que completa o stream quando o componente é destruído (usa DestroyRef)",
+        "Padrão antigo: takeUntil(destroy$) com um Subject disparado no ngOnDestroy",
+        "HttpClient completa após 1 emissão, mas subscribe manual + long-lived stream ainda vaza",
+        "toSignal e async pipe cuidam do unsubscribe — parte do apelo de migrar pra signals no template"
+      ],
+      "checkpoint": "Peça pro aluno citar 3 formas de não vazar subscription e qual ele prefere e por quê",
+      "ref": "02-angular-signals-reatividade/teoria.md#7-gerência-de-subscriptions-com-rxjs-por-que-ainda-importa"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Simulação de entrevista — Signals & Reatividade",
+      "pontos": [
+        "Agora a mesa vira: você é o candidato, eu sou o entrevistador",
+        "Faço as perguntas do pratica.md UMA A UMA e ouço sua resposta antes de comentar",
+        "Depois de cada resposta eu critico: o que faltou, o que estava impreciso, como soar mais sênior",
+        "Foco em clareza, uso correto dos termos (pull/push, lazy, memoização) e trade-offs",
+        "Sem pressa: é pra treinar a FALA, não só reconhecer a resposta certa"
+      ],
+      "checkpoint": "Confirme que o aluno quer começar a simulação e conduza pergunta a pergunta, criticando cada resposta",
+      "acao": "Conduzir simulação de entrevista no chat: fazer as perguntas do pratica.md uma a uma, ouvir a resposta do aluno e criticar (o que faltou, como soar mais sênior)",
+      "ref": "02-angular-signals-reatividade/pratica.md"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz de fixação — Módulo 02",
+      "pontos": [
+        "10 perguntas de múltipla escolha em estilo entrevista",
+        "Fixa signal/computed/effect, pull vs push e interop RxJS",
+        "Explicação em cada questão pra reforçar o porquê",
+        "Erra sem medo: o objetivo é achar buraco antes da prova"
+      ],
+      "checkpoint": "Depois do quiz, revise com o aluno as questões erradas antes de ir pra prova",
+      "acao": "Rodar: python3 engine/session.py start Entrevista-Angular-DotNet/apps/modulo-02/questions.json"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova do Módulo 02 (aprovação 70%)",
+      "pontos": [
+        "12 questões cobrindo todos os sub-tópicos do módulo",
+        "Feedback por alternativa — entenda por que cada opção está certa ou errada",
+        "Aprovação: 70%",
+        "Se não passar, revisamos os pontos fracos e refazemos"
+      ],
+      "checkpoint": "Confira o resultado; se ficou abaixo de 70%, revise os tópicos fracos antes de fechar o módulo",
+      "acao": "Rodar: python3 engine/session.py start Entrevista-Angular-DotNet/provas/modulo-02/questions.json --id prova"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Recap e próximo módulo",
+      "pontos": [
+        "Recap: Signals = reatividade granular pull; signal/computed/effect; imutabilidade e memoização",
+        "Você sabe defender Signals vs RxJS e explicar o caminho pra zoneless",
+        "Frase de bolso pra entrevista: 'Signals não substituem RxJS — resolvem estado síncrono; RxJS resolve o tempo'",
+        "Próximo: Módulo 03 — Router, Lazy Loading, DI & Interceptors",
+        "Comemore o avanço e alinhe quando retomar"
+      ],
+      "checkpoint": "Feche o módulo, confirme os pontos que ficaram sólidos e combine o início do Módulo 03",
+      "ref": "02-angular-signals-reatividade/teoria.md#glossário"
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 05 — .NET: IDisposable & Finalizers",
+  "questoes": [
+    {
+      "pergunta": "O entrevistador pergunta: por que o Garbage Collector sozinho não basta para liberar um FileStream ou uma SqlConnection?",
+      "opcoes": [
+        "Porque o GC é lento demais para lidar com objetos pequenos",
+        "Porque o GC gerencia memória gerenciada de forma não determinística e não sabe fechar recursos não gerenciados (handles, conexões), que são escassos",
+        "Porque FileStream e SqlConnection não são coletados pelo GC de jeito nenhum",
+        "Porque o GC só roda quando o processo termina"
+      ],
+      "correta": 1,
+      "explicacao": "O GC gerencia memória gerenciada e de forma não determinística (você não sabe quando). Recursos não gerenciados (file handles, conexões de banco) vivem fora do heap do GC, são escassos e precisam de liberação determinística via Dispose."
+    },
+    {
+      "pergunta": "Quantos métodos a interface IDisposable define, e qual é?",
+      "opcoes": [
+        "Um: void Dispose()",
+        "Dois: Dispose() e DisposeAsync()",
+        "Três: Dispose(), Finalize() e Close()",
+        "Um: void Close()"
+      ],
+      "correta": 0,
+      "explicacao": "IDisposable define um único método: void Dispose(). É o contrato de liberação determinística. DisposeAsync() pertence a IAsyncDisposable, outra interface."
+    },
+    {
+      "pergunta": "Para o que o compilador expande um bloco 'using (var x = ...) { ... }'?",
+      "opcoes": [
+        "Um bloco try/catch que ignora exceções",
+        "Uma chamada direta a x.Dispose() no fim do bloco, sem tratamento de exceção",
+        "Um try/finally onde o finally chama x?.Dispose(), garantindo o Dispose mesmo com exceção",
+        "Um lock que sincroniza o acesso ao recurso"
+      ],
+      "correta": 2,
+      "explicacao": "O using vira um try/finally com Dispose no finally. É por isso que o Dispose acontece mesmo se o bloco lançar uma exceção — o que torna o using seguro."
+    },
+    {
+      "pergunta": "No Dispose Pattern completo, por que Dispose(bool disposing) recebe o parâmetro 'disposing'?",
+      "opcoes": [
+        "Para saber se o objeto já foi disposto antes",
+        "Para distinguir se a chamada veio do Dispose() do usuário (true, pode tocar em gerenciados) ou do finalizer (false, só toca em não gerenciados)",
+        "Para escolher entre liberação síncrona e assíncrona",
+        "Para contar quantas vezes o Dispose foi chamado"
+      ],
+      "correta": 1,
+      "explicacao": "Se disposing==true, veio do Dispose() do usuário: os objetos gerenciados ainda existem, então pode-se liberá-los. Se disposing==false, veio do finalizer: os gerenciados podem já ter sido coletados (ordem de finalização não garantida), então só se libera os não gerenciados."
+    },
+    {
+      "pergunta": "O que faz GC.SuppressFinalize(this), chamado dentro do Dispose() público?",
+      "opcoes": [
+        "Força o GC a rodar o finalizer imediatamente",
+        "Remove o objeto da fila de finalização, evitando o custo do finalizer já que o descarte foi explícito",
+        "Impede que o objeto seja coletado pelo GC",
+        "Libera a memória gerenciada do objeto na hora"
+      ],
+      "correta": 1,
+      "explicacao": "Como o usuário já chamou Dispose e tudo foi limpo, SuppressFinalize tira o objeto da fila de finalização. Assim o GC não roda o finalizer à toa, evitando a sobrevida a uma coleta e a promoção de geração."
+    },
+    {
+      "pergunta": "Qual afirmação sobre finalizers (~destrutor) está correta?",
+      "opcoes": [
+        "São chamados deterministicamente no fim do escopo, como o using",
+        "São gratuitos e devem ser adicionados a toda classe por segurança",
+        "São chamados pelo GC de forma não determinística; o objeto entra na fila de finalização, sobrevive à primeira coleta e é promovido de geração (custo alto)",
+        "Rodam na mesma thread que criou o objeto, em ordem garantida"
+      ],
+      "correta": 2,
+      "explicacao": "O finalizer é chamado pelo GC, não deterministicamente, numa thread separada. O objeto com finalizer sobrevive à primeira coleta e é promovido de geração — por isso é caro e deve ser raro."
+    },
+    {
+      "pergunta": "Qual é a alternativa moderna que costuma dispensar escrever um finalizer para um recurso não gerenciado?",
+      "opcoes": [
+        "Usar um bloco try/catch em volta do recurso",
+        "Chamar GC.Collect() manualmente após o uso",
+        "Encapsular o handle num tipo derivado de SafeHandle, que já traz um finalizer crítico próprio",
+        "Marcar o campo do handle como volatile"
+      ],
+      "correta": 2,
+      "explicacao": "SafeHandle (ex.: SafeFileHandle) encapsula o handle não gerenciado e já possui um finalizer crítico embutido, robusto contra falhas parciais. Com ele, sua classe só implementa IDisposable e não precisa de ~destrutor."
+    },
+    {
+      "pergunta": "Quando você deve usar IAsyncDisposable / 'await using' em vez de IDisposable / 'using'?",
+      "opcoes": [
+        "Sempre, porque é mais moderno",
+        "Apenas quando o recurso é gerenciado",
+        "Quando o objeto não tem finalizer",
+        "Quando a limpeza do recurso é assíncrona (flush de stream, fechar conexão de rede, DbContext do EF Core)"
+      ],
+      "correta": 3,
+      "explicacao": "IAsyncDisposable (ValueTask DisposeAsync()) é para quando a limpeza precisa ser assíncrona — flush para a rede, fechar conexão, um DbContext do EF. O 'await using' chama e aguarda o DisposeAsync no fim do escopo sem bloquear a thread."
+    },
+    {
+      "pergunta": "Por que é um erro dar 'new HttpClient()' e Dispose a cada requisição?",
+      "opcoes": [
+        "Porque HttpClient não implementa IDisposable",
+        "Porque cada instância consome muita memória gerenciada",
+        "Porque o socket fica em TIME_WAIT após o Dispose e, em volume, esgota as portas TCP (socket exhaustion)",
+        "Porque o HttpClient precisa ser recriado a cada chamada por design"
+      ],
+      "correta": 2,
+      "explicacao": "Dar Dispose no HttpClient não fecha o socket na hora — ele fica em TIME_WAIT. Criar/descartar um por requisição esgota as portas TCP (SocketException). HttpClient é feito para ser reutilizado; use IHttpClientFactory."
+    },
+    {
+      "pergunta": "Você tem 'using var conexao = ...' dentro de um foreach. Quando a conexão é disposta?",
+      "opcoes": [
+        "No fim de cada iteração do loop",
+        "No fim do escopo do método, não a cada iteração — acumulando recursos abertos durante o loop",
+        "Imediatamente após a criação",
+        "Nunca — using var não funciona dentro de loops"
+      ],
+      "correta": 1,
+      "explicacao": "using var dispõe no fim do escopo (o método), não a cada iteração. Dentro de um loop isso acumula recursos abertos. Para liberar a cada volta, use um bloco 'using (...) { }' explícito dentro do loop."
+    }
+  ]
+}

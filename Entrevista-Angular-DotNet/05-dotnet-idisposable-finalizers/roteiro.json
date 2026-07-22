@@ -1,0 +1,179 @@
+{
+  "modulo": "05",
+  "titulo": ".NET — IDisposable, using & Finalizers",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que este módulo cobre e por que cai em entrevista",
+      "pontos": [
+        "Este módulo é prep de entrevista real: recursos gerenciados vs não gerenciados, IDisposable/Dispose, using, o Dispose Pattern completo, finalizers, IAsyncDisposable e armadilhas práticas (HttpClient)",
+        "IDisposable e finalizers separam quem só sabe usar 'using' de quem entende o que o GC faz e o que ele NÃO faz — clássico de entrevista .NET pleno/sênior",
+        "O entrevistador quer o 'porquê': por que o GC sozinho não basta, por que SuppressFinalize, por que o parâmetro bool disposing, por que HttpClient não se dá new por request",
+        "Formato: eu explico um tópico por vez → você pergunta à vontade → simulo uma entrevista → quiz de 10 → prova de 12 (70%)",
+        "Meta: você explicar liberação determinística e o Dispose Pattern sem travar, soando sênior"
+      ],
+      "checkpoint": "Confirme que o aluno topa o formato (explico → pergunta → simulação → quiz → prova) e que a entrevista é amanhã: foco é fluência nas respostas",
+      "ref": "05-dotnet-idisposable-finalizers/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "Recursos gerenciados vs não gerenciados: por que o GC não basta",
+      "pontos": [
+        "O GC gerencia MEMÓRIA gerenciada — ele libera objetos quando não há mais referências, de forma NÃO determinística (você não sabe quando)",
+        "Recursos não gerenciados vivem fora do heap do GC: file handles, sockets, conexões de banco, handles de OS, ponteiros nativos, GDI+",
+        "O GC não sabe fechar um arquivo nem devolver uma conexão ao pool — ele só conhece memória, não o significado desses handles",
+        "Segurar recursos escassos até o GC decidir coletar = esgotar pool de conexões, ficar sem file handles, travar arquivos",
+        "IDisposable existe para dar liberação DETERMINÍSTICA: você diz exatamente quando liberar (no fim do using)",
+        "Pegadinha: 'o GC não roda no meu objeto?' — roda pra memória, mas o recurso não gerenciado precisa de Dispose antes"
+      ],
+      "checkpoint": "Peça pro aluno dar 3 exemplos de recurso não gerenciado e explicar em uma frase por que o GC sozinho não resolve",
+      "ref": "05-dotnet-idisposable-finalizers/teoria.md#1-recursos-gerenciados-vs-nao-gerenciados-por-que-o-gc-nao-basta"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "IDisposable e Dispose(): o contrato e quando implementar",
+      "pontos": [
+        "IDisposable é uma interface com um único método: void Dispose() — o contrato de 'me limpe explicitamente'",
+        "Implemente quando sua classe DETÉM um recurso não gerenciado OU quando ela detém outro IDisposable como campo",
+        "Chamar Dispose libera o recurso AGORA (determinístico), sem esperar o GC",
+        "Dispose deve ser idempotente: chamar duas vezes não pode explodir (double-dispose seguro)",
+        "Depois de Dispose, usar o objeto deve lançar ObjectDisposedException — o objeto está 'morto'",
+        "Pegadinha: implementar IDisposable numa classe que só tem campos gerenciados triviais é over-engineering — só implemente se há o que liberar"
+      ],
+      "checkpoint": "Peça pro aluno dizer quando ele DEVE implementar IDisposable e por que Dispose precisa ser idempotente",
+      "ref": "05-dotnet-idisposable-finalizers/teoria.md#2-idisposable-e-dispose-o-contrato-e-quando-implementar"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "using: statement, using declaration e o que o compilador gera",
+      "pontos": [
+        "using statement clássico: using (var x = new Recurso()) { ... } — o compilador expande para try/finally { x?.Dispose(); }",
+        "O finally garante Dispose mesmo se der exceção dentro do bloco — é isso que torna using seguro",
+        "using declaration (C# 8, 'using var x = ...'): Dispose é chamado no fim do ESCOPO (fecha-chave do método/bloco), sem indentação extra",
+        "Múltiplos recursos: using empilhados ou vírgula — cada um é disposto na ordem inversa (LIFO)",
+        "using só funciona com quem implementa IDisposable (ou tem Dispose via ref struct/pattern-based)",
+        "Pegadinha: 'using var' num loop dispõe só no fim do método, não a cada iteração — se quer liberar por iteração, use bloco { } explícito"
+      ],
+      "checkpoint": "Peça pro aluno descrever o que o compilador gera para um using (try/finally) e a diferença de escopo entre using statement e using var",
+      "ref": "05-dotnet-idisposable-finalizers/teoria.md#3-using-statement-using-declaration-e-o-que-o-compilador-gera"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "O Dispose Pattern completo",
+      "pontos": [
+        "Dispose() público: chama Dispose(true) e depois GC.SuppressFinalize(this)",
+        "protected virtual void Dispose(bool disposing): o coração do padrão, virtual pra herança poder estender",
+        "disposing == true: veio do Dispose() do usuário → libere recursos gerenciados (outros IDisposable) E não gerenciados",
+        "disposing == false: veio do finalizer → NÃO toque em objetos gerenciados (podem já ter sido coletados); libere só os não gerenciados",
+        "Campo bool _disposed: guarda contra double-dispose (if _disposed return;)",
+        "GC.SuppressFinalize(this): já limpei tudo, GC não precisa me pôr na fila de finalização — evita o custo do finalizer"
+      ],
+      "checkpoint": "Peça pro aluno explicar por que o parâmetro 'disposing' existe e o que SuppressFinalize faz — os dois pontos que mais separam sênior de júnior aqui",
+      "ref": "05-dotnet-idisposable-finalizers/teoria.md#4-o-dispose-pattern-completo"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Finalizers (~Destrutor): custo e por que raramente escrever um",
+      "pontos": [
+        "Finalizer é o ~NomeDaClasse() — vira Finalize() e é chamado pelo GC antes de coletar o objeto, de forma NÃO determinística",
+        "Custo alto: objeto com finalizer vai pra fila de finalização, sobrevive à primeira coleta (é PROMOVIDO de geração) e só é liberado num ciclo posterior",
+        "Roda numa thread de finalização separada, sem ordem garantida entre objetos, sem hora certa",
+        "Serve de 'rede de segurança': se o usuário esquecer o Dispose, o finalizer ainda libera o recurso não gerenciado — nunca use pra lógica de negócio",
+        "SafeHandle é a alternativa moderna: encapsula o handle não gerenciado e já tem finalizer crítico próprio — você quase nunca precisa escrever ~destrutor",
+        "Pegadinha: finalizer que toca em campo gerenciado pode acessar objeto já coletado; e lançar exceção no finalizer derruba o processo"
+      ],
+      "checkpoint": "Peça pro aluno listar 2 custos do finalizer (fila + promoção de geração) e dizer por que SafeHandle costuma dispensar escrever um",
+      "ref": "05-dotnet-idisposable-finalizers/teoria.md#5-finalizers-destrutor-custo-e-por-que-raramente-escrever-um"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "IAsyncDisposable e await using",
+      "pontos": [
+        "IAsyncDisposable expõe ValueTask DisposeAsync() — pra quando a limpeza precisa ser assíncrona (flush de stream, fechar conexão de rede)",
+        "await using var x = ... : o compilador chama DisposeAsync() no fim do escopo e faz await, sem bloquear a thread",
+        "Casos reais: streams async, DbContext (EF Core implementa IAsyncDisposable), pipelines de rede que dão flush",
+        "Se a classe implementa os dois, prefira DisposeAsync no caminho async; Dispose síncrono fica como fallback",
+        "DisposeAsync não deve fazer .Wait()/.Result — isso reintroduz bloqueio e pode causar deadlock",
+        "Pegadinha: esquecer o 'await' no 'await using' — o DisposeAsync retorna ValueTask e sem await você não espera a limpeza terminar"
+      ],
+      "checkpoint": "Peça um exemplo de recurso que precisa de DisposeAsync e confirme que o aluno sabe que await using chama DisposeAsync no fim do escopo",
+      "ref": "05-dotnet-idisposable-finalizers/teoria.md#6-iasyncdisposable-e-await-using"
+    },
+    {
+      "id": "t7",
+      "fase": "teoria",
+      "titulo": "Armadilhas práticas: HttpClient, double-dispose e Dispose que engole exceção",
+      "pontos": [
+        "HttpClient: NÃO dê new/dispose por requisição — ele mantém sockets em TIME_WAIT; muitos news esgotam as portas (socket exhaustion)",
+        "Solução: HttpClient é feito pra ser reutilizado/singleton; use IHttpClientFactory, que gerencia pool de HttpMessageHandler e respeita DNS",
+        "Esquecer o Dispose de um recurso não gerenciado vaza handle/conexão até o GC (ou nunca, se não houver finalizer) — vazamento silencioso",
+        "Double-dispose: Dispose chamado duas vezes deve ser no-op (é o que o campo _disposed protege)",
+        "Dispose que engole exceção esconde falhas de flush/commit — mas lançar no Dispose dentro de um finally pode mascarar a exceção original do bloco",
+        "Pegadinha clássica de entrevista: 'por que não new HttpClient() por chamada?' — resposta é socket/port exhaustion + DNS stale, resolvido por IHttpClientFactory"
+      ],
+      "checkpoint": "Peça pro aluno explicar em voz alta por que NÃO dar new HttpClient por request e qual é a solução idiomática (IHttpClientFactory)",
+      "ref": "05-dotnet-idisposable-finalizers/teoria.md#7-armadilhas-praticas-httpclient-double-dispose-e-dispose-que-engole-excecao"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Simulação de entrevista",
+      "pontos": [
+        "Agora vira entrevista: eu pergunto, você responde em voz alta como responderia amanhã",
+        "Faço as perguntas do banco uma a uma, da mais comum pra pegadinha (HttpClient, finalizer vs Dispose, SuppressFinalize)",
+        "Depois de cada resposta, critico: o que faltou, o que foi impreciso, como soar mais sênior",
+        "Foco em fluência: resposta direta primeiro (o quê/quando), depois o detalhe técnico que impressiona",
+        "Sem consultar a teoria durante a simulação — é treino de recall sob pressão"
+      ],
+      "checkpoint": "Confirme que o aluno quer começar a simulação e vai responder sem olhar a teoria",
+      "acao": "Conduzir simulação de entrevista no chat: fazer as perguntas do pratica.md uma a uma, ouvir a resposta do aluno e criticar (o que faltou, como soar mais sênior)",
+      "ref": "05-dotnet-idisposable-finalizers/pratica.md"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz do módulo",
+      "pontos": [
+        "10 questões objetivas cobrindo os 7 subtópicos",
+        "Estilo entrevista: uma correta, distratores plausíveis",
+        "Serve pra fixar antes da prova — errar aqui é bom, mostra o que revisar"
+      ],
+      "checkpoint": "Confirme que o aluno está pronto pro quiz de 10 questões",
+      "acao": "Rodar: python3 engine/session.py start Entrevista-Angular-DotNet/apps/modulo-05/questions.json",
+      "ref": "05-dotnet-idisposable-finalizers/pratica.md"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova de fim de módulo",
+      "pontos": [
+        "12 questões, aprovação em 70%",
+        "Feedback por alternativa: cada opção explica por que está certa ou errada",
+        "Cobre tudo: managed vs unmanaged, IDisposable, using, Dispose Pattern, finalizers, IAsyncDisposable, HttpClient"
+      ],
+      "checkpoint": "Confirme que o aluno quer fazer a prova agora (70% pra passar)",
+      "acao": "Rodar: python3 engine/session.py start Entrevista-Angular-DotNet/provas/modulo-05/questions.json --id prova",
+      "ref": "05-dotnet-idisposable-finalizers/pratica.md"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Recap e próximo módulo",
+      "pontos": [
+        "Recap: GC não fecha handles (liberação determinística via Dispose), o contrato IDisposable, using = try/finally, o Dispose Pattern completo (disposing + SuppressFinalize), custo do finalizer + SafeHandle, IAsyncDisposable, e HttpClient/IHttpClientFactory",
+        "Se algo travou na simulação (SuppressFinalize, o bool disposing, HttpClient), vale revisar aquele subtópico antes da entrevista",
+        "Próximo: Módulo 06 — DI, Service Lifetimes & Repository (Singleton/Scoped/Transient + armadilhas, Repository/UoW)",
+        "Conexão: o lifetime Scoped e o descarte de serviços IDisposable pelo container conversam direto com o que vimos aqui"
+      ],
+      "checkpoint": "Pergunte se ficou alguma dúvida do módulo 05 antes de seguir pro 06 (DI & Lifetimes)",
+      "ref": "05-dotnet-idisposable-finalizers/teoria.md"
+    }
+  ]
+}

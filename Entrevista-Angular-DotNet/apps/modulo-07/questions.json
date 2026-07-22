@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 07 — .NET: Async, Escalabilidade & Idempotência",
+  "questoes": [
+    {
+      "pergunta": "Qual é o principal benefício de usar async/await numa API web sob carga?",
+      "opcoes": [
+        "Cada request individual fica mais rápida",
+        "O servidor atende mais requests concorrentes com as mesmas threads (throughput/escalabilidade)",
+        "O código roda em paralelo em vários núcleos automaticamente",
+        "O uso de CPU em cálculos pesados diminui"
+      ],
+      "correta": 1,
+      "explicacao": "Async não muda a latência de uma request (o I/O leva o mesmo tempo). O ganho é liberar a thread durante o await de I/O, de modo que o servidor sirva mais requests concorrentes com as mesmas threads — throughput/escalabilidade."
+    },
+    {
+      "pergunta": "O que é uma Task no C#?",
+      "opcoes": [
+        "Uma thread do sistema operacional dedicada à operação",
+        "Uma abstração de uma operação assíncrona em andamento (uma promessa de resultado)",
+        "Um processo separado que roda em background",
+        "Um lock que serializa o acesso a um recurso"
+      ],
+      "correta": 1,
+      "explicacao": "Task representa uma operação assíncrona em andamento — não é uma thread e, no caso típico de I/O, não cria nenhuma thread para esperar. O compilador reescreve o método async numa máquina de estados que usa a Task."
+    },
+    {
+      "pergunta": "Para um trabalho CPU bound (cálculo pesado), qual abordagem é adequada?",
+      "opcoes": [
+        "async/await sobre o cálculo, que libera a thread durante o processamento",
+        "Envolver a chamada de banco em Task.Run",
+        "Task.Run / paralelismo, para usar mais núcleos e tirar o trabalho do thread da request",
+        "Nada — async/await sozinho já paraleliza o cálculo"
+      ],
+      "correta": 2,
+      "explicacao": "Async puro não ajuda CPU bound, pois não há espera de I/O para liberar a thread. Para cálculo pesado usa-se Task.Run/paralelismo, usando mais núcleos e tirando o trabalho do thread da request."
+    },
+    {
+      "pergunta": "O que caracteriza thread pool starvation?",
+      "opcoes": [
+        "O GC coleta threads que não estão sendo usadas",
+        "Threads ficam bloqueadas (ex.: por .Result/.Wait()), o pool esgota e novas requests entram em fila com latência disparando",
+        "O sistema cria threads infinitamente até estourar a memória",
+        "As threads ficam ociosas demais e são destruídas"
+      ],
+      "correta": 1,
+      "explicacao": "Starvation é o esgotamento do pool: código que bloqueia threads (sync-over-async, I/O síncrono em massa) prende as threads; o pool não acompanha e requests novas entram em fila, disparando a latência."
+    },
+    {
+      "pergunta": "O que causa o deadlock clássico com .Result/.Wait() em ambientes com SynchronizationContext (ASP.NET clássico/UI)?",
+      "opcoes": [
+        "O GC pausa a aplicação durante a operação assíncrona",
+        "A thread bloqueada pelo .Result é justamente a que o await precisa para retomar — ela trava esperando a si mesma",
+        "Duas threads pegam o mesmo lock em ordem inversa",
+        "O thread pool cria threads demais e o sistema trava"
+      ],
+      "correta": 1,
+      "explicacao": "É sync-over-async: o await tenta retomar no SynchronizationContext (a thread da request/UI), mas essa thread está bloqueada pelo .Result esperando a Task — ela precisa de si mesma para continuar. Deadlock."
+    },
+    {
+      "pergunta": "Quando async void é aceitável?",
+      "opcoes": [
+        "Sempre que você não precisar do valor de retorno",
+        "Em métodos de repositório, para não bloquear",
+        "Apenas em event handlers, cuja assinatura exige void",
+        "Em qualquer método público de uma API"
+      ],
+      "correta": 2,
+      "explicacao": "async void é fire-and-forget e engole exceções (não capturáveis por quem chama). Só é aceitável em event handlers, onde a assinatura exige void. Em qualquer outro lugar use async Task."
+    },
+    {
+      "pergunta": "Por que um serviço precisa ser stateless para escalar horizontalmente?",
+      "opcoes": [
+        "Porque stateless usa menos memória por instância",
+        "Porque assim qualquer instância atende qualquer request, permitindo ao load balancer distribuir e adicionar/remover instâncias livremente",
+        "Porque serviços stateless não precisam de banco de dados",
+        "Porque o GC roda melhor em serviços sem estado"
+      ],
+      "correta": 1,
+      "explicacao": "Stateless = não guardar estado de sessão na memória local. Assim qualquer instância atende qualquer request; o load balancer distribui livremente e você escala/reduz sem prender usuário a uma instância. Estado vai pra um store compartilhado (Redis)."
+    },
+    {
+      "pergunta": "Por que sticky sessions (afinidade de sessão) são consideradas um anti-pattern de escala?",
+      "opcoes": [
+        "Porque tornam o load balancer mais lento em todas as requests",
+        "Porque amarram o usuário a uma instância: quebram o balanceamento e derrubam a sessão se aquela instância cair",
+        "Porque exigem HTTPS obrigatoriamente",
+        "Porque impedem o uso de cache distribuído"
+      ],
+      "correta": 1,
+      "explicacao": "Sticky session manda o mesmo usuário sempre pra mesma instância (porque o estado mora lá). Isso quebra o balanceamento, atrapalha escalar/reduzir e perde a sessão se a instância cair. O certo é ser stateless com estado externalizado."
+    },
+    {
+      "pergunta": "Como uma fila (mensageria) ajuda a absorver um pico de tráfego?",
+      "opcoes": [
+        "Processa todas as mensagens instantaneamente em paralelo",
+        "Desacopla produtor e consumidor: a API enfileira e responde rápido, e o worker processa no seu ritmo",
+        "Elimina a necessidade de banco de dados",
+        "Garante entrega exactly-once automaticamente"
+      ],
+      "correta": 1,
+      "explicacao": "A fila desacopla produtor de consumidor: a API só enfileira e responde rápido (ex.: 202), enquanto o worker processa gradualmente. Isso absorve picos sem derrubar o banco. Mas a entrega costuma ser at-least-once, exigindo consumidor idempotente."
+    },
+    {
+      "pergunta": "Quais métodos HTTP são idempotentes por definição?",
+      "opcoes": [
+        "POST e GET",
+        "GET, PUT e DELETE (POST não é)",
+        "Todos os métodos HTTP são idempotentes",
+        "Apenas GET"
+      ],
+      "correta": 1,
+      "explicacao": "GET, PUT e DELETE são idempotentes: repetir dá o mesmo estado final. POST não é — cria um recurso novo a cada chamada. Por isso um POST de pagamento precisa de proteção como a idempotency key."
+    }
+  ]
+}

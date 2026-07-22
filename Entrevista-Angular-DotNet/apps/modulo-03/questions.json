@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 03 — Angular: Router, Lazy Loading, DI & Interceptors",
+  "questoes": [
+    {
+      "pergunta": "Numa rota 'user/:id', onde você lê o valor de ':id' e por que às vezes precisa assinar o Observable em vez de usar o snapshot?",
+      "opcoes": [
+        "No ActivatedRoute.paramMap; se o Angular reutiliza a mesma instância do componente ao mudar de /user/1 para /user/2, o snapshot não atualiza",
+        "No queryParamMap; nunca precisa assinar, o snapshot sempre atualiza",
+        "No Router.url; o snapshot é sempre suficiente",
+        "No InjectionToken da rota; assinar é só questão de estilo"
+      ],
+      "correta": 0,
+      "explicacao": "':id' é um param de rota, lido em ActivatedRoute.paramMap. O snapshot é capturado uma vez na criação; se a mesma instância do componente for reutilizada com outro id, é preciso assinar o Observable paramMap para reagir à mudança."
+    },
+    {
+      "pergunta": "Qual é o ganho REAL de usar lazy loading numa aplicação Angular?",
+      "opcoes": [
+        "Reduz o total de código baixado ao longo de toda a sessão do usuário",
+        "Faz o Angular pular a change detection nas rotas lazy",
+        "Reduz o tamanho do bundle inicial via code splitting, deixando o carregamento inicial mais rápido",
+        "Elimina a necessidade de guards nas rotas carregadas sob demanda"
+      ],
+      "correta": 2,
+      "explicacao": "Lazy loading usa import() dinâmico e o bundler faz code splitting em chunks separados. O ganho é o bundle INICIAL menor e o boot mais rápido; o total baixado ao longo da sessão é parecido com o eager."
+    },
+    {
+      "pergunta": "Qual API você usa para carregar UM componente standalone sob demanda numa rota?",
+      "opcoes": [
+        "loadChildren: () => import('./x').then(m => m.X_ROUTES)",
+        "component: X com providedIn: 'root'",
+        "loadComponent: () => import('./x.component').then(m => m.XComponent)",
+        "preload: () => import('./x.component')"
+      ],
+      "correta": 2,
+      "explicacao": "loadComponent carrega um único componente standalone sob demanda. loadChildren carrega um conjunto de rotas filhas. 'component' é eager."
+    },
+    {
+      "pergunta": "Qual a diferença entre 'lazy com PreloadAllModules' e 'eager'?",
+      "opcoes": [
+        "São idênticos: ambos colocam o código no bundle inicial",
+        "Com PreloadAllModules o código continua em chunk separado, baixado em background DEPOIS do boot; eager coloca o código no bundle inicial, carregado no boot",
+        "PreloadAllModules desativa o lazy loading e volta tudo pra eager",
+        "Eager baixa em background depois do boot; PreloadAllModules baixa junto com a app"
+      ],
+      "correta": 1,
+      "explicacao": "Eager: código no bundle inicial, carregado no boot. PreloadAllModules: o código continua em chunk lazy separado; a diferença é apenas QUANDO baixa — em background, após o boot. O bundle inicial continua pequeno."
+    },
+    {
+      "pergunta": "Por que CanMatch é preferível a CanActivate para proteger uma rota LAZY?",
+      "opcoes": [
+        "CanActivate não funciona com rotas lazy",
+        "CanMatch roda antes do casamento da rota e, se reprovar, o Angular nem baixa o chunk; CanActivate roda depois e já baixou o chunk",
+        "CanMatch é mais rápido porque roda em Web Worker",
+        "CanActivate não pode redirecionar; CanMatch pode"
+      ],
+      "correta": 1,
+      "explicacao": "CanMatch roda ANTES de a rota casar. Se reprovar, o router segue procurando outra rota e não baixa o chunk lazy. CanActivate roda DEPOIS que a rota casou (chunk já baixado), então desperdiça o download ao barrar."
+    },
+    {
+      "pergunta": "O que faz um resolver (ResolveFn) numa rota?",
+      "opcoes": [
+        "Barra a saída da rota se houver alterações não salvas",
+        "Decide se o usuário pode ativar a rota com base em permissão",
+        "Pré-carrega o chunk lazy da rota em background",
+        "Pré-carrega dados ANTES de ativar a rota, deixando o componente pronto com os dados em ActivatedRoute.data"
+      ],
+      "correta": 3,
+      "explicacao": "Um resolver pré-carrega dados antes da ativação; o componente já nasce com os dados em route.data, evitando o flash de tela vazia. O trade-off é que a navegação espera o resolver terminar."
+    },
+    {
+      "pergunta": "O que 'providedIn: root' garante além de tornar o service um singleton?",
+      "opcoes": [
+        "Que o service seja recriado a cada rota",
+        "Que o service só possa ser injetado via constructor, não via inject()",
+        "Que o service tenha uma instância diferente por componente",
+        "Que o service seja tree-shakable: removido do bundle se ninguém o injetar"
+      ],
+      "correta": 3,
+      "explicacao": "providedIn: 'root' registra no injetor raiz (singleton na app) E é tree-shakable: se nenhum código injeta o service, o compilador o remove do bundle."
+    },
+    {
+      "pergunta": "Por que você usa um InjectionToken em vez de uma interface como chave de DI?",
+      "opcoes": [
+        "Porque interfaces são mais lentas em runtime",
+        "Porque interfaces somem na compilação (não existem em runtime) e não podem ser chave de DI; o InjectionToken permite injetar valores não-classe com type-safety",
+        "Porque o InjectionToken cria automaticamente um singleton",
+        "Porque interfaces só funcionam com constructor injection"
+      ],
+      "correta": 1,
+      "explicacao": "Tipos/interfaces do TypeScript são apagados na compilação e não existem em runtime, então não servem de chave de DI. O InjectionToken é um objeto real em runtime que permite injetar config, strings ou funções com type-safety."
+    },
+    {
+      "pergunta": "Você precisa anexar um header Authorization em todas as requisições. Qual é a abordagem correta num interceptor funcional?",
+      "opcoes": [
+        "req.headers.set('Authorization', ...) e retornar o mesmo req, pois a request é mutável",
+        "Modificar next(req).headers depois da resposta",
+        "Registrar o token no InjectionToken APP_CONFIG e o Angular anexa sozinho",
+        "Clonar a request com req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) e passar o clone para next()"
+      ],
+      "correta": 3,
+      "explicacao": "A HttpRequest é imutável. Você clona com req.clone({ setHeaders: {...} }) e passa o CLONE para next(). Tentar mutar req.headers direto não funciona."
+    },
+    {
+      "pergunta": "Você registra withInterceptors([auth, error]). Em que ordem eles processam a requisição e a resposta?",
+      "opcoes": [
+        "Na ida e na volta ambos rodam na mesma ordem: auth depois error",
+        "Na ida rodam na ordem do array (auth, depois error); na volta em ordem inversa (error recebe a response primeiro, depois auth)",
+        "A ordem é aleatória; o Angular decide em runtime",
+        "Na ida rodam em ordem inversa; na volta na ordem do array"
+      ],
+      "correta": 1,
+      "explicacao": "Interceptores formam um pipeline em cebola: na ida (request) rodam na ordem do array; na volta (response) em ordem inversa. Com [auth, error], error recebe a resposta antes de auth. Por isso a ordem importa (ex.: retry vs erro)."
+    }
+  ]
+}

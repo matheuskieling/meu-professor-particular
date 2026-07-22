@@ -1,0 +1,158 @@
+{
+  "modulo": "01",
+  "titulo": "Angular — Fundamentos & Ciclo de Vida",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que este módulo cobre e por que cai em entrevista",
+      "pontos": [
+        "Este módulo é prep de entrevista real: componente standalone, data binding, change detection, OnPush e o ciclo de vida completo",
+        "Ciclo de vida e change detection são clássicos de entrevista Angular — separam quem decorou de quem entende o motor por dentro",
+        "Entrevistador quer ouvir o 'porquê': por que ngOnInit e não constructor, por que OnPush é mais rápido, por que precisa dar unsubscribe",
+        "Formato: eu explico um tópico por vez → você pergunta à vontade → simulo uma entrevista com você → quiz → prova de fim de módulo",
+        "Meta: você conseguir responder cada pergunta soando sênior, sem travar e sem enrolar"
+      ],
+      "checkpoint": "Confirme que o aluno topa o formato (explico → pergunta → simulação → quiz → prova) e que a entrevista é amanhã, então o foco é fluência nas respostas",
+      "ref": "01-angular-fundamentos-ciclo-vida/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "Componente standalone: anatomia, constructor vs ngOnInit",
+      "pontos": [
+        "@Component com selector, template/templateUrl e imports (standalone traz os próprios imports, sem NgModule)",
+        "Angular instancia a classe, resolve o DI no constructor, cria a view e só então chama ngOnInit",
+        "Constructor: só injeção de dependência e init trivial de campos — nada de I/O, HTTP ou acesso a @Input",
+        "ngOnInit: aqui os @Input já estão setados; é onde vai a lógica de inicialização de verdade",
+        "Pegadinha clássica: fazer HTTP no constructor deixa o componente difícil de testar e roda antes dos inputs chegarem"
+      ],
+      "checkpoint": "Peça pro aluno explicar em uma frase por que lógica pesada NÃO vai no constructor",
+      "ref": "01-angular-fundamentos-ciclo-vida/teoria.md#1-componente-standalone-anatomia-e-constructor-vs-ngoninit"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "Data binding e o essencial de @Input/@Output",
+      "pontos": [
+        "Quatro formas: interpolação {{ }}, property binding [x], event binding (x), two-way [(x)]",
+        "@Input passa dado de pai pra filho; @Output com EventEmitter emite evento de filho pra pai",
+        "Two-way [(ngModel)] é açúcar de [value] + (valueChange)",
+        "Mudança num @Input dispara ngOnChanges antes do ngOnInit na primeira vez",
+        "Ligar isso aqui prepara o terreno pra entender ngOnChanges e SimpleChanges no ciclo de vida"
+      ],
+      "checkpoint": "Confirme que o aluno sabe distinguir @Input (entra dado) de @Output (sai evento) e as 4 sintaxes de binding",
+      "ref": "01-angular-fundamentos-ciclo-vida/teoria.md#2-data-binding-e-o-essencial-de-inputoutput"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "Change detection e o papel do Zone.js",
+      "pontos": [
+        "Change detection = processo do Angular de sincronizar o modelo (dados) com a view (DOM)",
+        "Zone.js faz monkey-patch de APIs async (eventos DOM, setTimeout, Promise, XHR) pra avisar o Angular 'algo pode ter mudado'",
+        "Depois de um evento async, o Angular percorre a árvore de componentes de cima pra baixo checando bindings",
+        "Estratégia padrão (Default/CheckAlways): checa TODOS os componentes a cada ciclo",
+        "Pegadinha: change detection não sabe O QUE mudou — ele reavalia bindings e compara; Zone.js só diz QUANDO rodar"
+      ],
+      "checkpoint": "Peça pro aluno explicar, com as próprias palavras, o que o Zone.js faz e o que a change detection faz — são coisas diferentes",
+      "ref": "01-angular-fundamentos-ciclo-vida/teoria.md#3-change-detection-e-o-papel-do-zonejs"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "ChangeDetectionStrategy.OnPush",
+      "pontos": [
+        "OnPush pula a checagem do componente a menos que: mudança de REFERÊNCIA de um @Input, evento originado no componente, ou async pipe emitindo",
+        "Exige imutabilidade: mutar o objeto sem trocar a referência não dispara — precisa criar um objeto novo",
+        "Ganho de performance: poda subárvores inteiras da checagem em apps grandes",
+        "markForCheck: marca o componente pra ser checado no próximo ciclo; detectChanges: força a checagem agora",
+        "Pegadinha: com OnPush, alterar array com push() não atualiza a view — tem que criar novo array ([...arr])"
+      ],
+      "checkpoint": "Peça os 3 gatilhos do OnPush e por que imutabilidade é obrigatória; confirme markForCheck vs detectChanges",
+      "ref": "01-angular-fundamentos-ciclo-vida/teoria.md#4-changedetectionstrategyonpush"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Ciclo de vida completo na ordem certa",
+      "pontos": [
+        "Ordem: ngOnChanges → ngOnInit → ngDoCheck → ngAfterContentInit → ngAfterContentChecked → ngAfterViewInit → ngAfterViewChecked → ngOnDestroy",
+        "ngOnChanges recebe SimpleChanges (previousValue/currentValue/firstChange); dispara antes de ngOnInit e a cada mudança de @Input",
+        "@ViewChild fica disponível em ngAfterViewInit; @ContentChild em ngAfterContentInit — antes disso são undefined",
+        "Content = projetado via ng-content (vem do pai); View = template do próprio componente e filhos",
+        "Pegadinha: ler @ViewChild no ngOnInit dá undefined; e mexer em binding no ngAfterViewInit pode dar ExpressionChangedAfterItHasBeenCheckedError"
+      ],
+      "checkpoint": "Peça pro aluno recitar a ordem dos 8 hooks e dizer em qual @ViewChild já está pronto",
+      "ref": "01-angular-fundamentos-ciclo-vida/teoria.md#5-ciclo-de-vida-completo-na-ordem-certa"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "ngOnDestroy e vazamento de memória",
+      "pontos": [
+        "ngOnDestroy roda quando o componente é destruído — hora de limpar tudo que sobreviveria a ele",
+        "Observables de vida longa sem unsubscribe = memory leak: o componente morto continua referenciado",
+        "Padrões: takeUntilDestroyed (Angular 16+), takeUntil(destroy$), ou DestroyRef.onDestroy()",
+        "async pipe faz unsubscribe automático — prefira ele quando der",
+        "Também limpar: setInterval/setTimeout, addEventListener manual, subscriptions de WebSocket/RxJS de fontes contínuas"
+      ],
+      "checkpoint": "Peça um exemplo de leak e a forma moderna de resolver (takeUntilDestroyed ou DestroyRef); confirme que async pipe dispensa unsubscribe",
+      "ref": "01-angular-fundamentos-ciclo-vida/teoria.md#6-ngondestroy-e-vazamento-de-memoria"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Simulação de entrevista",
+      "pontos": [
+        "Agora vira entrevista: eu pergunto, você responde em voz alta como responderia amanhã",
+        "Faço as perguntas do banco uma a uma, da mais comum pra pegadinha",
+        "Depois de cada resposta, critico: o que faltou, o que foi impreciso, como soar mais sênior",
+        "Foco em fluência: resposta direta primeiro, depois o detalhe técnico que impressiona",
+        "Sem consultar a teoria durante a simulação — é treino de recall sob pressão"
+      ],
+      "checkpoint": "Confirme que o aluno quer começar a simulação e que vai responder sem olhar a teoria",
+      "acao": "Conduzir simulação de entrevista no chat: fazer as perguntas do pratica.md uma a uma, ouvir a resposta do aluno e criticar (o que faltou, como soar mais sênior)",
+      "ref": "01-angular-fundamentos-ciclo-vida/pratica.md"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz do módulo",
+      "pontos": [
+        "10 questões objetivas cobrindo os 6 subtópicos",
+        "Estilo entrevista: uma correta, distratores plausíveis",
+        "Serve pra fixar antes da prova — errar aqui é bom, mostra o que revisar"
+      ],
+      "checkpoint": "Confirme que o aluno está pronto pro quiz de 10 questões",
+      "acao": "Rodar: python3 engine/session.py start Entrevista-Angular-DotNet/apps/modulo-01/questions.json",
+      "ref": "01-angular-fundamentos-ciclo-vida/pratica.md"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova de fim de módulo",
+      "pontos": [
+        "12 questões, aprovação em 70%",
+        "Feedback por alternativa: cada opção explica por que está certa ou errada",
+        "Cobre tudo: standalone, binding, change detection, OnPush, ciclo de vida, ngOnDestroy"
+      ],
+      "checkpoint": "Confirme que o aluno quer fazer a prova agora (70% pra passar)",
+      "acao": "Rodar: python3 engine/session.py start Entrevista-Angular-DotNet/provas/modulo-01/questions.json --id prova",
+      "ref": "01-angular-fundamentos-ciclo-vida/pratica.md"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Recap e próximo módulo",
+      "pontos": [
+        "Recap: constructor x ngOnInit, o motor do change detection + Zone.js, OnPush e imutabilidade, ordem dos 8 hooks, unsubscribe/DestroyRef",
+        "Se algo travou na simulação, vale revisar aquele subtópico específico antes da entrevista",
+        "Próximo: Módulo 02 — Signals & Reatividade (a evolução do change detection no Angular moderno)",
+        "Signals conversam direto com o que vimos aqui: são a alternativa a Zone.js pra reatividade granular"
+      ],
+      "checkpoint": "Pergunte se ficou alguma dúvida do módulo 01 antes de seguir pro 02 (Signals)",
+      "ref": "01-angular-fundamentos-ciclo-vida/teoria.md"
+    }
+  ]
+}

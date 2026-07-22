@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 02 — Angular: Signals & Reatividade",
+  "questoes": [
+    {
+      "pergunta": "Qual modelo de reatividade descreve corretamente um Signal do Angular?",
+      "opcoes": [
+        "Push e assíncrono, como um Observable",
+        "Pull e síncrono: o consumidor lê o valor atual e a leitura registra a dependência",
+        "Push e síncrono, sempre notificando via subscription",
+        "Pull e assíncrono, resolvendo via Promise"
+      ],
+      "correta": 1,
+      "explicacao": "Signal é pull (você lê chamando a função) e síncrono (sempre tem o valor atual). A leitura dentro de um contexto reativo registra a dependência."
+    },
+    {
+      "pergunta": "Por que Signals permitem change detection mais granular do que o Zone.js?",
+      "opcoes": [
+        "Porque desativam completamente a change detection",
+        "Porque o Zone.js roda mais rápido quando há Signals",
+        "Porque a leitura de um signal rastreia dependências, então o Angular sabe exatamente quem reavaliar",
+        "Porque Signals rodam em outra thread"
+      ],
+      "correta": 2,
+      "explicacao": "O Zone.js reverifica a árvore inteira porque não sabe o que mudou. Signals rastreiam dependências na leitura, então o Angular atualiza cirurgicamente só quem dependia do valor que mudou."
+    },
+    {
+      "pergunta": "Você tem `const lista = signal<string[]>([])` e faz `lista().push('a')`. O template com `@for` não atualiza. Por quê?",
+      "opcoes": [
+        "Porque `@for` não funciona com signals",
+        "Porque `push` muta o array no lugar; a referência não muda e Object.is considera que nada mudou",
+        "Porque signals de array precisam de `mutate()`",
+        "Porque faltou chamar `detectChanges()`"
+      ],
+      "correta": 1,
+      "explicacao": "A igualdade padrão é Object.is. push muta a mesma referência, então o signal não detecta mudança. Corrija criando nova referência: lista.update(l => [...l, 'a'])."
+    },
+    {
+      "pergunta": "Qual afirmação sobre `computed()` está correta?",
+      "opcoes": [
+        "É um bom lugar para efeitos colaterais como logs e chamadas HTTP",
+        "Recalcula em todo ciclo de change detection, independentemente de dependências",
+        "É memoizado e lazy: só recalcula quando uma dependência muda E alguém lê o valor",
+        "Retorna um WritableSignal que pode receber set()"
+      ],
+      "correta": 2,
+      "explicacao": "computed é derivado, somente-leitura, memoizado e lazy. Só recalcula quando uma dependência realmente muda e o valor é consumido; deve ser puro (sem efeito colateral)."
+    },
+    {
+      "pergunta": "Qual é o uso correto de `effect()`?",
+      "opcoes": [
+        "Derivar um novo valor de estado a partir de outros signals",
+        "Executar efeitos colaterais reativos, como sincronizar um signal com o localStorage",
+        "Substituir o computed por ser mais performático",
+        "Fazer cache memoizado de valores derivados"
+      ],
+      "correta": 1,
+      "explicacao": "effect é para efeitos colaterais (log, sync com localStorage, integrar com algo não-reativo). Derivar estado é trabalho do computed."
+    },
+    {
+      "pergunta": "Por que geralmente é um cheiro de design precisar de `allowSignalWrites` dentro de um effect?",
+      "opcoes": [
+        "Porque effect nunca deve ler signals",
+        "Porque escrever signal dentro de effect quase sempre indica que você deveria usar um computed para derivar estado",
+        "Porque allowSignalWrites desativa a change detection",
+        "Porque effect não roda no injection context"
+      ],
+      "correta": 1,
+      "explicacao": "Por padrão effect não escreve signals (evita loops). Precisar de allowSignalWrites normalmente significa que você está derivando estado num effect — o certo é computed."
+    },
+    {
+      "pergunta": "Quando você deveria preferir um Observable (RxJS) a um Signal?",
+      "opcoes": [
+        "Para guardar o valor atual de um contador na tela",
+        "Para uma busca com debounce que cancela o request anterior a cada tecla",
+        "Para derivar o total = preço * quantidade",
+        "Para armazenar o item selecionado da lista"
+      ],
+      "correta": 1,
+      "explicacao": "Debounce e cancelamento (switchMap/debounceTime) são coordenação no tempo — território do RxJS. Estado síncrono (contador, seleção, derivados) é Signal."
+    },
+    {
+      "pergunta": "O que faz `toSignal(obs$)` e qual cuidado ele exige?",
+      "opcoes": [
+        "Converte um signal em Observable; exige unsubscribe manual",
+        "Converte um Observable em signal e desinscreve sozinho; sem initialValue o signal fica undefined até a 1ª emissão",
+        "Cria um WritableSignal que emite no Observable a cada set",
+        "Serve apenas para HttpClient e não funciona com outros streams"
+      ],
+      "correta": 1,
+      "explicacao": "toSignal converte Observable → Signal e cuida do unsubscribe. Sem initialValue, o valor é undefined até a primeira emissão."
+    },
+    {
+      "pergunta": "Qual afirmação sobre zoneless change detection é correta?",
+      "opcoes": [
+        "É o modo padrão e estável desde o Angular 16",
+        "Elimina a necessidade de RxJS no projeto",
+        "É ligado com provideExperimentalZonelessChangeDetection e usa a mudança de signal como gatilho em vez do Zone.js",
+        "Só funciona com componentes que não usam OnPush"
+      ],
+      "correta": 2,
+      "explicacao": "Zoneless remove o Zone.js; a atualização passa a ser disparada por mudanças de signal (e alguns gatilhos de template). Ainda é experimental e casa bem com OnPush."
+    },
+    {
+      "pergunta": "Sobre gerência de subscriptions com Signals no projeto, o que é verdade?",
+      "opcoes": [
+        "Signals eliminam qualquer preocupação com unsubscribe, inclusive em RxJS",
+        "Todo Observable vaza memória se não for desinscrito, incluindo requests HTTP pontuais",
+        "Signals não têm subscription, mas streams RxJS de vida longa ainda vazam se não desinscritos; use async pipe ou takeUntilDestroyed",
+        "takeUntilDestroyed só funciona dentro do ngOnDestroy"
+      ],
+      "correta": 2,
+      "explicacao": "Signals não têm subscription. Mas RxJS continua no jogo: streams de vida longa (WebSocket, interval) vazam se não desinscritos. Prefira async pipe ou takeUntilDestroyed. HTTP pontual completa e não vaza."
+    }
+  ]
+}

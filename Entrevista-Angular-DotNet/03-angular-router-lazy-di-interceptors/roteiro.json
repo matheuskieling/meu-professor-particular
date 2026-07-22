@@ -1,0 +1,165 @@
+{
+  "modulo": "03",
+  "titulo": "Angular — Router, Lazy Loading, DI & Interceptors",
+  "beats": [
+    {
+      "id": "intro",
+      "fase": "teoria",
+      "titulo": "Abertura — o que este módulo cobre e por que cai MUITO em entrevista",
+      "pontos": [
+        "Cobre o Router do Angular: rotas, params/queryParams, rotas filhas, lazy loading, preloading, guards funcionais, resolvers, DI hierárquico e HTTP interceptors funcionais",
+        "Lazy loading e interceptors são dois dos temas MAIS pedidos em entrevista Angular pleno/sênior — todo entrevistador quer ouvir você explicar bundle inicial e anexar token de auth",
+        "O entrevistador quer o 'porquê': por que carregar sob demanda, por que CanMatch é melhor que CanActivate com lazy, por que providedIn:'root' é tree-shakable",
+        "Foco em Angular 17+/18: standalone, functional guards (CanActivateFn), functional interceptors com provideHttpClient(withInterceptors(...)), inject(), loadComponent/loadChildren",
+        "Formato: eu explico um subtópico por vez → você pergunta → simulo a entrevista → quiz de 10 → prova de 12 (70%)",
+        "Meta: você responder cada pergunta com fluência e soar sênior, sem travar — a entrevista é amanhã"
+      ],
+      "checkpoint": "Confirme que o aluno topa o formato e reforce que lazy loading e interceptors são quase certeza de cair — vale caprichar nesses dois",
+      "ref": "03-angular-router-lazy-di-interceptors/teoria.md"
+    },
+    {
+      "id": "t1",
+      "fase": "teoria",
+      "titulo": "Roteamento essencial: Routes, outlet, links, params e rotas filhas",
+      "pontos": [
+        "Routes é um array de objetos { path, component, children, ... }; provideRouter(routes) registra no bootstrap standalone",
+        "router-outlet é o placeholder onde o componente da rota ativa é renderizado; rotas filhas usam um outlet aninhado",
+        "routerLink navega declarativamente; Router.navigate/navigateByUrl navega programaticamente",
+        "Params de rota (path 'user/:id') vêm de ActivatedRoute.paramMap; queryParams (?tab=x) de queryParamMap — geralmente como Observable ou snapshot",
+        "children define rotas aninhadas que renderizam num router-outlet interno; path:'' + pathMatch:'full' e a rota curinga '**' para 404",
+        "Pegadinha: snapshot.paramMap não atualiza se a URL muda sem recriar o componente (mesma rota, id diferente) — aí precisa assinar o Observable"
+      ],
+      "checkpoint": "Peça pro aluno diferenciar param de rota (:id) de queryParam (?x=) e explicar quando usar snapshot vs assinar paramMap",
+      "ref": "03-angular-router-lazy-di-interceptors/teoria.md#1-roteamento-essencial-routes-outlet-links-params-e-rotas-filhas"
+    },
+    {
+      "id": "t2",
+      "fase": "teoria",
+      "titulo": "Lazy loading: loadChildren, loadComponent e o ganho real de bundle",
+      "pontos": [
+        "Eager: tudo entra no bundle inicial e carrega no boot; Lazy: o código da rota só é baixado quando o usuário navega até ela",
+        "loadComponent: () => import('./x').then(m => m.X) carrega um componente standalone sob demanda; loadChildren carrega um conjunto de rotas filhas",
+        "O ganho é code splitting: o bundler (esbuild/webpack) quebra em chunks separados, o bundle inicial fica menor e o first paint mais rápido",
+        "loadChildren pode apontar para um arquivo de rotas (() => import('./admin.routes').then(m => m.ADMIN_ROUTES)) — sem NgModule no mundo standalone",
+        "O import() dinâmico é o que dispara o carregamento assíncrono do chunk; o Angular resolve a promise antes de ativar a rota",
+        "Pegadinha: lazy loading reduz o bundle INICIAL, mas o total baixado no fim é parecido; o ganho é percepção de velocidade no primeiro carregamento"
+      ],
+      "checkpoint": "Peça pro aluno explicar em uma frase por que lazy loading melhora o tempo de carregamento inicial e o que é code splitting",
+      "ref": "03-angular-router-lazy-di-interceptors/teoria.md#2-lazy-loading-loadchildren-loadcomponent-e-o-ganho-real-de-bundle"
+    },
+    {
+      "id": "t3",
+      "fase": "teoria",
+      "titulo": "Preloading strategies: PreloadAllModules, NoPreloading e custom",
+      "pontos": [
+        "Preloading = baixar os chunks lazy em segundo plano DEPOIS que a app inicial já carregou, pra que a navegação futura seja instantânea",
+        "NoPreloading (padrão): nada é pré-carregado; cada rota lazy só baixa quando o usuário navega",
+        "PreloadAllModules: assim que a app termina de carregar, o Angular baixa todos os chunks lazy em background",
+        "Registro: provideRouter(routes, withPreloading(PreloadAllModules)) no Angular standalone",
+        "Custom PreloadingStrategy: implementa preload(route, load) e decide caso a caso — ex.: só pré-carregar rotas com data:{preload:true}",
+        "Pegadinha: preloading NÃO é o mesmo que eager — o código continua em chunk separado; a diferença é QUANDO baixa (depois do boot, não junto)"
+      ],
+      "checkpoint": "Peça pro aluno explicar a diferença entre eager, lazy sem preload e lazy com PreloadAllModules",
+      "ref": "03-angular-router-lazy-di-interceptors/teoria.md#3-preloading-strategies-preloadallmodules-nopreloading-e-custom"
+    },
+    {
+      "id": "t4",
+      "fase": "teoria",
+      "titulo": "Guards funcionais: CanActivate, CanMatch, CanDeactivate e resolvers",
+      "pontos": [
+        "Guards funcionais são funções (CanActivateFn, CanMatchFn, etc.) que retornam boolean | UrlTree | Observable/Promise disso; usam inject() por dentro",
+        "CanActivate: roda DEPOIS que a rota casou — barra a ativação (ex.: usuário logado?); retornar UrlTree redireciona (ex.: para /login)",
+        "CanMatch: roda ANTES de a rota casar — se falhar, o router segue avaliando outras rotas; é ótimo com lazy porque impede baixar o chunk se o guard reprovar",
+        "CanDeactivate: barra a SAÍDA da rota (ex.: 'tem alterações não salvas, quer sair?'); recebe o componente atual",
+        "Resolver (ResolveFn): pré-carrega dados ANTES de ativar a rota; o componente já nasce com os dados prontos em ActivatedRoute.data",
+        "Pegadinha: CanActivate com lazy ainda BAIXA o chunk antes de barrar; CanMatch reprova sem baixar — por isso CanMatch é o preferido pra proteger rota lazy"
+      ],
+      "checkpoint": "Peça pro aluno explicar por que CanMatch é melhor que CanActivate para proteger uma rota lazy e o que um resolver resolve",
+      "ref": "03-angular-router-lazy-di-interceptors/teoria.md#4-guards-funcionais-canactivate-canmatch-candeactivate-e-resolvers"
+    },
+    {
+      "id": "t5",
+      "fase": "teoria",
+      "titulo": "Injeção de dependência: injector hierárquico, providedIn root e tokens",
+      "pontos": [
+        "O Angular tem injetores hierárquicos: root (app inteira) → rota (route-level providers) → componente; a busca sobe a árvore até achar o provider",
+        "providedIn:'root' registra o service no injetor raiz e o torna tree-shakable: se ninguém injeta, ele é removido do bundle",
+        "InjectionToken cria um token para injetar valores que não são classes (config, string, função) com type-safety",
+        "inject() é a API funcional (usada em guards/interceptors/effects e no campo da classe); constructor injection é a forma clássica — ambos funcionam",
+        "Multi providers (multi:true) permitem múltiplos valores no mesmo token, injetados como array (padrão de plugin/estratégia)",
+        "Pegadinha: providedIn:'root' é singleton na app toda; um provider em route-level ou no componente cria uma instância própria naquele escopo — não é o mesmo objeto"
+      ],
+      "checkpoint": "Peça pro aluno explicar o que providedIn:'root' faz (singleton + tree-shaking) e como o injetor busca subindo a hierarquia",
+      "ref": "03-angular-router-lazy-di-interceptors/teoria.md#5-injecao-de-dependencia-injector-hierarquico-providedin-root-e-tokens"
+    },
+    {
+      "id": "t6",
+      "fase": "teoria",
+      "titulo": "HTTP Interceptors funcionais: pipeline, casos de uso e ordem",
+      "pontos": [
+        "Interceptor funcional é uma HttpInterceptorFn (req, next) => next(req): intercepta toda requisição HTTP num pipeline, podendo clonar/modificar a req e observar a resposta",
+        "Casos clássicos: anexar token de auth (Authorization: Bearer), tratamento de erro global (catchError + 401→logout), retry, logging e loading spinner",
+        "Anexar token: req é imutável — clona com req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) e passa pro next",
+        "Erro global: next(req).pipe(catchError(err => ...)) captura falhas de qualquer requisição num só lugar",
+        "Ordem: os interceptores rodam na ORDEM em que estão no array de withInterceptors na ida (request), e na ordem INVERSA na volta (response)",
+        "Registro: provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])) — funcional, sem a classe HTTP_INTERCEPTORS antiga"
+      ],
+      "checkpoint": "Peça pro aluno descrever como anexar um token em todas as requisições (clonar a req) e citar 3 casos de uso de interceptor",
+      "ref": "03-angular-router-lazy-di-interceptors/teoria.md#6-http-interceptors-funcionais-pipeline-casos-de-uso-e-ordem"
+    },
+    {
+      "id": "p1",
+      "fase": "pratica",
+      "titulo": "Simulação de entrevista",
+      "pontos": [
+        "Agora vira entrevista: eu pergunto, você responde em voz alta como responderia amanhã",
+        "Faço as perguntas do banco uma a uma, da mais comum pra pegadinha",
+        "Depois de cada resposta, critico: o que faltou, o que foi impreciso, como soar mais sênior",
+        "Foco em fluência: resposta direta primeiro, depois o detalhe técnico que impressiona (ex.: 'CanMatch não baixa o chunk')",
+        "Sem consultar a teoria durante a simulação — é treino de recall sob pressão"
+      ],
+      "checkpoint": "Confirme que o aluno quer começar a simulação e que vai responder sem olhar a teoria",
+      "acao": "Conduzir simulação de entrevista no chat: fazer as perguntas do pratica.md uma a uma, ouvir a resposta do aluno e criticar (o que faltou, como soar mais sênior)",
+      "ref": "03-angular-router-lazy-di-interceptors/pratica.md"
+    },
+    {
+      "id": "q1",
+      "fase": "quiz",
+      "titulo": "Quiz do módulo",
+      "pontos": [
+        "10 questões objetivas cobrindo os 6 subtópicos (roteamento, lazy, preloading, guards, DI, interceptors)",
+        "Estilo entrevista: uma correta, distratores plausíveis",
+        "Serve pra fixar antes da prova — errar aqui é bom, mostra o que revisar"
+      ],
+      "checkpoint": "Confirme que o aluno está pronto pro quiz de 10 questões",
+      "acao": "Rodar: python3 engine/session.py start Entrevista-Angular-DotNet/apps/modulo-03/questions.json",
+      "ref": "03-angular-router-lazy-di-interceptors/pratica.md"
+    },
+    {
+      "id": "prova",
+      "fase": "prova",
+      "titulo": "Prova de fim de módulo",
+      "pontos": [
+        "12 questões, aprovação em 70%",
+        "Feedback por alternativa: cada opção explica por que está certa ou errada",
+        "Cobre tudo: params/rotas filhas, loadComponent/loadChildren, preloading, CanActivate/CanMatch/CanDeactivate, resolvers, DI hierárquico, interceptors e ordem"
+      ],
+      "checkpoint": "Confirme que o aluno quer fazer a prova agora (70% pra passar)",
+      "acao": "Rodar: python3 engine/session.py start Entrevista-Angular-DotNet/provas/modulo-03/questions.json --id prova",
+      "ref": "03-angular-router-lazy-di-interceptors/pratica.md"
+    },
+    {
+      "id": "fim",
+      "fase": "fechamento",
+      "titulo": "Recap e próximo módulo",
+      "pontos": [
+        "Recap: rotas/params/filhas, lazy com loadComponent/loadChildren e code splitting, preloading strategies, guards funcionais (CanMatch > CanActivate no lazy), resolvers, DI hierárquico + providedIn:'root', interceptors funcionais (token, erro, ordem)",
+        "Se algo travou na simulação — especialmente lazy loading ou interceptors — vale revisar aquele subtópico antes da entrevista",
+        "Fecha o bloco Angular (01 fundamentos, 02 signals, 03 router/DI/interceptors); agora viramos pra .NET",
+        "Próximo: Módulo 04 — .NET Runtime, GC & Memory Management (CLR, stack vs heap, gerações do GC, boxing, LOH, Span<T>)"
+      ],
+      "checkpoint": "Pergunte se ficou alguma dúvida do módulo 03 antes de seguir pro 04 (.NET Runtime & GC)",
+      "ref": "03-angular-router-lazy-di-interceptors/teoria.md"
+    }
+  ]
+}

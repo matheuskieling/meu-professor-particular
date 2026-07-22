@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 01: Angular Ciclo de Vida & Change Detection",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "Um candidato diz: 'coloco a chamada HTTP no constructor pra já ir buscando os dados'. Qual a melhor crítica sênior?",
+      "opcoes": [
+        "Está certo, o constructor é o lugar ideal pra buscar dados",
+        "No constructor os @Input ainda são undefined e o efeito colateral prejudica testabilidade; HTTP vai no ngOnInit",
+        "O constructor não aceita código async, então dá erro de compilação",
+        "Deveria usar o ngAfterViewInit pra chamadas HTTP"
+      ],
+      "correta": 1,
+      "explicacao": "No constructor os inputs ainda não chegaram e acoplar I/O à construção atrapalha testes. A inicialização de verdade vai no ngOnInit.",
+      "feedbacks": [
+        "Não. O constructor é só pra DI e init trivial; buscar dados ali roda antes dos inputs e prejudica os testes.",
+        "Correto. Inputs undefined no constructor + testabilidade são os dois pontos-chave; ngOnInit é o lugar certo.",
+        "Não. O constructor pode disparar código assíncrono; o problema não é sintático, é de timing e testabilidade.",
+        "Não. ngAfterViewInit é pra manipular a view (@ViewChild), não pra inicialização de dados — isso é ngOnInit."
+      ]
+    },
+    {
+      "pergunta": "O que caracteriza um componente standalone no Angular 17+?",
+      "opcoes": [
+        "Ele não pode receber @Input nem @Output",
+        "Ele declara os próprios imports no @Component e dispensa NgModule",
+        "Ele não participa da change detection",
+        "Ele só pode ser usado com lazy loading"
+      ],
+      "correta": 1,
+      "explicacao": "Standalone traz os próprios imports e não precisa de NgModule, facilitando lazy loading, tree-shaking e testes.",
+      "feedbacks": [
+        "Não. Standalone recebe @Input/@Output normalmente; a diferença é dispensar o NgModule.",
+        "Correto. Os imports vão no próprio @Component; sem NgModule o componente fica autocontido.",
+        "Não. Standalone participa da change detection como qualquer componente.",
+        "Não. Ele facilita lazy loading, mas pode ser usado em qualquer contexto."
+      ]
+    },
+    {
+      "pergunta": "Qual afirmação separa corretamente Zone.js de change detection?",
+      "opcoes": [
+        "O Zone.js compara os bindings; a change detection avisa quando algo async ocorre",
+        "O Zone.js avisa QUANDO rodar a CD; a change detection decide O QUE atualizar no DOM",
+        "São sinônimos: fazem exatamente a mesma coisa",
+        "O Zone.js atualiza o DOM diretamente sem a change detection"
+      ],
+      "correta": 1,
+      "explicacao": "Zone.js patcha APIs async e notifica QUANDO rodar; a CD reavalia bindings e decide O QUE atualizar.",
+      "feedbacks": [
+        "Invertido. Quem compara bindings é a CD; quem detecta o async e avisa é o Zone.js.",
+        "Correto. Zone = quando (detecta async), change detection = o quê (reavalia e atualiza o DOM).",
+        "Não. São responsabilidades distintas: notificar vs. checar/atualizar.",
+        "Não. O Zone.js não mexe no DOM; ele só notifica o Angular pra rodar a CD."
+      ]
+    },
+    {
+      "pergunta": "Um estado é alterado dentro de ngZone.runOutsideAngular(). O que acontece com a view?",
+      "opcoes": [
+        "A view atualiza normalmente no próximo ciclo",
+        "A view NÃO atualiza automaticamente, pois a mudança ocorreu fora da zona do Angular",
+        "O Angular lança um erro em runtime",
+        "A change detection roda duas vezes por segurança"
+      ],
+      "correta": 1,
+      "explicacao": "Fora da zona do Angular, o Zone.js não notifica a mudança, então nenhum ciclo de CD é disparado e a view não reflete o novo estado.",
+      "feedbacks": [
+        "Não. Justamente por estar fora da zona, nenhum ciclo é disparado automaticamente.",
+        "Correto. Sem notificação do Zone.js, a CD não roda e a view fica desatualizada até um trigger válido.",
+        "Não. Não há erro; simplesmente a view não atualiza.",
+        "Não. Ela não roda nem uma vez automaticamente nesse caso."
+      ]
+    },
+    {
+      "pergunta": "Quais são os três gatilhos principais que fazem um componente OnPush ser checado?",
+      "opcoes": [
+        "Qualquer ciclo de CD da aplicação, sempre",
+        "Mudança de referência de @Input, evento no componente, e async pipe emitindo",
+        "Somente chamadas a detectChanges()",
+        "Mutação de qualquer propriedade de um objeto de @Input"
+      ],
+      "correta": 1,
+      "explicacao": "OnPush dispara com mudança de referência de @Input, evento originado no componente ou async pipe emitindo (além de markForCheck/detectChanges).",
+      "feedbacks": [
+        "Não. OnPush justamente pula os ciclos, exceto sob gatilhos específicos.",
+        "Correto. Esses são os três gatilhos automáticos; markForCheck/detectChanges são o modo manual.",
+        "Não. detectChanges é só o modo manual; existem gatilhos automáticos além dele.",
+        "Não. Mutação sem trocar a referência não é detectada pelo OnPush."
+      ]
+    },
+    {
+      "pergunta": "Com OnPush, a view não atualiza depois de this.items.push(novo). Qual é a causa e a correção?",
+      "opcoes": [
+        "É bug do Angular; a correção é remover o OnPush",
+        "A referência do array não mudou; a correção é this.items = [...this.items, novo]",
+        "Falta chamar ngOnInit de novo",
+        "O template precisa de mais um binding"
+      ],
+      "correta": 1,
+      "explicacao": "OnPush compara @Input por referência; push mantém a mesma referência. Criar novo array dispara a checagem.",
+      "feedbacks": [
+        "Não. Não é bug; é o comportamento esperado do OnPush, que exige imutabilidade.",
+        "Correto. push mantém a referência; um novo array ([...arr, novo]) dispara o gatilho de @Input.",
+        "Não. ngOnInit roda uma vez e não tem relação com atualizar a lista.",
+        "Não. O problema é de referência do dado, não do template."
+      ]
+    },
+    {
+      "pergunta": "Você mudou um estado dentro de um callback não rastreado e precisa que a view atualize no próximo ciclo, sem forçar checagem síncrona. O que usa?",
+      "opcoes": [
+        "detectChanges()",
+        "markForCheck()",
+        "ngOnChanges()",
+        "ApplicationRef.tick() dentro de um loop"
+      ],
+      "correta": 1,
+      "explicacao": "markForCheck marca o componente (e ancestrais) pra serem checados no próximo ciclo, sem executar a checagem imediatamente.",
+      "feedbacks": [
+        "Não. detectChanges roda a checagem AGORA, de forma síncrona — não é o que foi pedido.",
+        "Correto. markForCheck agenda a checagem pro próximo ciclo, exatamente o cenário descrito.",
+        "Não. ngOnChanges é um hook de ciclo de vida, não um método que você chama pra agendar CD.",
+        "Não. Isso é abordagem incorreta e força checagens desnecessárias."
+      ]
+    },
+    {
+      "pergunta": "Qual é a ordem correta dos hooks de ciclo de vida do Angular?",
+      "opcoes": [
+        "ngOnChanges → ngOnInit → ngDoCheck → ngAfterContentInit → ngAfterContentChecked → ngAfterViewInit → ngAfterViewChecked → ngOnDestroy",
+        "ngOnInit → ngOnChanges → ngDoCheck → ngAfterViewInit → ngAfterContentInit → ngOnDestroy",
+        "ngOnChanges → ngDoCheck → ngOnInit → ngAfterViewInit → ngAfterContentInit → ngAfterViewChecked → ngOnDestroy",
+        "ngOnInit → ngDoCheck → ngOnChanges → ngAfterContentChecked → ngAfterViewChecked → ngOnDestroy"
+      ],
+      "correta": 0,
+      "explicacao": "A ordem canônica: ngOnChanges, ngOnInit, ngDoCheck, ngAfterContentInit, ngAfterContentChecked, ngAfterViewInit, ngAfterViewChecked, ngOnDestroy.",
+      "feedbacks": [
+        "Correto. Essa é a sequência exata dos oito hooks, de Changes a Destroy.",
+        "Não. ngOnChanges vem ANTES do ngOnInit, e os hooks de Content vêm antes dos de View.",
+        "Não. ngOnInit vem depois do primeiro ngOnChanges, mas antes do ngDoCheck.",
+        "Não. ngOnChanges é o primeiro, não intercalado no meio."
+      ]
+    },
+    {
+      "pergunta": "Um dev tenta acessar this.inputRef (@ViewChild) dentro do ngOnInit e recebe undefined. Por quê?",
+      "opcoes": [
+        "O @ViewChild foi declarado errado",
+        "A view do componente ainda não foi criada; @ViewChild só existe a partir do ngAfterViewInit",
+        "É preciso chamar detectChanges no constructor",
+        "@ViewChild só funciona com componentes OnPush"
+      ],
+      "correta": 1,
+      "explicacao": "@ViewChild aponta pro template do próprio componente, criado só no ngAfterViewInit. No ngOnInit ele ainda é undefined.",
+      "feedbacks": [
+        "Não. A declaração pode estar correta; o problema é o timing do acesso.",
+        "Correto. A view só existe a partir do ngAfterViewInit — por isso é undefined no ngOnInit.",
+        "Não. detectChanges no constructor não resolve nem faz sentido aqui.",
+        "Não. @ViewChild independe da estratégia de change detection."
+      ]
+    },
+    {
+      "pergunta": "O que dispara o erro ExpressionChangedAfterItHasBeenCheckedError?",
+      "opcoes": [
+        "Usar OnPush em qualquer componente",
+        "Alterar um valor de binding depois de a view já ter sido checada no mesmo ciclo (ex.: no ngAfterViewInit), detectado em modo dev",
+        "Fazer unsubscribe duas vezes do mesmo Observable",
+        "Injetar HttpClient num componente standalone"
+      ],
+      "correta": 1,
+      "explicacao": "Em dev, o Angular refaz a verificação pra garantir estabilidade; se um binding mudou após a checagem (clássico no ngAfterViewInit), lança o erro.",
+      "feedbacks": [
+        "Não. OnPush não causa esse erro; ele é sobre estabilidade da view após a checagem.",
+        "Correto. É uma verificação de dev: o valor mudou depois de a view já ter sido checada no ciclo.",
+        "Não. Unsubscribe duplicado não gera esse erro.",
+        "Não. Injeção de HttpClient não tem relação com esse erro."
+      ]
+    },
+    {
+      "pergunta": "Qual é a forma mais idiomática (Angular 16+) de garantir unsubscribe de um stream contínuo ao destruir o componente?",
+      "opcoes": [
+        "Chamar unsubscribe() manualmente no constructor",
+        "Usar takeUntilDestroyed() no pipe, ou registrar a limpeza via DestroyRef",
+        "Confiar que o garbage collector recolhe sozinho",
+        "Usar ngDoCheck pra cancelar a subscription"
+      ],
+      "correta": 1,
+      "explicacao": "takeUntilDestroyed() e DestroyRef.onDestroy() são os mecanismos modernos; o async pipe também dispensa unsubscribe manual.",
+      "feedbacks": [
+        "Não. No constructor a subscription geralmente nem existe ainda; e é frágil.",
+        "Correto. takeUntilDestroyed/DestroyRef são a abordagem moderna; async pipe é ainda melhor quando cabe.",
+        "Não. Sem unsubscribe, a subscription mantém o componente vivo — o GC não recolhe.",
+        "Não. ngDoCheck roda a cada ciclo e não é o lugar pra cancelar subscriptions."
+      ]
+    },
+    {
+      "pergunta": "Um candidato afirma: 'todo Observable precisa de unsubscribe no ngOnDestroy'. Como um sênior corrige?",
+      "opcoes": [
+        "Está totalmente certo",
+        "Nem todos: os que completam sozinhos (ex.: HttpClient) não vazam, e o async pipe faz unsubscribe automático; o cuidado é com streams contínuos",
+        "Nenhum Observable precisa de unsubscribe",
+        "Só Observables criados com new Observable precisam"
+      ],
+      "correta": 1,
+      "explicacao": "HTTP completa após emitir e não vaza; o async pipe desassina sozinho. O risco real são streams contínuos (interval, eventos, WebSocket, subjects de vida longa).",
+      "feedbacks": [
+        "Não. É uma generalização imprecisa; muitos Observables completam sozinhos.",
+        "Correto. A nuance é distinguir streams que completam (HTTP) dos contínuos, e lembrar do async pipe.",
+        "Não. Streams contínuos precisam sim de unsubscribe pra não vazar.",
+        "Não. A distinção não é o construtor, e sim se o stream completa ou é contínuo."
+      ]
+    }
+  ]
+}

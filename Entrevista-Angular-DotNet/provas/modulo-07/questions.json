@@ -1,0 +1,210 @@
+{
+  "titulo": "PROVA — Módulo 07: .NET Async, Escalabilidade & Idempotência",
+  "aprovacao": 70,
+  "questoes": [
+    {
+      "pergunta": "O entrevistador pergunta: 'Async deixa minhas requests mais rápidas?' Qual resposta está correta?",
+      "opcoes": [
+        "Sim, cada request fica mais rápida porque roda em paralelo",
+        "Não; a latência de uma request não muda — async melhora o throughput ao liberar a thread durante o I/O",
+        "Sim, porque async usa mais threads por request",
+        "Depende: async acelera GET mas não POST"
+      ],
+      "correta": 1,
+      "explicacao": "Async não altera a latência (o I/O leva o mesmo tempo); ele melhora o throughput/escalabilidade ao liberar a thread durante a espera de I/O.",
+      "feedbacks": [
+        "Errado. Async não roda a request em paralelo nem acelera o I/O — a latência individual não muda.",
+        "Correto. A request não fica mais rápida; o ganho é throughput: a thread é liberada no await de I/O e serve outra request.",
+        "Errado. Async não usa mais threads por request; ao contrário, libera a thread durante a espera.",
+        "Errado. Não tem a ver com o verbo HTTP; async melhora throughput independentemente de ser GET ou POST."
+      ]
+    },
+    {
+      "pergunta": "Qual afirmação sobre Task e Thread está correta?",
+      "opcoes": [
+        "Task é sinônimo de Thread: toda Task cria uma thread",
+        "Task é uma operação assíncrona em andamento; em I/O, tipicamente não cria nem usa uma thread para esperar",
+        "Thread é mais barata de criar que Task",
+        "Task só pode ser usada com Task.Run"
+      ],
+      "correta": 1,
+      "explicacao": "Task representa uma operação assíncrona em andamento — não é uma thread e, em I/O, não segura thread para esperar. Thread é um recurso do SO caro de criar.",
+      "feedbacks": [
+        "Errado. Task não é sinônimo de Thread; em I/O ela nem usa uma thread para aguardar.",
+        "Correto. Task é uma promessa de resultado/operação em andamento; em I/O não há thread bloqueada esperando.",
+        "Errado. É o contrário: criar Thread do SO é caro; Task é uma abstração leve.",
+        "Errado. Task é retornada por qualquer método async; Task.Run é só uma das formas de criar uma."
+      ]
+    },
+    {
+      "pergunta": "Você tem um endpoint que faz um cálculo de hash pesado (CPU bound). Qual abordagem escala melhor sem travar o thread da request?",
+      "opcoes": [
+        "Marcar o método como async e usar await no cálculo",
+        "Envolver o cálculo em Task.Run para tirá-lo do thread da request e usar núcleos",
+        "Chamar .Result no final para garantir a conclusão",
+        "Fazer o cálculo dentro de um lock"
+      ],
+      "correta": 1,
+      "explicacao": "CPU bound não se beneficia de async puro (não há I/O para liberar a thread). Task.Run tira o trabalho do thread da request e permite usar núcleos.",
+      "feedbacks": [
+        "Errado. Async puro não ajuda CPU bound: não há espera de I/O para liberar a thread.",
+        "Correto. Para CPU bound, Task.Run tira o trabalho do thread da request e usa paralelismo/núcleos.",
+        "Errado. .Result bloqueia a thread e pode causar starvation/deadlock — nunca é a solução.",
+        "Errado. Lock só serializa acesso; não resolve o problema de ocupar o thread da request com CPU."
+      ]
+    },
+    {
+      "pergunta": "Por que envolver uma chamada de banco async (I/O) em Task.Run é considerado um erro?",
+      "opcoes": [
+        "Porque Task.Run não compila com métodos async",
+        "Porque I/O async já não usa thread durante a espera; o Task.Run só desperdiça uma thread do pool",
+        "Porque Task.Run causa deadlock garantido",
+        "Porque bancos de dados não suportam chamadas assíncronas"
+      ],
+      "correta": 1,
+      "explicacao": "I/O async não segura thread durante a espera. Envolver em Task.Run reintroduz o desperdício de thread que o async justamente evita, prejudicando a escalabilidade.",
+      "feedbacks": [
+        "Errado. Task.Run compila normalmente com código async.",
+        "Correto. O I/O async já libera a thread; Task.Run só ocupa uma thread do pool à toa.",
+        "Errado. Task.Run não causa deadlock garantido; o problema é desperdício de thread.",
+        "Errado. Bancos suportam chamadas async; o problema é o Task.Run desnecessário."
+      ]
+    },
+    {
+      "pergunta": "Num ASP.NET clássico, chamar BuscarAsync().Result dentro de um controller deadlocka. Qual é a mecânica exata?",
+      "opcoes": [
+        "O GC pausa a aplicação e nunca retoma",
+        "O await tenta retomar na thread da request (via SynchronizationContext), mas ela está bloqueada pelo .Result esperando a Task — ela trava esperando a si mesma",
+        "Duas requests pegam o mesmo lock em ordem inversa",
+        "O thread pool fica sem threads permanentemente"
+      ],
+      "correta": 1,
+      "explicacao": "Sync-over-async: o SynchronizationContext faz o await tentar voltar à thread da request, que está bloqueada pelo .Result — ela precisa de si mesma para continuar. Deadlock.",
+      "feedbacks": [
+        "Errado. O GC não tem relação com esse deadlock.",
+        "Correto. A thread bloqueada pelo .Result é a mesma que o await precisa para retomar — deadlock por auto-espera.",
+        "Errado. Não é deadlock de locks em ordem inversa; é sync-over-async num contexto único.",
+        "Errado. O pool não é a causa direta aqui; é a auto-espera da thread do contexto."
+      ]
+    },
+    {
+      "pergunta": "O candidato afirma: 'No ASP.NET Core, .Result nunca dá problema porque não deadlocka.' Como um sênior corrige?",
+      "opcoes": [
+        "Está totalmente certo, pode usar .Result à vontade no Core",
+        "É verdade que o ASP.NET Core não tem SynchronizationContext (então não deadlocka assim), mas .Result ainda é ruim: bloqueia thread e causa thread pool starvation sob carga",
+        "Está errado: o ASP.NET Core também deadlocka com .Result do mesmo jeito que o clássico",
+        "O problema do .Result é apenas de performance de GC"
+      ],
+      "correta": 1,
+      "explicacao": "ASP.NET Core não tem SynchronizationContext, então o deadlock clássico não ocorre. Mas .Result continua bloqueando a thread — sob carga, isso causa starvation. A regra segue: nunca bloqueie.",
+      "feedbacks": [
+        "Errado. Não deadlockar não significa que .Result é seguro — ele bloqueia thread.",
+        "Correto. Sem SynchronizationContext não há aquele deadlock, mas .Result ainda causa starvation sob carga.",
+        "Errado. O ASP.NET Core não tem SynchronizationContext, então o deadlock clássico não ocorre nele.",
+        "Errado. O problema do .Result é bloqueio de thread/starvation, não GC."
+      ]
+    },
+    {
+      "pergunta": "Para que serve ConfigureAwait(false)?",
+      "opcoes": [
+        "Cancelar a Task se ela demorar demais",
+        "Dizer ao await que não precisa retomar no SynchronizationContext capturado — retome em qualquer thread do pool; evita deadlock e é mais eficiente em bibliotecas",
+        "Forçar a Task a rodar em paralelo",
+        "Transformar um método CPU bound em I/O bound"
+      ],
+      "correta": 1,
+      "explicacao": "ConfigureAwait(false) evita capturar/voltar ao contexto de sincronização, prevenindo deadlock e sendo mais eficiente. É importante em bibliotecas e no ASP.NET clássico; no Core importa menos (não há contexto).",
+      "feedbacks": [
+        "Errado. Isso é papel de CancellationToken, não de ConfigureAwait.",
+        "Correto. Ele desliga a volta ao contexto capturado — evita deadlock e melhora eficiência em bibliotecas.",
+        "Errado. Ele não força paralelismo; só controla onde o await retoma.",
+        "Errado. Ele não muda a natureza CPU/I/O do trabalho."
+      ]
+    },
+    {
+      "pergunta": "Você guarda o carrinho do usuário numa coleção static em memória. Funciona no dev, mas quebra ao escalar para 2+ instâncias. Por quê?",
+      "opcoes": [
+        "Porque static causa memory leak no GC",
+        "Porque o estado vive na memória de uma instância; ao balancear, o usuário cai numa instância que não tem o estado dele — o serviço não é stateless",
+        "Porque coleções static não são thread-safe",
+        "Porque o load balancer não suporta POST"
+      ],
+      "correta": 1,
+      "explicacao": "Estado em memória local torna o serviço stateful: qualquer instância que não tenha aquele estado falha. Para escalar horizontalmente, externalize o estado (Redis) e mantenha o serviço stateless.",
+      "feedbacks": [
+        "Errado. O problema não é leak de GC, é estado preso a uma instância.",
+        "Correto. O estado em memória local quebra a escala horizontal; o certo é externalizar (Redis) e ser stateless.",
+        "Errado. Thread-safety é outro problema; aqui a falha é o estado não ser compartilhado entre instâncias.",
+        "Errado. O load balancer suporta POST; a causa é o estado local não replicado."
+      ]
+    },
+    {
+      "pergunta": "O entrevistador pergunta: 'Como você escala essa API?' Qual resposta soa mais sênior?",
+      "opcoes": [
+        "Colocar uma máquina com mais CPU e RAM (escala vertical)",
+        "Torná-la stateless, externalizar o estado (Redis) e rodar várias instâncias atrás de um load balancer (escala horizontal)",
+        "Adicionar mais índices no banco de dados",
+        "Usar sticky sessions para grudar cada usuário numa instância"
+      ],
+      "correta": 1,
+      "explicacao": "A resposta de arquitetura esperada é escala horizontal: stateless + estado externalizado + várias instâncias atrás de load balancer. Vertical tem teto e ponto único de falha; sticky session é anti-pattern.",
+      "feedbacks": [
+        "Fraco. Vertical é a resposta simples, mas tem teto físico e ponto único de falha — não é o que o entrevistador quer ouvir.",
+        "Correto. Stateless + estado externalizado + várias instâncias atrás de load balancer é a resposta de escala horizontal.",
+        "Errado. Índices ajudam a query, mas não são resposta de escala da aplicação.",
+        "Errado. Sticky session é anti-pattern: amarra o usuário à instância e derruba a sessão se ela cair."
+      ]
+    },
+    {
+      "pergunta": "Você adiciona uma fila (mensageria) entre a API e o processamento. Qual consequência exige atenção?",
+      "opcoes": [
+        "A API fica mais lenta porque enfileirar é caro",
+        "A entrega costuma ser at-least-once, então o consumidor pode receber a mesma mensagem mais de uma vez e precisa ser idempotente",
+        "O banco de dados deixa de ser necessário",
+        "A fila garante exactly-once, então nada muda no consumidor"
+      ],
+      "correta": 1,
+      "explicacao": "Filas normalmente entregam at-least-once (redelivery em timeout/falha). O consumidor precisa ser idempotente para não processar duas vezes o mesmo pedido.",
+      "feedbacks": [
+        "Errado. Enfileirar é barato e deixa a API mais responsiva, não mais lenta.",
+        "Correto. At-least-once implica possíveis duplicatas; o consumidor precisa ser idempotente.",
+        "Errado. A fila não elimina o banco; só desacopla o processamento.",
+        "Errado. Exactly-once é praticamente um mito; assuma at-least-once + consumidor idempotente."
+      ]
+    },
+    {
+      "pergunta": "Um POST /pagamentos pode ser chamado duas vezes por retry ou duplo clique. Como tornar a operação segura para repetir?",
+      "opcoes": [
+        "Trocar o POST por GET, que é idempotente",
+        "Exigir uma Idempotency-Key: o servidor guarda a chave + resultado e, se a chave repetir, devolve o mesmo resultado sem reexecutar",
+        "Adicionar um lock global no endpoint",
+        "Confiar que o cliente nunca vai repetir a request"
+      ],
+      "correta": 1,
+      "explicacao": "POST não é idempotente. A idempotency key permite deduplicar retries: o servidor guarda chave + resultado e, se a chave repetir, devolve o resultado guardado sem reexecutar a cobrança.",
+      "feedbacks": [
+        "Errado. GET é para leitura; não se cria pagamento com GET.",
+        "Correto. A idempotency key deduplica retries: mesma chave devolve o mesmo resultado sem reexecutar.",
+        "Errado. Um lock global não resolve retries em instâncias diferentes nem duplo clique espaçado.",
+        "Errado. Em rede real, retries e duplo clique acontecem; é preciso projetar para isso."
+      ]
+    },
+    {
+      "pergunta": "O candidato diz: 'Meu broker garante exactly-once, então não preciso me preocupar.' Qual é a visão correta de um sênior?",
+      "opcoes": [
+        "Concordar: com um bom broker, exactly-once resolve tudo",
+        "Exactly-once é praticamente um mito em distribuído; o padrão viável é at-least-once + consumidor idempotente, que produz o efeito de exactly-once",
+        "O certo é usar at-most-once, aceitando perder mensagens",
+        "Idempotência só importa para GET"
+      ],
+      "correta": 1,
+      "explicacao": "Garantir exactly-once de forma barata é essencialmente impossível em sistemas distribuídos. O padrão correto é at-least-once + consumidor idempotente — como reprocessar não muda o efeito, o resultado observado equivale a exactly-once.",
+      "feedbacks": [
+        "Errado. Confiar no exactly-once do broker é frágil; falhas de rede e redelivery quebram essa garantia.",
+        "Correto. Assuma at-least-once e projete o consumidor idempotente — é isso que dá o efeito de exactly-once na prática.",
+        "Errado. At-most-once perde mensagens; não é aceitável para pagamentos/pedidos.",
+        "Errado. Idempotência importa para operações que modificam estado (POST/consumo de fila), não só GET."
+      ]
+    }
+  ]
+}

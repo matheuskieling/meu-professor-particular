@@ -1,0 +1,115 @@
+{
+  "titulo": "Módulo 01 — Angular: Ciclo de Vida & Change Detection",
+  "questoes": [
+    {
+      "pergunta": "No momento em que o constructor de um componente executa, o que já está garantidamente disponível?",
+      "opcoes": [
+        "As dependências injetadas via DI",
+        "Os valores dos @Input já preenchidos",
+        "As referências de @ViewChild",
+        "O DOM da view já renderizado"
+      ],
+      "correta": 0,
+      "explicacao": "O constructor serve pra injeção de dependência. Os @Input só chegam a partir do ngOnChanges/ngOnInit, e @ViewChild/DOM só no ngAfterViewInit."
+    },
+    {
+      "pergunta": "Por que a inicialização com HTTP deve ficar no ngOnInit e não no constructor?",
+      "opcoes": [
+        "Porque o constructor não pode conter código assíncrono",
+        "Porque no constructor os @Input ainda são undefined e o efeito colateral prejudica testabilidade",
+        "Porque o ngOnInit roda antes do constructor",
+        "Porque o Angular proíbe injeção de HttpClient no constructor"
+      ],
+      "correta": 1,
+      "explicacao": "No constructor os inputs ainda não foram setados e acoplar I/O à construção do objeto atrapalha os testes. O ngOnInit roda depois dos inputs prontos."
+    },
+    {
+      "pergunta": "Qual é o papel do Zone.js no Angular?",
+      "opcoes": [
+        "Comparar os bindings e atualizar o DOM",
+        "Gerenciar o roteamento entre componentes",
+        "Fazer monkey-patch de APIs async e avisar o Angular quando rodar a change detection",
+        "Fazer unsubscribe automático de Observables"
+      ],
+      "correta": 2,
+      "explicacao": "O Zone.js patcha APIs async (eventos, setTimeout, Promise, XHR) e notifica o Angular QUANDO rodar a CD. A CD é que decide O QUE atualizar."
+    },
+    {
+      "pergunta": "Na estratégia padrão de change detection, o que o Angular faz a cada ciclo?",
+      "opcoes": [
+        "Checa apenas o componente que disparou o evento",
+        "Percorre a árvore de componentes de cima pra baixo checando os bindings de todos",
+        "Checa somente os componentes com @Input alterado",
+        "Recria toda a árvore de componentes do zero"
+      ],
+      "correta": 1,
+      "explicacao": "Com a estratégia Default (CheckAlways), o Angular percorre a árvore inteira do root às folhas reavaliando bindings a cada ciclo."
+    },
+    {
+      "pergunta": "Com ChangeDetectionStrategy.OnPush, qual destes NÃO dispara a checagem do componente?",
+      "opcoes": [
+        "Mudança de referência de um @Input",
+        "Um evento (click) originado no componente",
+        "Um async pipe emitindo novo valor",
+        "Mutar uma propriedade do objeto recebido por @Input sem trocar a referência"
+      ],
+      "correta": 3,
+      "explicacao": "OnPush compara @Input por referência (===). Mutar o objeto sem trocar a referência não é detectado; é preciso criar um objeto/array novo."
+    },
+    {
+      "pergunta": "Com OnPush, como atualizar corretamente um array exibido no template?",
+      "opcoes": [
+        "this.items.push(novo)",
+        "this.items = [...this.items, novo]",
+        "this.items.length = 0",
+        "this.items[0] = novo"
+      ],
+      "correta": 1,
+      "explicacao": "Só a nova referência ([...arr, novo]) dispara o gatilho de @Input do OnPush. push e mutação por índice mantêm a mesma referência."
+    },
+    {
+      "pergunta": "Qual a diferença entre markForCheck() e detectChanges()?",
+      "opcoes": [
+        "markForCheck roda a checagem agora; detectChanges agenda pro próximo ciclo",
+        "markForCheck agenda a checagem pro próximo ciclo; detectChanges executa a checagem imediatamente",
+        "Ambos executam a checagem imediatamente",
+        "Ambos apenas agendam a checagem pro próximo ciclo"
+      ],
+      "correta": 1,
+      "explicacao": "markForCheck marca o componente (e ancestrais) pra checagem no próximo ciclo; detectChanges roda a checagem de forma síncrona na hora."
+    },
+    {
+      "pergunta": "Qual é a ordem correta dos hooks de ciclo de vida?",
+      "opcoes": [
+        "ngOnInit → ngOnChanges → ngAfterViewInit → ngAfterContentInit → ngOnDestroy",
+        "ngOnChanges → ngOnInit → ngDoCheck → ngAfterContentInit → ngAfterContentChecked → ngAfterViewInit → ngAfterViewChecked → ngOnDestroy",
+        "ngOnChanges → ngDoCheck → ngOnInit → ngAfterViewInit → ngAfterContentInit → ngOnDestroy",
+        "ngOnInit → ngDoCheck → ngAfterContentInit → ngAfterViewInit → ngOnChanges → ngOnDestroy"
+      ],
+      "correta": 1,
+      "explicacao": "A ordem é ngOnChanges → ngOnInit → ngDoCheck → ngAfterContentInit → ngAfterContentChecked → ngAfterViewInit → ngAfterViewChecked → ngOnDestroy."
+    },
+    {
+      "pergunta": "Em qual hook a referência de @ViewChild fica disponível pela primeira vez?",
+      "opcoes": [
+        "ngOnInit",
+        "ngOnChanges",
+        "ngAfterViewInit",
+        "ngAfterContentInit"
+      ],
+      "correta": 2,
+      "explicacao": "@ViewChild aponta pro template do próprio componente, que só existe a partir do ngAfterViewInit. No ngOnInit ainda é undefined."
+    },
+    {
+      "pergunta": "Qual Observable normalmente NÃO precisa de unsubscribe manual?",
+      "opcoes": [
+        "Uma requisição do HttpClient, que completa após emitir",
+        "Um interval() que emite continuamente",
+        "Um Subject compartilhado de vida longa",
+        "Um stream de eventos de um WebSocket"
+      ],
+      "correta": 0,
+      "explicacao": "O HttpClient completa sozinho após emitir, então não vaza. O risco está em streams contínuos que nunca completam; o async pipe também dispensa unsubscribe manual."
+    }
+  ]
+}

@@ -221,8 +221,8 @@
       }
     ]
   },
-  "pos": 6,
-  "marco_sessao": 4,
+  "pos": 10,
+  "marco_sessao": 6,
   "status": {
     "intro": "visto",
     "t1": "visto",
@@ -230,10 +230,10 @@
     "t3": "visto",
     "t4": "visto",
     "t5": "visto",
-    "t6": "pendente",
-    "t7": "pendente",
-    "p1": "pendente",
-    "p2": "pendente",
+    "t6": "visto",
+    "t7": "visto",
+    "p1": "visto",
+    "p2": "visto",
     "p3": "pendente",
     "p4": "pendente",
     "p5": "pendente",
@@ -266,6 +266,26 @@
       "beat": "t5",
       "ts": "2026-07-21T17:24:24+00:00",
       "text": "FIM da sessao no t5 concluido (managed vs inline, least privilege, MFA/higiene de credenciais). Aluno respondeu checkpoint com dominio: managed=reaproveitavel/inline=presa a identidade e morre com ela; least privilege=minimo necessario, s3:GetObject no lugar de s3:*. Reforcei bonus: managed tem versionamento+auditoria central; least privilege tambem aperta RESOURCE (ARN especifico, nao *). Meta do aluno: prova CLF-C02 (liberada apos Modulo 07) em ~1 mes; plano combinado ~3-4 beats/dia (restam ~90 beats ate fim do M07). Proximo: t6 = Roles e STS (credenciais temporarias) - aluno ja tem base forte disso das sessoes anteriores."
+    },
+    {
+      "beat": "t6",
+      "ts": "2026-07-23T01:07:36+00:00",
+      "text": "Cross-account: aluno teve duvida (achava que 'logava' na conta B). Expliquei que voce continua sendo o user da conta A e ASSUME uma role emprestada da conta B via sts:AssumeRole — precisa dos DOIS lados: trust policy na conta destino confiando na origem + policy sts:AssumeRole no user de origem. Credencial temporaria expira sozinha (janela de estrago minima mesmo se vazar). Analogia do cracha de visitante funcionou. Checkpoint t6 respondido com dominio."
+    },
+    {
+      "beat": "t7",
+      "ts": "2026-07-23T01:18:58+00:00",
+      "text": "t7 (Identity Center + billing) concluido. Aluno teve boas duvidas sobre IAM vs Identity Center: corrigi meu atalho 'role=servico' (role serve p/ qualquer acesso TEMPORARIO, humano ou servico; regra real e permanente=user vs temporario=role). Expliquei Identity Center = camada de orquestracao ACIMA das contas (Organizations): identidade central (pode vir de Google/AD/Okta), permission set = role reutilizavel, atribuicao = tripla grupo+permission-set+conta, entrega role temporaria via STS (aws sso login), offboarding num lugar so. Aluno consolidou: grupos = iguais IAM mas no diretorio central; permission set = role reutilizavel atribuida a grupo por conta dando acesso temporario. Dominou. Indo pra pratica p1."
+    },
+    {
+      "beat": "p1",
+      "ts": "2026-07-23T01:29:49+00:00",
+      "text": "p1 (Parte A Console) concluida pelo aluno: policy customizada CursoS3SomenteLeitura criada (3 acoes de leitura, least privilege), group curso-observadores-s3 com a policy anexada, user teste-leitor (sem console) no group, access keys copiadas com seguranca. Reforcei higiene de chaves. Indo pra p2 (Parte B CLI: profile separado + sentir least privilege/AccessDenied)."
+    },
+    {
+      "beat": "p2",
+      "ts": "2026-07-23T01:35:27+00:00",
+      "text": "p2 (Parte B CLI) concluida: aluno configurou profile teste-leitor, confirmou identidades nos dois profiles, s3 ls autorizado (voltou vazio=sucesso, conta sem buckets), e os DOIS AccessDenied esperados (s3:CreateBucket e iam:ListUsers) com implicit deny ('no identity-based policy allows'). Aluno entendeu a diferenca 'posso mas nao ha nada' vs 'nao posso' e o diagnostico via mensagem de erro (identidade->acao->recurso). PARADA da sessao aqui. Proximo: p3 = criar a role (Console) e ler a trust policy, depois p4 assumir via STS."
     }
   ],
   "iniciado_em": "2026-07-20T20:21:32+00:00",
@@ -273,7 +293,11 @@
     "intro": "2026-07-20T20:24:32+00:00",
     "t1": "2026-07-20T20:46:12+00:00",
     "t3": "2026-07-21T14:36:20+00:00",
-    "t5": "2026-07-21T17:24:24+00:00"
+    "t5": "2026-07-21T17:24:24+00:00",
+    "t6": "2026-07-23T01:07:36+00:00",
+    "t7": "2026-07-23T01:18:58+00:00",
+    "p1": "2026-07-23T01:29:49+00:00",
+    "p2": "2026-07-23T01:35:27+00:00"
   },
   "concluido_aprox": [
     "intro",

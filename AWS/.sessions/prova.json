@@ -1,227 +1,227 @@
 {
-  "bank_path": "/home/mkieling/dev/courses/AWS/provas/modulo-01/questions.json",
+  "bank_path": "/home/mkieling/dev/courses/AWS/provas/modulo-02/questions.json",
   "bank": {
-    "titulo": "PROVA — Módulo 01: Fundamentos de Cloud & AWS",
+    "titulo": "PROVA — Módulo 02: Conta, IAM & Segurança",
     "aprovacao": 70,
     "questoes": [
       {
-        "pergunta": "Uma empresa quer subir uma aplicação para o ar em minutos, pagando só pelo que usar e escalando conforme a demanda. Que característica da nuvem descreve isso?",
+        "pergunta": "Um desenvolvedor novo entrou no time e precisa das mesmas permissões dos outros 5 desenvolvedores. Qual a forma CORRETA de conceder?",
         "opcoes": [
-          "CapEx: grande investimento antecipado em hardware",
-          "Elasticidade e modelo pague-pelo-uso (OpEx)",
-          "Colocation: alugar espaço num datacenter próprio",
-          "Licenciamento perpétuo de software"
+          "Anexar as policies diretamente no user dele, uma a uma",
+          "Adicionar o user dele ao group que os outros desenvolvedores já usam",
+          "Compartilhar as access keys de um desenvolvedor antigo",
+          "Dar AdministratorAccess pra garantir que nada falte"
         ],
         "correta": 1,
-        "explicacao": "Elasticidade + pagamento sob demanda (OpEx) é o coração da proposta de valor da nuvem.",
+        "explicacao": "Groups existem exatamente pra isso: permissões em lote, gerenciadas num lugar só.",
         "feedbacks": [
-          "CapEx é justamente o modelo ANTIGO (comprar hardware antecipado) que a nuvem substitui.",
-          "Isso mesmo: escalar sob demanda e pagar só pelo uso é elasticidade + OpEx.",
-          "Colocation ainda te deixa dono do hardware e da capacidade ociosa — não é o modelo da nuvem.",
-          "Licença perpétua é um custo fixo antecipado, o oposto do pague-pelo-uso."
+          "Funciona, mas não escala: com N users você gerencia N cópias das permissões. Policy direto no user é exceção, não regra.",
+          "Correto: o group já carrega as policies do time. Entrou no group, herdou as permissões — um lugar só pra gerenciar.",
+          "Nunca: credencial é individual e intransferível. Compartilhar chave destrói a auditoria (quem fez o quê?) e multiplica o risco de vazamento.",
+          "Viola o least privilege: admin total pra quem precisa só das permissões do time é exatamente o excesso que causa desastres."
         ]
       },
       {
-        "pergunta": "Você criou um recurso ontem e hoje ele 'sumiu' do console. Qual a causa mais provável?",
+        "pergunta": "Uma aplicação rodando numa instância EC2 precisa ler objetos de um bucket S3. Qual a abordagem recomendada?",
         "opcoes": [
-          "A AWS deletou o recurso automaticamente",
-          "Você está numa Região diferente da que criou o recurso",
-          "O recurso expira em 24h por padrão",
-          "Houve falha em uma AZ"
-        ],
-        "correta": 1,
-        "explicacao": "Recursos regionais só aparecem na região onde foram criados. Cheque o seletor de região.",
-        "feedbacks": [
-          "A AWS não deleta seus recursos sozinha — isso seria péssimo. Não é isso.",
-          "Exato: a maioria dos recursos é regional. Trocou de região no seletor, 'sumiu'.",
-          "Recursos não expiram em 24h por padrão; continuam (e podem custar) até você removê-los.",
-          "Falha de AZ não faz um recurso desaparecer do console — no máximo afeta disponibilidade."
-        ]
-      },
-      {
-        "pergunta": "Qual afirmação sobre Regiões e Zonas de Disponibilidade está CORRETA?",
-        "opcoes": [
-          "Uma AZ contém várias Regiões",
-          "Regiões são conectadas para que uma falha se propague entre elas",
-          "Uma Região contém múltiplas AZs isoladas entre si",
-          "Toda Região tem exatamente uma AZ"
+          "Gravar access keys de um IAM user num arquivo de configuração dentro da instância",
+          "Usar as credenciais do root, que sempre funcionam",
+          "Anexar à instância uma role com permissão de leitura no bucket",
+          "Tornar o bucket público para não precisar de credencial"
         ],
         "correta": 2,
-        "explicacao": "Região > AZ. Cada Região tem várias AZs (datacenters isolados), base da alta disponibilidade.",
+        "explicacao": "Roles para serviços: a instância assume a role e recebe credenciais temporárias, sem chave fixa pra vazar.",
         "feedbacks": [
-          "Está invertido: é a Região que contém AZs, não o contrário.",
-          "Ao contrário: Regiões são isoladas justamente para que falhas NÃO se propaguem.",
-          "Correto: uma Região agrupa múltiplas AZs isoladas — por isso você distribui recursos entre AZs.",
-          "Não: Regiões normalmente têm 3 ou mais AZs."
+          "É o antipadrão clássico: chave de longa duração gravada num servidor. Se a instância for comprometida, a chave vaza e vale até alguém revogar.",
+          "Duplamente errado: o root nem deve TER access keys, e usá-lo numa aplicação é o maior risco possível.",
+          "Correto: role anexada à instância = credenciais temporárias renovadas automaticamente, com só as permissões necessárias. É o padrão AWS.",
+          "Tornar o bucket público resolve 'o acesso' expondo os dados pro mundo inteiro — é a receita dos vazamentos famosos de S3."
         ]
       },
       {
-        "pergunta": "No modelo IaaS (ex.: EC2), quem é responsável por aplicar patches de segurança no sistema operacional da instância?",
+        "pergunta": "Analise: um user tem uma policy com {\"Effect\":\"Allow\",\"Action\":\"s3:*\",\"Resource\":\"*\"} e outra com {\"Effect\":\"Deny\",\"Action\":\"s3:PutObject\",\"Resource\":\"arn:aws:s3:::producao/*\"}. O que ele consegue fazer?",
         "opcoes": [
-          "A AWS, sempre",
-          "Você, o cliente",
-          "Ninguém, o SO não precisa de patches",
-          "O fabricante do hardware"
+          "Tudo no S3, inclusive escrever em producao, pois o Allow é mais amplo",
+          "Nada no S3, pois o Deny invalida a policy inteira",
+          "Tudo no S3, EXCETO escrever objetos no bucket producao",
+          "Somente ler o bucket producao"
         ],
-        "correta": 1,
-        "explicacao": "Em IaaS o SO é seu; patch dele é 'segurança NA nuvem', responsabilidade do cliente.",
+        "correta": 2,
+        "explicacao": "O Deny explícito vence só onde ele bate (PutObject em producao/*); todo o resto do Allow continua valendo.",
         "feedbacks": [
-          "A AWS cuida da infra física e da virtualização, mas NÃO do SO de uma instância EC2.",
-          "Isso: no EC2 o SO é seu. Patches, usuários e configuração do SO são responsabilidade sua.",
-          "Todo SO precisa de patches — deixar sem é uma falha de segurança clássica.",
-          "O fabricante do hardware não tem acesso ao seu SO nem responsabilidade sobre ele."
+          "O Deny explícito sempre vence o Allow no escopo em que se aplica — escrever em producao está bloqueado.",
+          "O Deny não 'contamina' a policy toda: ele só bloqueia a ação e o recurso que ele descreve. O resto do Allow permanece.",
+          "Correto: a avaliação é por ação+recurso. Deny explícito bloqueia PutObject em producao/*; todas as outras combinações seguem permitidas pelo Allow.",
+          "Ele pode muito mais que isso: o Allow s3:* em * cobre leitura e escrita em todos os buckets — só PutObject em producao está vetado."
         ]
       },
       {
-        "pergunta": "Um bucket S3 seu vazou dados por ter sido configurado como público sem querer. Segundo o Modelo de Responsabilidade Compartilhada, de quem é a responsabilidade?",
+        "pergunta": "Você criou uma policy com 'Allow s3:GetObject' em 'arn:aws:s3:::meu-bucket', mas o comando 'aws s3 ls s3://meu-bucket' retorna AccessDenied. Qual a causa mais provável?",
         "opcoes": [
-          "Da AWS: é infraestrutura dela",
-          "Sua: configuração de acesso é 'segurança NA nuvem'",
-          "Compartilhada em 50/50, sem culpado definido",
-          "Do usuário final que acessou os dados"
-        ],
-        "correta": 1,
-        "explicacao": "A AWS protege a infraestrutura; como você configura acesso e protege dados é com você.",
-        "feedbacks": [
-          "A AWS garante a segurança DA nuvem (hardware, rede física). Sua configuração não é com ela.",
-          "Correto: definir quem acessa o bucket é 'segurança NA nuvem' — responsabilidade do cliente.",
-          "O modelo não é 50/50: a fronteira é clara (infra x configuração/dados), e configuração é sua.",
-          "Quem acessou aproveitou a brecha, mas a responsabilidade pela config é de quem configurou: você."
-        ]
-      },
-      {
-        "pergunta": "Qual serviço/recurso você usa para ser AVISADO por e-mail quando o gasto se aproxima de um limite definido por você?",
-        "opcoes": [
-          "AWS Budgets",
-          "Amazon EC2",
-          "AWS IAM",
-          "Amazon S3"
+          "Listar o conteúdo exige s3:ListBucket, que não foi concedido",
+          "O bucket precisa estar público para o ls funcionar",
+          "GetObject deveria apontar para região us-east-1 no ARN",
+          "Falta um Deny explícito na policy"
         ],
         "correta": 0,
-        "explicacao": "AWS Budgets cria orçamentos e dispara alertas por e-mail — sua rede de segurança contra sustos.",
+        "explicacao": "Listar exige s3:ListBucket no ARN do bucket; GetObject serve pra baixar objetos (e pede o ARN bucket/*).",
         "feedbacks": [
-          "Isso: AWS Budgets define orçamentos e envia alertas quando o gasto se aproxima do limite.",
-          "EC2 é compute (máquinas virtuais), não controle de custos.",
-          "IAM cuida de identidade e permissões, não de orçamento.",
-          "S3 é armazenamento de objetos, não alerta de custo."
+          "Correto: são ações diferentes. ListBucket (no ARN do bucket) lista; GetObject (no ARN bucket/*) baixa. O erro clássico é conceder uma e esquecer a outra.",
+          "Bucket público não é pré-requisito pra dono listar: com a permissão IAM certa (ListBucket), o ls funciona em bucket privado.",
+          "ARNs de S3 não levam região (o serviço de nomes de bucket é global): arn:aws:s3:::bucket. O problema é a ação faltante, não a região.",
+          "Deny explícito NEGARIA algo — adicionar um não destrava nada. O que falta é um Allow para s3:ListBucket."
         ]
       },
       {
-        "pergunta": "Qual comando da AWS CLI confirma que suas credenciais estão funcionando, mostrando sua identidade (UserId, Account, ARN)?",
+        "pergunta": "No ARN 'arn:aws:iam::123456789012:user/joao', por que o campo de região está vazio (os dois-pontos seguidos)?",
         "opcoes": [
-          "aws configure list-regions",
-          "aws sts get-caller-identity",
-          "aws iam whoami",
-          "aws ec2 describe-instances"
+          "É um erro de digitação no ARN",
+          "Porque o IAM é um serviço global, sem região",
+          "Porque o user joao ainda não escolheu uma região",
+          "Porque a região só aparece para roles, não para users"
         ],
         "correta": 1,
-        "explicacao": "`aws sts get-caller-identity` é o teste padrão de 'quem sou eu' após configurar a CLI.",
+        "explicacao": "Serviços globais (IAM, Route 53, CloudFront) omitem a região no ARN, mas a posição fica marcada pelos dois-pontos.",
         "feedbacks": [
-          "Esse comando não é o teste de identidade; e 'configure list-regions' nem existe nesse formato.",
-          "Correto: é o jeito canônico de checar que a CLI está autenticada e ver sua identidade.",
-          "Não existe 'aws iam whoami'. O comando certo é 'aws sts get-caller-identity'.",
-          "describe-instances lista EC2 (e pode falhar/vir vazio) — não é um teste de identidade."
+          "O ARN está correto: os '::' marcam a posição de um campo intencionalmente vazio.",
+          "Correto: IAM não vive numa região — users, groups, roles e policies valem na conta inteira, então o campo região fica vazio.",
+          "Users IAM não 'escolhem' região: a identidade é global e vale em todas as regiões da conta.",
+          "Roles também são IAM e também têm região vazia no ARN. A regra é do serviço (global), não do tipo de identidade."
         ]
       },
       {
-        "pergunta": "Por que evitamos usar o usuário root da conta AWS no dia a dia?",
+        "pergunta": "Sua empresa exige que a permissão de deletar snapshots NUNCA funcione, nem para admins. Como garantir isso via IAM?",
         "opcoes": [
-          "Porque o root é mais lento que um usuário IAM",
-          "Porque o root pode tudo e não dá pra restringir; comprometê-lo seria catastrófico",
-          "Porque o root não consegue criar recursos",
-          "Porque a AWS cobra a mais pelo uso do root"
+          "Simplesmente não conceder Allow para deletar snapshots",
+          "Aplicar um Deny explícito para a ação de deletar snapshots, pois ele vence qualquer Allow",
+          "Remover todos os admins da conta",
+          "Criar um group vazio chamado 'sem-delete'"
         ],
         "correta": 1,
-        "explicacao": "O root tem poder irrestrito. Use-o o mínimo (protegido por MFA) e opere com usuários IAM.",
+        "explicacao": "Deny explícito é a trava inquebrável: mesmo quem tem AdministratorAccess (Allow *:*) é bloqueado.",
         "feedbacks": [
-          "Não há diferença de 'velocidade'; o problema do root é o poder irrestrito.",
-          "Isso: root pode tudo e não pode ser limitado. Por isso: MFA nele e trabalhe com usuários IAM.",
-          "O root consegue criar recursos, sim — o problema é o risco, não a capacidade.",
-          "Não há cobrança extra por usar o root; a questão é segurança, não custo."
+          "Insuficiente: um admin tem Allow em tudo (*:*), então a ação seguiria permitida. Não conceder só funciona pra quem não tem Allow amplo.",
+          "Correto: Deny explícito > Allow, sempre. É exatamente o mecanismo para travas absolutas que nem admin atravessa.",
+          "Drástico e não resolve: a exigência é bloquear UMA ação, não eliminar administradores da conta.",
+          "Group vazio não faz nada: policies só têm efeito quando anexadas, e um group sem policy (e sem membros) é inerte."
         ]
       },
       {
-        "pergunta": "Lambda é frequentemente classificado como serverless/FaaS. Comparado a rodar a mesma lógica num EC2, o que MUDA na sua responsabilidade?",
+        "pergunta": "Ao rodar 'aws sts assume-role', a resposta traz três credenciais. Qual delas NÃO existe nas access keys comuns de um IAM user?",
         "opcoes": [
-          "Você passa a gerenciar também o SO e o escalonamento",
-          "Você deixa de gerenciar SO e escalonamento; foca só no código",
-          "Nada muda: é idêntico ao EC2",
-          "Você precisa provisionar servidores manualmente antes"
+          "AccessKeyId",
+          "SecretAccessKey",
+          "SessionToken",
+          "Nenhuma: as credenciais são idênticas às de um user"
         ],
-        "correta": 1,
-        "explicacao": "Quanto mais gerenciado o serviço, menos sobra pra você. No Lambda, entrega a função e pronto.",
+        "correta": 2,
+        "explicacao": "O SessionToken é a marca das credenciais temporárias do STS — e elas ainda têm Expiration.",
         "feedbacks": [
-          "É o contrário: no Lambda você deixa de cuidar do SO e do escalonamento.",
-          "Correto: serverless assume SO, provisionamento e escala; você cuida só do código e dos dados.",
-          "Muda bastante: EC2 é IaaS (você cuida do SO); Lambda abstrai a infra inteira.",
-          "Serverless é exatamente NÃO provisionar servidores manualmente."
+          "AccessKeyId existe nos dois casos (nas temporárias costuma começar com ASIA em vez de AKIA), então não é o diferencial.",
+          "SecretAccessKey também existe nos dois tipos de credencial.",
+          "Correto: o SessionToken só existe em credenciais temporárias do STS, junto com uma data de expiração. Sem ele, as credenciais temporárias não funcionam.",
+          "São diferentes: credenciais de role têm SessionToken e expiram; access keys de user são de longa duração."
         ]
       },
       {
-        "pergunta": "Sobre o Free Tier da AWS, qual afirmação está CORRETA?",
+        "pergunta": "Você exportou AWS_ACCESS_KEY_ID/SECRET/SESSION_TOKEN para testar uma role. Terminou o teste, mas a CLI continua agindo como a role. Por quê?",
         "opcoes": [
-          "Tudo na AWS é sempre gratuito no Free Tier",
-          "Tem três sabores: sempre-grátis, 12 meses grátis e trials",
-          "Só vale para empresas com contrato enterprise",
-          "É um valor fixo de crédito de US$ 100 por mês"
+          "A role fica ativa até você deletá-la no console",
+          "Variáveis de ambiente têm precedência sobre ~/.aws/credentials; é preciso dar unset nelas",
+          "O arquivo ~/.aws/credentials foi sobrescrito pelo assume-role",
+          "A CLI trava na última identidade usada até reiniciar a máquina"
         ],
         "correta": 1,
-        "explicacao": "Free Tier = sempre-grátis + 12 meses grátis (a partir da criação) + trials por tempo/uso.",
+        "explicacao": "A ordem de precedência da CLI coloca env vars acima dos arquivos de perfil. unset AWS_* resolve.",
         "feedbacks": [
-          "Não; só uma parte dos serviços/limites é gratuita, e muitos têm cota.",
-          "Isso mesmo: são esses três tipos, e cada um tem regras próprias de limite.",
-          "Free Tier é aberto a qualquer conta nova, não exige contrato enterprise.",
-          "Não é um crédito fixo mensal; são cotas por serviço."
+          "Deletar a role revogaria o acesso, mas o motivo do comportamento é local: as variáveis de ambiente ainda estão setadas no shell.",
+          "Correto: a CLI resolve credenciais nesta ordem: env vars primeiro, depois profiles. Enquanto as AWS_* existirem no shell, elas mandam.",
+          "assume-role não escreve nada em ~/.aws — ele só retorna as credenciais na resposta; você é quem as exportou no ambiente.",
+          "Não há 'trava': basta unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN e a CLI volta ao profile padrão."
         ]
       },
       {
-        "pergunta": "Qual destes é um exemplo típico de custo que 'sangra em silêncio' se você esquecer?",
+        "pergunta": "Uma access key foi commitada por engano num repositório público do GitHub. Qual a PRIMEIRA providência?",
         "opcoes": [
-          "Listar regiões pela CLI",
-          "Um NAT Gateway ou EC2 esquecido ligado",
-          "Fazer login no console",
-          "Criar um usuário IAM"
+          "Apagar o commit e fazer force push — resolvido",
+          "Desativar/deletar a chave no IAM imediatamente e emitir uma nova",
+          "Trocar a senha do console do user",
+          "Esperar pra ver se alguém usa a chave antes de agir"
         ],
         "correta": 1,
-        "explicacao": "Recursos que cobram por hora de existência (NAT Gateway, EC2 ligado, IP elástico ocioso) drenam custo.",
+        "explicacao": "Chave pública em repo = comprometida (bots varrem o GitHub em minutos). Revogar primeiro, limpar o histórico depois.",
         "feedbacks": [
-          "Listar regiões é uma chamada de API de leitura — não gera custo relevante.",
-          "Exato: esses recursos cobram enquanto existem/estão ligados, mesmo sem tráfego. Daí o teardown.",
-          "Login no console é gratuito.",
-          "Criar usuário IAM é gratuito; IAM não cobra por usuários/grupos/roles."
+          "Tarde demais: bots capturam chaves em minutos e o histórico/forks/caches podem preservá-la. A chave JÁ está comprometida — revogue.",
+          "Correto: a chave deve ser considerada vazada no instante do push. Desativar/deletar no IAM corta o acesso; depois gere outra e limpe o repo.",
+          "Senha de console e access key são credenciais independentes — trocar a senha não invalida a chave vazada.",
+          "É o pior plano: a mineração de cripto na sua conta começa em minutos, não em dias. Agir imediatamente é a única resposta."
         ]
       },
       {
-        "pergunta": "Qual é a 'regra de ouro' de custos adotada neste curso?",
+        "pergunta": "Sobre o IAM Identity Center, qual afirmação está CORRETA?",
         "opcoes": [
-          "Deixar recursos ligados por garantia, nunca destruir",
-          "Terminou a prática, faça o teardown; na dúvida, pergunte antes de criar",
-          "Sempre usar a maior instância possível",
-          "Desativar os alertas de billing para não receber e-mails"
+          "É um serviço para criar access keys de longa duração em massa",
+          "Fornece acesso humano via SSO com credenciais temporárias (roles), ideal para múltiplas contas",
+          "Substitui as policies do IAM por um sistema próprio de permissões incompatível",
+          "Só funciona para aplicações, nunca para pessoas"
         ],
         "correta": 1,
-        "explicacao": "Recurso pago só vive enquanto a prática precisa. Terminou, destrói. Na dúvida, pergunte antes.",
+        "explicacao": "Identity Center = SSO: pessoas logam num portal e recebem roles temporárias nas contas, sem chave eterna.",
         "feedbacks": [
-          "É justamente o que NÃO fazemos — recurso esquecido ligado é a maior fonte de custo inesperado.",
-          "Isso: teardown ao fim de cada prática e pergunte antes de criar algo que possa custar.",
-          "Instância grande sem necessidade só aumenta o custo — o oposto da boa prática.",
-          "Desativar alertas é remover sua rede de segurança; fazemos o contrário (ativamos)."
+          "É o oposto: o objetivo dele é ELIMINAR chaves de longa duração para humanos, trocando-as por sessões temporárias.",
+          "Correto: login único, diretório central (ou integrado a um IdP), permission sets aplicados em múltiplas contas, tudo via credenciais temporárias.",
+          "Ele usa o mesmo modelo por baixo: permission sets viram roles com policies IAM normais nas contas.",
+          "É exatamente para pessoas (acesso humano). Aplicações/serviços continuam usando roles diretamente."
+        ]
+      },
+      {
+        "pergunta": "Seu user IAM admin não consegue ver as páginas de Billing, mas o root vê. O que está faltando?",
+        "opcoes": [
+          "Instalar o plugin de billing da CLI",
+          "Ativar, como root, a opção 'IAM user and role access to Billing information' na conta",
+          "Dar AdministratorAccess ao user (só isso já resolveria)",
+          "Billing só pode ser visto pelo root, sem exceção"
+        ],
+        "correta": 1,
+        "explicacao": "Além da permissão IAM, existe uma chave global da conta (só o root ativa) que libera billing para users/roles.",
+        "feedbacks": [
+          "Não existe 'plugin de billing' — o bloqueio é uma configuração da conta, não da ferramenta.",
+          "Correto: é uma trava em dois fatores — a configuração da conta (ação de root) E a permissão IAM. Sem a primeira, nem admin enxerga billing.",
+          "AdministratorAccess sozinho não basta: enquanto a chave da conta estiver desativada, users IAM são bloqueados nas páginas de billing.",
+          "Pode sim ser visto por users IAM — desde que o root ative o acesso e o user tenha as permissões adequadas."
+        ]
+      },
+      {
+        "pergunta": "Qual conjunto de práticas melhor descreve 'least privilege' aplicado corretamente?",
+        "opcoes": [
+          "Dar s3:* e ec2:* para todos e restringir se houver incidente",
+          "Conceder só as ações e recursos necessários, revisar com 'last accessed' e remover o que não é usado",
+          "Usar uma única policy AdministratorAccess para simplificar a auditoria",
+          "Bloquear tudo com Deny explícito e abrir exceções por e-mail"
+        ],
+        "correta": 1,
+        "explicacao": "Least privilege = mínimo necessário + revisão contínua. O IAM ajuda mostrando quando cada permissão foi usada.",
+        "feedbacks": [
+          "'Restringir depois' nunca acontece — e o incidente vem antes. Começar amplo é o antipadrão que o least privilege combate.",
+          "Correto: ações e ARNs específicos, concessão sob demanda, e poda periódica guiada pelos dados de last accessed do IAM.",
+          "Admin pra todo mundo é o oposto de least privilege — e a auditoria fica pior, pois qualquer um pode ter feito qualquer coisa.",
+          "Desnecessário: o implicit deny já bloqueia tudo por padrão. Deny explícito é pra travas absolutas, não pra gestão do dia a dia."
         ]
       }
     ]
   },
   "order": [
-    9,
-    5,
-    8,
-    7,
     10,
-    0,
-    4,
-    2,
     1,
-    11,
     6,
+    0,
+    2,
+    5,
+    9,
+    7,
+    4,
+    8,
+    11,
     3
   ],
   "pos": 12,
@@ -236,16 +236,16 @@
     {
       "pos": 1,
       "escolha": [
-        0
+        2
       ],
       "acertou": true
     },
     {
       "pos": 2,
       "escolha": [
-        0
+        2
       ],
-      "acertou": false
+      "acertou": true
     },
     {
       "pos": 3,
@@ -257,7 +257,7 @@
     {
       "pos": 4,
       "escolha": [
-        1
+        2
       ],
       "acertou": true
     },
@@ -278,7 +278,7 @@
     {
       "pos": 7,
       "escolha": [
-        2
+        1
       ],
       "acertou": true
     },
@@ -306,7 +306,7 @@
     {
       "pos": 11,
       "escolha": [
-        1
+        0
       ],
       "acertou": true
     }

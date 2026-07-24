@@ -221,8 +221,8 @@
       }
     ]
   },
-  "pos": 10,
-  "marco_sessao": 6,
+  "pos": 16,
+  "marco_sessao": 10,
   "status": {
     "intro": "visto",
     "t1": "visto",
@@ -234,12 +234,12 @@
     "t7": "visto",
     "p1": "visto",
     "p2": "visto",
-    "p3": "pendente",
-    "p4": "pendente",
-    "p5": "pendente",
-    "q1": "pendente",
-    "prova": "pendente",
-    "fim": "pendente"
+    "p3": "visto",
+    "p4": "visto",
+    "p5": "visto",
+    "q1": "visto",
+    "prova": "visto",
+    "fim": "visto"
   },
   "notes": [
     {
@@ -286,6 +286,16 @@
       "beat": "p2",
       "ts": "2026-07-23T01:35:27+00:00",
       "text": "p2 (Parte B CLI) concluida: aluno configurou profile teste-leitor, confirmou identidades nos dois profiles, s3 ls autorizado (voltou vazio=sucesso, conta sem buckets), e os DOIS AccessDenied esperados (s3:CreateBucket e iam:ListUsers) com implicit deny ('no identity-based policy allows'). Aluno entendeu a diferenca 'posso mas nao ha nada' vs 'nao posso' e o diagnostico via mensagem de erro (identidade->acao->recurso). PARADA da sessao aqui. Proximo: p3 = criar a role (Console) e ler a trust policy, depois p4 assumir via STS."
+    },
+    {
+      "beat": "p3",
+      "ts": "2026-07-24T00:49:00+00:00",
+      "text": "p3: aluno confundiu o Action da trust policy com 'lista de permissoes que o user precisa ter para assumir'. Causa: minha narracao colou duas condicoes numa frase ('qualquer identidade que TAMBEM tenha sts:AssumeRole pode assumir'). Corrigido: o Action da trust policy apenas NOMEIA a operacao autorizada (assumir); nao e requisito sobre o user. A exigencia de o user ter sts:AssumeRole vem de OUTRO documento (permission policy do user), verificacao paralela e independente. Trust policy so olha o Principal (quem) + Action sts:AssumeRole (qual operacao). Reforcar no review: os 3 documentos (trust policy da role / permission policy da role / permission policy do user)."
+    },
+    {
+      "beat": "fim",
+      "ts": "2026-07-24T01:20:48+00:00",
+      "text": "FIM da sessao com Modulo 02 COMPLETO. Nesta sessao: revisao (2/2), p3 (criou role curso-role-ec2-readonly + leu trust policy — teve duvida forte sobre Action da trust policy vs permissoes do user, corrigida e virou dominio), p4 (assumiu role via sts:AssumeRole na conta 514640445902, viu ASIA/SessionToken/Expiration, testou limites ec2 ok/s3 negado, unset ok), p5 (billing liberado + teardown do teste-leitor). QUIZ 10/10 e PROVA 12/12 (100%). Aluno solido em IAM. Proximo: Modulo 03 - Rede (VPC): subnets, route tables, IGW, security groups."
     }
   ],
   "iniciado_em": "2026-07-20T20:21:32+00:00",
@@ -297,7 +307,13 @@
     "t6": "2026-07-23T01:07:36+00:00",
     "t7": "2026-07-23T01:18:58+00:00",
     "p1": "2026-07-23T01:29:49+00:00",
-    "p2": "2026-07-23T01:35:27+00:00"
+    "p2": "2026-07-23T01:35:27+00:00",
+    "p3": "2026-07-24T00:50:47+00:00",
+    "p4": "2026-07-24T00:59:41+00:00",
+    "p5": "2026-07-24T01:08:14+00:00",
+    "q1": "2026-07-24T01:13:13+00:00",
+    "prova": "2026-07-24T01:19:48+00:00",
+    "fim": "2026-07-24T01:20:48+00:00"
   },
   "concluido_aprox": [
     "intro",
